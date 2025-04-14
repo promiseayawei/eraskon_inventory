@@ -1,0 +1,9 @@
+CREATE TABLE partner (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    short_name VARCHAR(255) NOT NULL,
+    fullname VARCHAR(255) NOT NULL,
+    logo VARCHAR(255) NOT NULL, -- Store the file path or URL of the logo
+    address VARCHAR(255) NOT NULL,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

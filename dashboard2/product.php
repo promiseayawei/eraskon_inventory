@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eraskon Inventory Management</title>
+
+  <!-- Boxicons CSS -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+  <style>
+    :root {
+      --bg-light: #e2dcdc;
+      --bg-dark: #090F3B;
+      --text-light: #090F3B;
+      --text-dark: #f1f1f1;
+      --card-bg-light: #e2dcdc;
+      --card-bg-dark: #050d4a;
+      --input-border: #ccc;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    body.dark {
+
+      --bg-light: #090F3B;
+      --bg-dark: #e2dcdc;
+      --text-light: #e2dcdc;
+      --text-dark: #090F3B;
+      --card-bg-light: #090F3B;
+      --card-bg-dark: #050d4a;
+      --input-border: #ccc;
+    }
+
+    .product-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: flex-start;
+    }
+
+    .invoice-panel {
+      position: sticky;
+      top: 100px;
+      align-self: flex-start;
+      background: var(--container-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      margin-left: auto;
+    }
+
+    .product-card {
+      background-color: var(--container-bg);
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: calc(33.333% - 13.34px);
+      /* Three cards per row with gap compensation */
+      flex: 0 0 calc(33.333% - 13.34px);
+      box-sizing: border-box;
+    }
+
+    body.dark .product-card {
+      background-color: var(--card-bg-dark);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: auto;
+      max-height: 100%;
+      /* Increased max height */
+      object-fit: cover;
+      /* Changed from 'contain' to 'cover' for better visual fit */
+      aspect-ratio: 4 / 4;
+      /* Maintain consistent aspect ratio */
+      border-radius: 12px;
+      /* Optional: soft rounded corners for modern look */
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+    }
+
+    .product-card img:hover {
+      transform: scale(1.05);
+      /* Subtle hover effect to make it interactive */
+    }
+
+
+    .main-content {
+      padding: 1rem;
+    }
+
+    .product-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .quantity-control button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .quantity-control button:hover {
+      background: #0056b3;
+    }
+
+    .quantity-control input[type="number"] {
+      width: 60px;
+      padding: 0.3rem;
+      text-align: center;
+    }
+
+    @media screen and (max-width: 1024px) {
+      .product-card {
+        width: calc(50% - 10px);
+        /* Two per row on medium screens */
+        flex: 0 0 calc(50% - 10px);
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      .product-layout {
+        flex-direction: column;
+      }
+
+      .invoice-panel {
+        position: static;
+        width: 100%;
+        margin-left: 0;
+        max-height: none;
+      }
+    }
+
+
+    @media screen and (max-width: 600px) {
+      .product-card {
+        width: 100%;
+        /* Full width on mobile */
+        flex: 0 0 100%;
+      }
+    }
+  </style>
+</head>
+
+
+<body>
+  <!-- navbar -->
+  <nav class="navbar">
+    <div class="logo_item">
+      <i class="bx bx-menu" id="sidebarOpen"></i>
+      <img src="assets/images/eraskon_logo.webp" alt=""></i>Inventory System
+    </div>
+
+    <div class="search_bar">
+      <input type="text" placeholder="Search" />
+    </div>
+
+    <div class="navbar_content">
+      <i class="bi bi-grid"></i>
+      <i class='bx bx-sun' id="darkLight"></i>
+      <i class='bx bx-bell'></i>
+      <img src="assets/images/avatar.png" alt="" class="profile" />
+    </div>
+  </nav>
+
+  <!-- sidebar -->
+  <nav class="sidebar">
+    <div class="menu_content">
+      <ul class="menu_items">
+        <div class="menu_title menu_dahsboard"></div>
+        <!-- duplicate or remove this li tag if you want to add or remove navlink with submenu -->
+        <!-- start -->
+        <li class="item">
+          <div href="#" class="nav_link submenu_item">
+            <span class="navlink_icon">
+              <i class="bx bx-home-alt"></i>
+            </span>
+            <span class="navlink">Home</span>
+            <i class="bx bx-chevron-right arrow-left"></i>
+          </div>
+
+          <ul class="menu_items submenu">
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+          </ul>
+        </li>
+        <!-- end -->
+
+        <!-- duplicate this li tag if you want to add or remove  navlink with submenu -->
+        <!-- start -->
+        <li class="item">
+          <div href="#" class="nav_link submenu_item">
+            <span class="navlink_icon">
+              <i class="bx bx-grid-alt"></i>
+            </span>
+            <span class="navlink">Overview</span>
+            <i class="bx bx-chevron-right arrow-left"></i>
+          </div>
+
+          <ul class="menu_items submenu">
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+          </ul>
+        </li>
+        <!-- end -->
+      </ul>
+
+      <ul class="menu_items">
+        <div class="menu_title menu_editor"></div>
+        <!-- duplicate these li tag if you want to add or remove navlink only -->
+        <!-- Start -->
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bxs-magic-wand"></i>
+            </span>
+            <span class="navlink">Products</span>
+          </a>
+        </li>
+        <!-- End -->
+
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bx-loader-circle"></i>
+            </span>
+            <span class="navlink">Sales</span>
+          </a>
+        </li>
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bx-filter"></i>
+            </span>
+            <span class="navlink">Report</span>
+          </a>
+        </li>
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bx-cloud-upload"></i>
+            </span>
+            <span class="navlink">stock</span>
+          </a>
+        </li>
+      </ul>
+
+
+      <!-- Sidebar Open / Close -->
+      <div class="bottom_content">
+        <div class="bottom expand_sidebar">
+          <span> Expand</span>
+          <i class='bx bx-log-in'></i>
+        </div>
+        <div class="bottom collapse_sidebar">
+          <span> Collapse</span>
+          <i class='bx bx-log-out'></i>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <main id="app" class="main-content">
+    <section class="product-page">
+      <h2 style="margin: 20px 0;">Products</h2>
+      <div class="search-box">
+        <input type="text" v-model="searchTerm" placeholder="Search products...">
+      </div>
+
+      <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+        <!-- Product Grid -->
+        <div class="product-grid" style="flex: 1;">
+          <div class="product-card" v-for="product in filteredProducts" :key="product.id">
+            <img :src="product.image" :alt="product.name" />
+            <div class="product-header">
+              <h3>{{ product.name }}</h3>
+              <p>{{ product.description }}</p>
+            </div>
+            <div class="variant-selector">
+              <label>Variant:</label>
+              <select v-model="product.selectedVariant">
+                <option v-for="variant in product.variants" :value="variant">
+                  {{ variant.size }} - ₦{{ variant.price }} ({{ variant.stock }} available)
+                </option>
+              </select>
+            </div>
+            <div class="quantity-control">
+              <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
+              <input type="number" v-model.number="product.quantity" min="1" />
+              <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
+            </div>
+            <p>Stock: {{ product.selectedVariant.stock }}</p>
+            <button class="order-btn" @click="addToCart(product)">Order</button>
+          </div>
+        </div>
+
+        <!-- Invoice Panel -->
+        <div class="invoice-panel" v-if="cart.length">
+          <h3>Invoice Summary</h3>
+          <ul>
+            <li v-for="(item, index) in cart" :key="index">
+              {{ item.name }} ({{ item.variant.size }}) - {{ item.quantity }} x ₦{{ item.variant.price }} = ₦{{ item.variant.price * item.quantity }}
+            </li>
+          </ul>
+          <p><strong>Total:</strong> ₦{{ cartTotal }}</p>
+          <button @click="generateInvoice">Download Invoice</button>
+        </div>
+
+        <!-- Empty Cart Fallback -->
+        <div class="invoice-panel" v-else>
+          <h3>Invoice Summary</h3>
+          <p>Your cart is empty. Add products to generate an invoice.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <!-- JavaScript -->
+  <!-- JavaScript -->
+  <script src="assets/js/script.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        isDarkMode: localStorage.getItem("darkMode") === "true",
+        searchTerm: '',
+        cart: [],
+        products: [{
+            id: 1,
+            name: 'ERASKO GOLD20W-50',
+            description: 'High-performance multi-grade oil',
+            image: 'assets/images/erasko_gold.png',
+            quantity: 1,
+            variants: [{
+                size: '1L',
+                price: 3000,
+                stock: 25
+              },
+              {
+                size: '3L',
+                price: 8000,
+                stock: 20
+              },
+              {
+                size: '25L',
+                price: 60000,
+                stock: 15
+              },
+              {
+                size: '50L',
+                price: 110000,
+                stock: 10
+              }
+            ],
+            selectedVariant: {
+              size: '1L',
+              price: 3000,
+              stock: 25
+            }
+          },
+          {
+            id: 2,
+            name: 'ERASKO POWER20W-50',
+            description: 'Reliable and durable engine oil',
+            image: 'assets/images/erasko_power.png',
+            quantity: 1,
+            variants: [{
+                size: '1L',
+                price: 2800,
+                stock: 30
+              },
+              {
+                size: '3L',
+                price: 7500,
+                stock: 25
+              },
+              {
+                size: '25L',
+                price: 58000,
+                stock: 12
+              },
+              {
+                size: '50L',
+                price: 105000,
+                stock: 8
+              }
+            ],
+            selectedVariant: {
+              size: '1L',
+              price: 2800,
+              stock: 30
+            }
+          },
+          {
+            id: 3,
+            name: 'ERASKO DMO',
+            description: 'Diesel Motor Oil for heavy-duty engines',
+            image: 'assets/images/erasko_dmo.png',
+            quantity: 1,
+            variants: [{
+                size: '1L',
+                price: 3200,
+                stock: 18
+              },
+              {
+                size: '5L',
+                price: 15000,
+                stock: 10
+              },
+              {
+                size: '25L',
+                price: 62000,
+                stock: 7
+              }
+            ],
+            selectedVariant: {
+              size: '1L',
+              price: 3200,
+              stock: 18
+            }
+          },
+          {
+            id: 4,
+            name: 'ERASKO HDSAE40',
+            description: 'Heavy-duty SAE40 engine oil',
+            image: 'assets/images/erasko_hd.png',
+            quantity: 1,
+            variants: [{
+                size: '1L',
+                price: 2900,
+                stock: 22
+              },
+              {
+                size: '25L',
+                price: 59000,
+                stock: 10
+              },
+              {
+                size: '50L',
+                price: 112000,
+                stock: 5
+              }
+            ],
+            selectedVariant: {
+              size: '1L',
+              price: 2900,
+              stock: 22
+            }
+          }
+        ]
+      },
+      computed: {
+        cartTotal() {
+          return this.cart.reduce((sum, item) => sum + (item.variant.price * item.quantity), 0);
+        },
+        filteredProducts() {
+          const term = this.searchTerm.toLowerCase();
+          return this.products.filter(product =>
+            product.name.toLowerCase().includes(term) ||
+            product.description.toLowerCase().includes(term)
+          );
+        }
+      },
+      methods: {
+        toggleDarkMode() {
+          this.isDarkMode = !this.isDarkMode;
+          localStorage.setItem("darkMode", this.isDarkMode);
+        },
+        increaseQty(product) {
+          if (product.quantity < product.selectedVariant.stock) product.quantity++;
+        },
+        decreaseQty(product) {
+          if (product.quantity > 1) product.quantity--;
+        },
+        addToCart(product) {
+          const existing = this.cart.find(i => i.id === product.id && i.variant.size === product.selectedVariant.size);
+          const maxQty = product.selectedVariant.stock;
+
+          if (existing) {
+            if (existing.quantity + product.quantity > maxQty) {
+              alert(`Only ${maxQty - existing.quantity} more in stock for this variant.`);
+              return;
+            }
+            existing.quantity += product.quantity;
+          } else {
+            if (product.quantity > maxQty) {
+              alert(`Only ${maxQty} available in stock.`);
+              return;
+            }
+            this.cart.push({
+              id: product.id,
+              name: product.name,
+              variant: product.selectedVariant,
+              quantity: product.quantity
+            });
+          }
+          product.quantity = 1;
+        },
+        generateInvoice() {
+          const lines = this.cart.map(item => `${item.name} (${item.variant.size}) x ${item.quantity} = ₦${item.variant.price * item.quantity}`);
+          const content = `INVOICE\n\n${lines.join('\n')}\n\nTOTAL: ₦${this.cartTotal}`;
+          const blob = new Blob([content], {
+            type: 'text/plain'
+          });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'invoice.txt';
+          a.click();
+          this.cart = [];
+        }
+      },
+      watch: {
+        isDarkMode(val) {
+          document.body.classList.toggle('dark', val);
+        }
+      },
+      mounted() {
+        document.getElementById("darkLight").addEventListener("click", function() {
+          app.toggleDarkMode(); // Make sure 'app' is the Vue instance
+        });
+        document.body.classList.toggle('dark', this.isDarkMode);
+      }
+    });
+  </script>
+</body>
+
+</html>

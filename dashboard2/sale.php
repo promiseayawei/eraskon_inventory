@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eraskon Inventory Management</title>
+
+  <!-- Boxicons CSS -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Animate.css for card animation -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+  <style>
+    :root {
+      --bg-light: #e2dcdc;
+      --bg-dark: #090F3B;
+      --text-light: #090F3B;
+      --text-dark: #f1f1f1;
+      --card-bg-light: #e2dcdc;
+      --card-bg-dark: #050d4a;
+      --input-border: #ccc;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    body.dark {
+
+      --bg-light: #090F3B;
+      --bg-dark: #e2dcdc;
+      --text-light: #e2dcdc;
+      --text-dark: #090F3B;
+      --card-bg-light: #090F3B;
+      --card-bg-dark: #050d4a;
+      --input-border: #ccc;
+    }
+
+
+    .fade-enter-active,
+    .fade-leave-active {
+      transition: all 0.5s ease;
+    }
+
+    .fade-enter-from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .fade-enter-to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .product-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: flex-start;
+    }
+
+    .invoice-panel {
+      position: sticky;
+      top: 100px;
+      align-self: flex-start;
+      background: var(--container-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      margin-left: auto;
+    }
+
+    .product-card {
+      background-color: var(--container-bg);
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: calc(33.333% - 13.34px);
+      /* Three cards per row with gap compensation */
+      flex: 0 0 calc(33.333% - 13.34px);
+      box-sizing: border-box;
+    }
+
+    body.dark .product-card {
+      background-color: var(--card-bg-dark);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: auto;
+      max-height: 100%;
+      /* Increased max height */
+      object-fit: cover;
+      /* Changed from 'contain' to 'cover' for better visual fit */
+      aspect-ratio: 4 / 4;
+      /* Maintain consistent aspect ratio */
+      border-radius: 12px;
+      /* Optional: soft rounded corners for modern look */
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+    }
+
+    .product-card img:hover {
+      transform: scale(1.05);
+      /* Subtle hover effect to make it interactive */
+    }
+
+
+    .main-content {
+      padding: 1rem;
+    }
+
+    .product-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .quantity-control button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .quantity-control button:hover {
+      background: #0056b3;
+    }
+
+    .quantity-control input[type="number"] {
+      width: 60px;
+      padding: 0.3rem;
+      text-align: center;
+    }
+
+    @media screen and (max-width: 1024px) {
+      .product-card {
+        width: calc(50% - 10px);
+        /* Two per row on medium screens */
+        flex: 0 0 calc(50% - 10px);
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      .product-layout {
+        flex-direction: column;
+      }
+
+      .invoice-panel {
+        position: static;
+        width: 100%;
+        margin-left: 0;
+        max-height: none;
+      }
+    }
+
+
+    @media screen and (max-width: 600px) {
+      .product-card {
+        width: 100%;
+        /* Full width on mobile */
+        flex: 0 0 100%;
+      }
+    }
+  </style>
+</head>
+
+
+<body>
+  <!-- navbar -->
+  <nav class="navbar">
+    <div class="logo_item">
+      <i class="bx bx-menu" id="sidebarOpen"></i>
+      <img src="assets/images/eraskon_logo.webp" alt=""></i>Inventory System
+    </div>
+
+    <div class="search_bar">
+      <input type="text" placeholder="Search" />
+    </div>
+
+    <div class="navbar_content">
+      <i class="bi bi-grid"></i>
+      <i class='bx bx-sun' id="darkLight"></i>
+      <i class='bx bx-bell'></i>
+      <img src="assets/images/avatar.png" alt="" class="profile" />
+    </div>
+  </nav>
+
+  <!-- sidebar -->
+  <nav class="sidebar">
+    <div class="menu_content">
+      <ul class="menu_items">
+        <div class="menu_title menu_dahsboard"></div>
+        <!-- duplicate or remove this li tag if you want to add or remove navlink with submenu -->
+        <!-- start -->
+        <li class="item">
+          <div href="#" class="nav_link submenu_item">
+            <span class="navlink_icon">
+              <i class="bx bx-home-alt"></i>
+            </span>
+            <span class="navlink">Home</span>
+            <i class="bx bx-chevron-right arrow-left"></i>
+          </div>
+
+          <ul class="menu_items submenu">
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+          </ul>
+        </li>
+        <!-- end -->
+
+        <!-- duplicate this li tag if you want to add or remove  navlink with submenu -->
+        <!-- start -->
+        <li class="item">
+          <div href="#" class="nav_link submenu_item">
+            <span class="navlink_icon">
+              <i class="bx bx-grid-alt"></i>
+            </span>
+            <span class="navlink">Overview</span>
+            <i class="bx bx-chevron-right arrow-left"></i>
+          </div>
+
+          <ul class="menu_items submenu">
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+          </ul>
+        </li>
+        <!-- end -->
+      </ul>
+
+      <ul class="menu_items">
+        <div class="menu_title menu_editor"></div>
+        <!-- duplicate these li tag if you want to add or remove navlink only -->
+        <!-- Start -->
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bxs-magic-wand"></i>
+            </span>
+            <span class="navlink">Products</span>
+          </a>
+        </li>
+        <!-- End -->
+
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bx-loader-circle"></i>
+            </span>
+            <span class="navlink">Sales</span>
+          </a>
+        </li>
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bx-filter"></i>
+            </span>
+            <span class="navlink">Report</span>
+          </a>
+        </li>
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bx-cloud-upload"></i>
+            </span>
+            <span class="navlink">stock</span>
+          </a>
+        </li>
+      </ul>
+
+
+      <!-- Sidebar Open / Close -->
+      <div class="bottom_content">
+        <div class="bottom expand_sidebar">
+          <span> Expand</span>
+          <i class='bx bx-log-in'></i>
+        </div>
+        <div class="bottom collapse_sidebar">
+          <span> Collapse</span>
+          <i class='bx bx-log-out'></i>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <main id="app" class="main-content ">
+
+
+
+    <!-- Beautified Bootstrap Cards with Animation -->
+    <div class="row g-4 mb-5">
+      <div class="col-sm-6 col-md-4 col-lg-3" v-for="(card, index) in performanceCards" :key="index">
+        <div
+          class="card h-100 p-3 border-0 shadow-lg animate__animated animate__fadeInUp"
+          :class="darkMode ? 'bg-dark text-white' : 'bg-white text-dark'"
+          :style="`animation-delay: ${index * 100}ms; animation-duration: 600ms; border-radius: 1rem; transition: transform 0.3s ease, box-shadow 0.3s ease;`"
+          @mouseover="hoverIndex = index"
+          @mouseleave="hoverIndex = null"
+          :class="{ 'shadow-lg': hoverIndex === index, 'shadow': hoverIndex !== index }">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-bar-chart-fill fs-2" v-if="card.icon"></i>
+            </div>
+            <h5 class="card-title fw-semibold">{{ card.title }}</h5>
+            <h3 class="card-text fw-bold mb-2">{{ card.amount }}</h3>
+            <p class="card-text small text-muted">{{ card.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Orders Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+      <div class="mb-4 flex justify-between items-center">
+        <h2 class="text-xl font-semibold">Orders</h2>
+        <input type="text" v-model="searchQuery" placeholder="Search..." class="border px-3 py-2 rounded dark:bg-gray-700 dark:text-white" />
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full table-auto text-sm">
+          <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700">
+              <th class="px-4 py-2">Order ID</th>
+              <th class="px-4 py-2">Customer</th>
+              <th class="px-4 py-2">Amount</th>
+              <th class="px-4 py-2">Status</th>
+              <th class="px-4 py-2">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(order, index) in paginatedOrders" :key="index" class="border-t dark:border-gray-700">
+              <td class="px-4 py-2">{{ order.id }}</td>
+              <td class="px-4 py-2">{{ order.customer }}</td>
+              <td class="px-4 py-2">₦{{ order.amount }}</td>
+              <td class="px-4 py-2">{{ order.status }}</td>
+              <td class="px-4 py-2">{{ order.date }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="mt-4 flex justify-center items-center gap-4">
+        <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded">Prev</button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button @click="nextPage" :disabled="currentPage === totalPages" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded">Next</button>
+      </div>
+    </div>
+    </div>
+
+  </main>
+  <!-- JavaScript -->
+  <!-- JavaScript -->
+  <script src="assets/js/script.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script> <!-- ✅ Vue 3 -->
+
+
+  <script>
+    const {
+      createApp
+    } = Vue;
+
+    createApp({
+      data() {
+        return {
+          isDark: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+          hoverIndex: null,
+          performanceCards: [{
+              title: 'Total Sales',
+              amount: '₦150,000',
+              description: 'This month’s sales',
+              icon: 'bi-bar-chart-fill'
+            },
+            {
+              title: 'Orders',
+              amount: '240',
+              description: 'Completed orders',
+              icon: 'bi-cart-fill'
+            },
+            {
+              title: 'Customers',
+              amount: '1,200',
+              description: 'Active users',
+              icon: 'bi-people-fill'
+            },
+            {
+              title: 'Returns',
+              amount: '12',
+              description: 'Returned items',
+              icon: 'bi-arrow-counterclockwise'
+            }
+          ],
+
+
+
+          darkMode: localStorage.getItem('darkMode') === 'true',
+          searchQuery: '',
+          currentPage: 1,
+          rowsPerPage: 10,
+          orders: Array.from({
+            length: 50
+          }, (_, i) => ({
+            id: `ORD${i + 1}`,
+            customer: `Customer ${i + 1}`,
+            amount: Math.floor(Math.random() * 9000 + 1000),
+            status: i % 2 === 0 ? 'Completed' : 'Pending',
+            date: new Date().toISOString().split('T')[0]
+          }))
+        };
+      },
+      computed: {
+        filteredOrders() {
+          return this.orders.filter(order =>
+            Object.values(order).some(val =>
+              String(val).toLowerCase().includes(this.searchQuery.toLowerCase())
+            )
+          );
+        },
+        totalPages() {
+          return Math.ceil(this.filteredOrders.length / this.rowsPerPage);
+        },
+        paginatedOrders() {
+          const start = (this.currentPage - 1) * this.rowsPerPage;
+          return this.filteredOrders.slice(start, start + this.rowsPerPage);
+        }
+      },
+      watch: {
+        darkMode(newVal) {
+          document.documentElement.classList.toggle('dark', newVal);
+          localStorage.setItem('darkMode', newVal);
+        },
+        searchQuery() {
+          this.currentPage = 1;
+        }
+      },
+      methods: {
+        toggleDarkMode() {
+          this.darkMode = !this.darkMode;
+        },
+        nextPage() {
+          if (this.currentPage < this.totalPages) this.currentPage++;
+        },
+        prevPage() {
+          if (this.currentPage > 1) this.currentPage--;
+        }
+      },
+      mounted() {
+        document.documentElement.classList.toggle('dark', this.darkMode);
+      }
+    }).mount('#app');
+  </script>
+</body>
+
+</html>

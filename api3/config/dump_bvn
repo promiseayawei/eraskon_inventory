@@ -1,0 +1,15 @@
+CREATE TABLE dump_bvn (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(10) NOT NULL,
+    source VARCHAR(100) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    dob VARCHAR(20) NOT NULL,
+    bvn VARCHAR(20) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    alt_phone_number VARCHAR(20) NOT NULL,
+    data longtext  NOT NULL,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    status VARCHAR(100) NOT NULL
+);

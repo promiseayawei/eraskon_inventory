@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<!-- Coding by CodingNepal || www.codingnepalweb.com -->
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Boxicons CSS -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <title>Eraskon Inventory Management</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+</head>
+
+<body>
+  <!-- navbar -->
+  <nav class="navbar">
+    <div class="logo_item">
+      <i class="bx bx-menu" id="sidebarOpen"></i>
+      <img src="assets/images/eraskon_logo.webp" alt=""></i>Inventory System
+    </div>
+
+    <div class="search_bar">
+      <input type="text" placeholder="Search" />
+    </div>
+
+    <div class="navbar_content">
+      <i class="bi bi-grid"></i>
+      <i class='bx bx-sun' id="darkLight"></i>
+      <i class='bx bx-bell'></i>
+      <img src="assets/images/avatar.png" alt="" class="profile" />
+    </div>
+  </nav>
+
+  <!-- sidebar -->
+  <nav class="sidebar">
+    <div class="menu_content">
+      <ul class="menu_items">
+        <div class="menu_title menu_dahsboard"></div>
+        <!-- duplicate or remove this li tag if you want to add or remove navlink with submenu -->
+        <!-- start -->
+        <li class="item">
+          <div href="#" class="nav_link submenu_item">
+            <span class="navlink_icon">
+              <i class="bx bx-home-alt"></i>
+            </span>
+            <span class="navlink">Home</span>
+            <i class="bx bx-chevron-right arrow-left"></i>
+          </div>
+
+          <ul class="menu_items submenu">
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+          </ul>
+        </li>
+        <!-- end -->
+
+        <!-- duplicate this li tag if you want to add or remove  navlink with submenu -->
+        <!-- start -->
+        <li class="item">
+          <div href="#" class="nav_link submenu_item">
+            <span class="navlink_icon">
+              <i class="bx bx-grid-alt"></i>
+            </span>
+            <span class="navlink">Overview</span>
+            <i class="bx bx-chevron-right arrow-left"></i>
+          </div>
+
+          <ul class="menu_items submenu">
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+          </ul>
+        </li>
+        <!-- end -->
+      </ul>
+
+      <ul class="menu_items">
+        <div class="menu_title menu_editor"></div>
+        <!-- duplicate these li tag if you want to add or remove navlink only -->
+        <!-- Start -->
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bxs-magic-wand"></i>
+            </span>
+            <span class="navlink">Products</span>
+          </a>
+        </li>
+        <!-- End -->
+
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bx-loader-circle"></i>
+            </span>
+            <span class="navlink">Sales</span>
+          </a>
+        </li>
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bx-filter"></i>
+            </span>
+            <span class="navlink">Report</span>
+          </a>
+        </li>
+        <li class="item">
+          <a href="#" class="nav_link">
+            <span class="navlink_icon">
+              <i class="bx bx-cloud-upload"></i>
+            </span>
+            <span class="navlink">stock</span>
+          </a>
+        </li>
+      </ul>
+
+
+      <!-- Sidebar Open / Close -->
+      <div class="bottom_content">
+        <div class="bottom expand_sidebar">
+          <span> Expand</span>
+          <i class='bx bx-log-in'></i>
+        </div>
+        <div class="bottom collapse_sidebar">
+          <span> Collapse</span>
+          <i class='bx bx-log-out'></i>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <main id="app" class="main-content">
+    <div class="cards">
+      <div class="card" v-for="card in cards" :key="card.title">
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.value }}</p>
+      </div>
+    </div>
+
+
+    <div class="chart-row" style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px;">
+      <div class="chart-container"
+        style=" flex: 1; min-width: 300px;padding: 16px;background-color: var(--container-bg);border-radius: 10px;transition: background 0.3s, color 0.3s;">
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="margin: 0;">Sales Chart</h4>
+          <div>
+            <select v-model="selectedMonth" @change="drawChart()">
+              <option value="all">All Months</option>
+              <option v-for="month in availableMonths" :key="month" :value="month">{{ month }}</option>
+            </select>
+            <button @click="downloadChart('salesChart', 'Sales_Report.png')">Download</button>
+          </div>
+        </div>
+        <canvas id="salesChart"></canvas>
+      </div>
+
+      <div class="chart-container"
+        style=" flex: 1; min-width: 300px;padding: 16px;background-color: var(--container-bg);border-radius: 10px;transition: background 0.3s, color 0.3s;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="margin: 0;">Product Stock</h4>
+          <button @click="downloadChart('productChart', 'Product_Stock.png')">Download</button>
+        </div>
+        <canvas id="productChart"></canvas>
+      </div>
+    </div>
+
+
+
+
+    <div class="table-section">
+      <input type="text" v-model="search" placeholder="Search products..." class="table-search" />
+      <table>
+        <thead>
+          <tr>
+            <th @click="sort('name')">Name</th>
+            <th @click="sort('category')">Category</th>
+            <th @click="sort('stock')">Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="product in filteredProducts" :key="product.id">
+            <td>{{ product.name }}</td>
+            <td>{{ product.category }}</td>
+            <td>{{ product.stock }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+ 
+  <!-- JavaScript -->
+  <script src="assets/js/script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+
+  <script>
+    function toggleSidebar() {
+      document.body.classList.toggle('collapsed');
+    }
+  
+    new Vue({
+      el: '#app',
+      data: {
+        cards: [
+          { title: 'Total Products', value: 150 },
+          { title: 'Total Sales', value: 75 },
+          { title: 'Available Stock', value: 100 }
+        ],
+        search: '',
+        sortKey: '',
+        sortAsc: true,
+        selectedMonth: 'all',
+        products: [
+          { id: 1, name: 'ERASKO GOLD20W-50', category: 'Lubricants', stock: 40 },
+          { id: 2, name: 'ERASKO POWER20W-50', category: 'Lubricants', stock: 30 },
+          { id: 3, name: 'ERASKO DMO', category: 'Lubricant', stock: 25 },
+          { id: 4, name: 'ERASKO HDSAE40', category: 'Lubricant', stock: 20 }
+        ],
+        salesChart: null,
+        productChart: null,
+        salesData: {
+          Jan: [10, 20],
+          Feb: [25, 15],
+          Mar: [15, 22],
+          Apr: [20, 18]
+        }
+      },
+      computed: {
+        availableMonths() {
+          return Object.keys(this.salesData);
+        },
+        filteredProducts() {
+          let list = this.products.filter(p =>
+            p.name.toLowerCase().includes(this.search.toLowerCase())
+          );
+          if (this.sortKey) {
+            list.sort((a, b) => {
+              const result = a[this.sortKey] > b[this.sortKey] ? 1 : -1;
+              return this.sortAsc ? result : -result;
+            });
+          }
+          return list;
+        }
+      },
+      methods: {
+        sort(key) {
+          if (this.sortKey === key) {
+            this.sortAsc = !this.sortAsc;
+          } else {
+            this.sortKey = key;
+            this.sortAsc = true;
+          }
+        },
+        getCSSVar(varName) {
+          return getComputedStyle(document.body).getPropertyValue(varName).trim();
+        },
+        downloadChart(chartId, fileName) {
+          const canvas = document.getElementById(chartId);
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = fileName;
+          a.click();
+        },
+        getTextColor() {
+          return document.body.classList.contains('dark-mode') ? '#ffffff' : '#000000';  // Dynamically check if dark mode is enabled
+        },
+        drawChart() {
+          const lineColor1 = this.getCSSVar('--blue-color') || '#4A90E2';
+          const lineColor2 = '#FF6B6B';
+          const barColor = this.getCSSVar('--grey-color') || '#777';
+          const textColor = this.getTextColor();  // Use the dynamically determined text color based on the mode
+  
+          if (this.salesChart) this.salesChart.destroy();
+          if (this.productChart) this.productChart.destroy();
+  
+          const ctxSales = document.getElementById("salesChart").getContext("2d");
+          const ctxProduct = document.getElementById("productChart").getContext("2d");
+  
+          let labels = [];
+          let dataset1 = [], dataset2 = [];
+  
+          if (this.selectedMonth === 'all') {
+            labels = Object.keys(this.salesData);
+            dataset1 = labels.map(m => this.salesData[m][0]);
+            dataset2 = labels.map(m => this.salesData[m][1]);
+          } else {
+            labels = [this.selectedMonth];
+            dataset1 = [this.salesData[this.selectedMonth][0]];
+            dataset2 = [this.salesData[this.selectedMonth][1]];
+          }
+  
+          // Sales chart (line chart)
+          this.salesChart = new Chart(ctxSales, {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Online Sales",
+                  data: dataset1,
+                  borderColor: lineColor1,
+                  backgroundColor: lineColor1 + '30',
+                  tension: 0.4,
+                  fill: true,
+                  pointBackgroundColor: lineColor1
+                },
+                {
+                  label: "Offline Sales",
+                  data: dataset2,
+                  borderColor: lineColor2,
+                  backgroundColor: lineColor2 + '30',
+                  tension: 0.4,
+                  fill: true,
+                  pointBackgroundColor: lineColor2
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { labels: { color: textColor } },
+                tooltip: {
+                  backgroundColor: textColor,
+                  titleColor: barColor,
+                  bodyColor: barColor
+                },
+                datalabels: {
+                  color: textColor,
+                  anchor: 'end',
+                  align: 'top',
+                  font: { weight: 'bold' },
+                  formatter: Math.round
+                }
+              },
+              scales: {
+                x: {
+                  ticks: { color: textColor },  // Set x-axis label color dynamically
+                  grid: { color: textColor + '20' }
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: { color: textColor },  // Set y-axis label color dynamically
+                  grid: { color: textColor + '20' }
+                }
+              }
+            },
+            plugins: [ChartDataLabels]
+          });
+  
+          // Product chart (bar chart)
+          this.productChart = new Chart(ctxProduct, {
+            type: "bar",
+            data: {
+              labels: this.products.map(p => p.name),
+              datasets: [{
+                label: "Stock Level",
+                data: this.products.map(p => p.stock),
+                backgroundColor: barColor,
+                borderRadius: 6,
+                borderSkipped: false
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { labels: { color: textColor } },
+                tooltip: {
+                  backgroundColor: textColor,
+                  titleColor: barColor,
+                  bodyColor: barColor
+                },
+                datalabels: {
+                  color: textColor,
+                  anchor: 'end',
+                  align: 'top',
+                  font: { weight: 'bold' },
+                  formatter: Math.round
+                }
+              },
+              scales: {
+                x: {
+                  ticks: { color: textColor },  // Set x-axis label color dynamically
+                  grid: { display: false }  // Removes background lines behind bars
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: { color: textColor },  // Set y-axis label color dynamically
+                  grid: { display: false }  // Removes background lines
+                }
+              }
+            },
+            plugins: [ChartDataLabels]
+          });
+        }
+      },
+      mounted() {
+        this.drawChart();
+        const observer = new MutationObserver(() => this.drawChart());
+        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      }
+    });
+  </script>
+  
+
+
+
+
+</body>
+
+</html>
