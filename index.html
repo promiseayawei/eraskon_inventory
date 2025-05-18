@@ -11,10 +11,65 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
   <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      /* Rounded corners */
+      border-style: solid;
+      border-width: 15px;
+      border-color: #007bff;
+      border-color: transparent;    
+
+      /* Adds rounded corners */
+      /* White background to highlight rounded corners */
+      padding: 20px;
+      /* Optional padding inside */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      /* Optional subtle shadow */
+      /* Optional max width */
+      margin: 1em auto;
+      /* Center container with vertical margin */
+    }
+
+
+    .logo-header {
+
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      margin-top: 2em;
+      color: #f3f0f0;
+      position: relative;
+    }
+
+    .logo-header img {
+      height: 4em;
+      width: 4em;
+    }
+
+    .logo-header p {
+      color: rgb(242, 235, 235);
+      font-weight: bold;
+      font-size: 1.2em;
+      margin: 0;
+    }
+
+
     .message-box {
       display: none;
-
-      margin-left: -1em;
+      margin-bottom: 1em;
       padding: 1em 1.5em;
       border-radius: 8px;
       max-width: 400px;
@@ -33,11 +88,50 @@
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
+
+    .input-box input {
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      outline: none;
+      font-size: 1em;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+
+    .input-box input:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    }
+
+    /* Add left margin to all fontawesome icons */
+    .input-box i.fas,
+    .input-box i.fa {
+      margin-left: 10px;
+    }
+
+    footer {
+
+      text-align: center;
+      padding: 1em 0;
+      font-size: 0.9em;
+      color: #f1f1f1;
+    }
   </style>
 </head>
 
 <body>
+  <!-- Logo Header -->
+  <div class="logo-header">
+    <img src="assets/images/eraskon_logo.webp" alt="Eraskon Logo">
+    <h1>Eraskon Inventory</h1>
+  </div>
+
+
   <div class="container">
+
+
     <input type="checkbox" id="flip">
 
     <!-- Cover Images -->
@@ -58,32 +152,25 @@
       </div>
     </div>
 
-
     <!-- Forms Section -->
     <div class="forms">
-      <!-- Message Box -->
-      <div id="messageBox" class="message-box"></div>
+      <!-- Message Boxes -->
+      <div id="loginMessageBox" class="message-box"></div>
 
       <div class="form-content">
 
         <!-- Login Form -->
         <div class="login-form">
-          <div style="display:flex; flex-direction:row-wrap;">
-            <img src="assets/images/eraskon_logo.webp" alt="" style="height: 4em; width: 4em; margin-top: -1em;">
-            <b>
-              <p style="color: brown; margin: 0;">Eraskon Inventory</p>
-            </b>
-          </div>
           <div class="title">Login</div>
           <form>
             <div class="input-boxes">
               <div class="input-box">
-                <i style="margin-left: 5px;" class="fas fa-envelope"></i>
-                <input type="text" placeholder="Enter your email" required>
+                <i class="fas fa-envelope"></i>
+                <input type="text" placeholder="Enter your email" required autocomplete="email">
               </div>
               <div class="input-box">
-                <i style="margin-left: 5px;" class="fas fa-lock"></i>
-                <input type="password" placeholder="Enter your password" required>
+                <i class="fas fa-lock"></i>
+                <input type="password" placeholder="Enter your password" required autocomplete="current-password">
               </div>
               <div class="text"><a href="#">Forgot password?</a></div>
               <div class="button input-box">
@@ -96,36 +183,34 @@
           </form>
         </div>
 
-        <!-- Activation Form -->
+        <!-- Signup Form -->
         <div class="signup-form">
-          <div style="display:flex; flex-direction:row-wrap;">
-            <img src="assets/images/eraskon_logo.webp" alt="" style="height: 4em; width: 4em; margin-top: -1em;">
-            <b>
-              <p style="color: brown; margin: 0;">Eraskon Inventory</p>
-            </b>
-          </div>
+
+          <!-- Message Boxes -->
+          <div id="signupMessageBox" class="message-box"></div>
+
           <div class="title">Signup Account</div>
           <form>
             <div class="input-boxes">
               <div class="input-box">
-                <i style="margin-left: 5px;"  class="fas fa-user"></i>
-                <input type="text" placeholder="Enter your email" required>
+                <i class="fas fa-envelope"></i>
+                <input type="text" placeholder="Enter your email" required autocomplete="email">
               </div>
               <div class="input-box">
-                <i style="margin-left: 5px;"  class="fas fa-user"></i>
-                <input type="text" placeholder="First name" required>
+                <i class="fas fa-user"></i>
+                <input type="text" placeholder="First name" required autocomplete="given-name">
               </div>
               <div class="input-box">
-                <i style="margin-left: 5px;"  class="fas fa-user"></i>
-                <input type="text" placeholder="Last name" required>
+                <i class="fas fa-user"></i>
+                <input type="text" placeholder="Last name" required autocomplete="family-name">
               </div>
               <div class="input-box">
-                <i style="margin-left: 5px;"  class="fas fa-lock"></i>
-                <input type="text" placeholder="Enter your password" required>
+                <i class="fas fa-lock"></i>
+                <input type="text" placeholder="Enter your password" required autocomplete="new-password">
               </div>
               <div class="input-box">
-                <i style="margin-left: 5px;"  class="fas fa-lock"></i>
-                <input type="password" placeholder="Confirm your password" required>
+                <i class="fas fa-lock"></i>
+                <input type="password" placeholder="Confirm your password" required autocomplete="new-password">
               </div>
               <div class="button input-box">
                 <input type="submit" value="Submit">
@@ -141,90 +226,89 @@
     </div>
   </div>
 
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Eraskon Inventory. All rights reserved || developed by <a
+      href="https://github.com/ayaweisoft">ayaweisoft</a>
+  </footer>
+
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="/config.js"></script>
- <script>
-  const API_BASE = 'http://localhost:5000/auth'; // or from config.js
+  <script>
+    const API_BASE = 'http://localhost:5000/auth';
 
-  function showMessage(message, type = "success") {
-    const box = document.getElementById("messageBox");
-    box.textContent = message;
-    box.className = `message-box ${type}`;
-    box.style.display = "block";
-    setTimeout(() => box.style.display = "none", 5000);
-  }
-
-  // LOGIN
-  document.querySelector(".login-form form").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const email = e.target.querySelector("input[type='text']").value;
-    const password = e.target.querySelector("input[type='password']").value;
-
-    axios.post(`${API_BASE}/login`, { email, password })
-      .then(response => {
-        const { token, user } = response.data;
-
-        // Save user data
-        localStorage.setItem('token', token);
-        localStorage.setItem('email', user.email);
-        localStorage.setItem('role', user.role);
-        localStorage.setItem('name', `${user.firstName} ${user.lastName}`);
-        localStorage.setItem('userId', user._id);
-        localStorage.setItem('warehouse', user.warehouse || '');
-
-        showMessage("Login successful!", "success");
-        setTimeout(() => window.location.href = "/Users/apple/Documents/GitHub/eraskon_inventory/store.html", 1500);
-      })
-      .catch(err => {
-        console.error(err);
-        const msg = err.response?.data?.error || "Login failed.";
-        showMessage(msg, "error");
-      });
-  });
-
-  // REGISTER / ACTIVATE ACCOUNT
-  document.querySelector(".signup-form form").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const inputs = e.target.querySelectorAll("input");
-    const email = inputs[0].value;
-    const firstName= inputs[1].value;
-    const lastName = inputs[2].value;
-    const password = inputs[3].value;
-    const confirmPassword = inputs[4].value;
-
-    if (password !== confirmPassword) {
-      showMessage("Passwords do not match", "error");
-      return;
+    function showMessage(id, message, type = "success") {
+      const box = document.getElementById(id);
+      box.textContent = message;
+      box.className = `message-box ${type}`;
+      box.style.display = "block";
+      setTimeout(() => box.style.display = "none", 5000);
     }
 
-    axios.post(`${API_BASE}/register`, { email, firstName, lastName, password })
-      .then(res => showMessage(res.data.message || "Account activated!", "success"))
-      .catch(err => {
-        console.error(err);
-        const msg = err.response?.data?.error || "Activation failed.";
-        showMessage(msg, "error");
-      });
-  });
+    // LOGIN
+    document.querySelector(".login-form form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const email = e.target.querySelector("input[type='text']").value;
+      const password = e.target.querySelector("input[type='password']").value;
 
-  // forgot password
-  document.querySelector(".login-form .text a").addEventListener("click", function(e) {
-    e.preventDefault();  
-    const email = prompt("Enter your email address:");
-    if (email) {
-      axios.post(`${API_BASE}/forgot-password`, { email })
-        .then(res => showMessage(res.data.message || "Password reset link sent!", "success"))
+      axios.post(`${API_BASE}/login`, { email, password })
+        .then(response => {
+          const { token, user } = response.data;
+
+          localStorage.setItem('token', token);
+          localStorage.setItem('email', user.email);
+          localStorage.setItem('role', user.role);
+          localStorage.setItem('name', `${user.firstName} ${user.lastName}`);
+          localStorage.setItem('userId', user._id);
+          localStorage.setItem('warehouse', user.warehouse || '');
+
+          showMessage("loginMessageBox", "Login successful!", "success");
+          setTimeout(() => window.location.href = "/Users/apple/Documents/GitHub/eraskon_inventory/store.html", 1500);
+        })
         .catch(err => {
-          console.error(err);
-          const msg = err.response?.data?.error || "Password reset failed.";
-          showMessage(msg, "error");
+          const msg = err.response?.data?.error || "Login failed.";
+          showMessage("loginMessageBox", msg, "error");
         });
-    }
-  });
+    });
 
-  // TODO: Hook for Forgot Password if needed
-</script>
+    // REGISTER
+    document.querySelector(".signup-form form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const inputs = e.target.querySelectorAll("input");
+      const email = inputs[0].value;
+      const firstName = inputs[1].value;
+      const lastName = inputs[2].value;
+      const password = inputs[3].value;
+      const confirmPassword = inputs[4].value;
 
+      if (password !== confirmPassword) {
+        showMessage("signupMessageBox", "Passwords do not match", "error");
+        return;
+      }
+
+      axios.post(`${API_BASE}/register`, { email, firstName, lastName, password })
+        .then(res => showMessage("signupMessageBox", res.data.message || "Account activated!", "success"))
+        .catch(err => {
+          const msg = err.response?.data?.error || "Activation failed.";
+          showMessage("signupMessageBox", msg, "error");
+        });
+    });
+
+    // FORGOT PASSWORD
+    document.querySelector(".login-form .text a").addEventListener("click", function (e) {
+      e.preventDefault();
+      const email = prompt("Enter your email address:");
+      if (email) {
+        axios.post(`${API_BASE}/forgot-password`, { email })
+          .then(res => showMessage("loginMessageBox", res.data.message || "Password reset link sent!", "success"))
+          .catch(err => {
+            const msg = err.response?.data?.error || "Password reset failed.";
+            showMessage("loginMessageBox", msg, "error");
+          });
+      }
+    });
+  </script>
 </body>
 
 </html>
