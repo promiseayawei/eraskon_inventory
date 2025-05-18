@@ -264,7 +264,7 @@
           localStorage.setItem('warehouse', user.warehouse || '');
 
           showMessage("loginMessageBox", "Login successful!", "success");
-          setTimeout(() => window.location.href = "/Users/apple/Documents/GitHub/eraskon_inventory/store.html", 1500);
+          setTimeout(() => window.location.href = "store.html", 1500);
         })
         .catch(err => {
           const msg = err.response?.data?.error || "Login failed.";
