@@ -544,6 +544,15 @@ th {
 .footer .socials a:hover {
   color: var(--blue-color, #4A90E2);
 }
+footer a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
 
 /* Dark mode support */
 body.dark-mode .footer {

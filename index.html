@@ -123,13 +123,13 @@
 
 <body>
   <!-- Logo Header -->
-  <div class="logo-header">
+  <div class="logo-header animated delay-1">
     <img src="assets/images/eraskon_logo.webp" alt="Eraskon Logo">
     <h1>Eraskon Inventory</h1>
   </div>
 
 
-  <div class="container">
+  <div class="container  container animated delay-2">
 
 
     <input type="checkbox" id="flip">
@@ -153,7 +153,7 @@
     </div>
 
     <!-- Forms Section -->
-    <div class="forms">
+    <div class="forms animated delay-3">
       <!-- Message Boxes -->
       <div id="loginMessageBox" class="message-box"></div>
 
@@ -227,9 +227,9 @@
   </div>
 
   <!-- Footer -->
-  <footer>
-    &copy; 2025 Eraskon Inventory. All rights reserved || developed by <a
-      href="https://github.com/ayaweisoft">ayaweisoft</a>
+  <footer class="forms animated delay-4">
+    &copy; 2025 Eraskon Inventory. All rights reserved || Developed by <a
+      href="https://github.com/ayaweisoft">Ayaweisoft</a>
   </footer>
 
   <!-- Scripts -->
@@ -260,11 +260,24 @@
           localStorage.setItem('email', user.email);
           localStorage.setItem('role', user.role);
           localStorage.setItem('name', `${user.firstName} ${user.lastName}`);
+          localStorage.setItem('firstName', user.firstName);
+          localStorage.setItem('lastName', user.lastName);
           localStorage.setItem('userId', user._id);
           localStorage.setItem('warehouse', user.warehouse || '');
 
           showMessage("loginMessageBox", "Login successful!", "success");
-          setTimeout(() => window.location.href = "store.html", 1500);
+          if(user.role === "admin") {
+            setTimeout(() => window.location.href = "stats.html", 1500);
+          } else if (user.role === "manager") {
+            setTimeout(() => window.location.href = "store.html", 1500);
+          } else if (user.role === "staff") {
+            setTimeout(() => window.location.href = "order.html", 1500);
+          } else if (user.role === "branch_manager") {
+            setTimeout(() => window.location.href = "store.html", 1500);
+          } else {
+            setTimeout(() => window.location.href = "welcome.html", 1500);
+          }
+          
         })
         .catch(err => {
           const msg = err.response?.data?.error || "Login failed.";

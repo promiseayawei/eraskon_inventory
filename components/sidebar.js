@@ -3,33 +3,37 @@ document.write(`
   <nav class="sidebar">
     <div class="menu_content">
       <ul class="menu_items">
-        <div class="menu_title menu_dahsboard"></div>
+        <div class="menu_title menu_dashboard"></div>
 
         <li class="item">
           <div href="#" class="nav_link submenu_item">
             <span class="navlink_icon"><i class="bx bx-home-alt"></i></span>
-            <span class="navlink">Home</span>
+            <span class="navlink">Dashboard</span>
             <i class="bx bx-chevron-right arrow-left"></i>
           </div>
           <ul class="menu_items submenu">
-            <a href="#" class="nav_link sublink">Nav Sub Link</a>
-            <a href="#" class="nav_link sublink">Nav Sub Link</a>
-            <a href="#" class="nav_link sublink">Nav Sub Link</a>
-            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+            <a href="store.html" class="nav_link sublink bx bx-store">store</a>
+            <a href="product.html" class="nav_link sublink bx bx-product">products</a>
+            <a href="customer.html" class="nav_link sublink bx bx-user">customers</a>
+            <a href="report.html" class="nav_link sublink bx bx-chart">reports</a>
+            <a href="setting.html" class="nav_link sublink bx bx-cog">settings</a>
+            
           </ul>
         </li>
 
         <li class="item">
           <div href="#" class="nav_link submenu_item">
             <span class="navlink_icon"><i class="bx bx-grid-alt"></i></span>
-            <span class="navlink">Overview</span>
+            <span class="navlink">Admin</span>
             <i class="bx bx-chevron-right arrow-left"></i>
           </div>
           <ul class="menu_items submenu">
-            <a href="#" class="nav_link sublink">Nav Sub Link</a>
-            <a href="#" class="nav_link sublink">Nav Sub Link</a>
-            <a href="#" class="nav_link sublink">Nav Sub Link</a>
-            <a href="#" class="nav_link sublink">Nav Sub Link</a>
+         
+            <a href="user.html" class="nav_link sublink">users</a>
+            <a href="role.html" class="nav_link sublink">roles</a>
+            <a href="#" class="nav_link sublink">permissions</a>
+            <a href="#" class="nav_link sublink">audit logs</a>
+            <a href="product.html" class="nav_link sublink">Products</a>
           </ul>
         </li>
       </ul>
@@ -37,19 +41,19 @@ document.write(`
       <ul class="menu_items">
         <div class="menu_title menu_editor"></div>
         <li class="item">
-          <a href="#" class="nav_link">
+          <a href="product.html" class="nav_link">
             <span class="navlink_icon"><i class="bx bxs-magic-wand"></i></span>
             <span class="navlink">Products</span>
           </a>
         </li>
         <li class="item">
-          <a href="#" class="nav_link">
+          <a href="sales.html" class="nav_link">
             <span class="navlink_icon"><i class="bx bx-loader-circle"></i></span>
             <span class="navlink">Sales</span>
           </a>
         </li>
         <li class="item">
-          <a href="#" class="nav_link">
+          <a href="report.html" class="nav_link">
             <span class="navlink_icon"><i class="bx bx-filter"></i></span>
             <span class="navlink">Report</span>
           </a>

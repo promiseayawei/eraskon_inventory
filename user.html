@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Eraskon Inventory Management</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        /* Your base styles here */
+            :root {
+      --bg-light: #e2dcdc;
+      --bg-dark: #090F3B;
+      --text-light: #090F3B;
+      --text-dark: #f1f1f1;
+      --card-bg-light: #e2dcdc;
+      --card-bg-dark: #050d4a;
+      --input-border: #ccc;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    body.dark {
+
+      --bg-light: #090F3B;
+      --bg-dark: #e2dcdc;
+      --text-light: #e2dcdc;
+      --text-dark: #090F3B;
+      --card-bg-light: #090F3B;
+      --card-bg-dark: #050d4a;
+      --input-border: #ccc;
+    }
+
+
+        #main-content {
+            margin-left: 250px;
+            /* Adjust based on sidebar width */
+            margin-top: 60px;
+            /* Adjust based on navbar height */
+            padding: 20px;
+            background: #fff;
+            min-height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        /* User management specific styles */
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .user-header input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .user-header button {
+            padding: 8px 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        table.user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table.user-table th,
+        table.user-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        table.user-table th {
+            background: var(--text-light);
+        }
+
+        table.user-table td.actions button {
+            margin-right: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        table.user-table td.actions button.edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        table.user-table td.actions button.delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            /* Hide modal by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            /* Show modal when .show is added */
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 380px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .modal-content label {
+            display: block;
+            margin: 10px 0 4px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 8px;
+            font-size: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .modal-content button {
+            margin-top: 15px;
+            padding: 10px 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-content button.save {
+            background-color: #2563eb;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .modal-content button.cancel {
+            background-color: #6b7280;
+            color: white;
+        }
+
+        #pagination {
+            margin-top: 1rem;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        #pagination button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #pagination button:disabled {
+            background: #e2e8f0;
+            color: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        #pagination #pageInfo {
+            font-weight: 500;
+            color: #4a5568;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <script src="components/navbar.js"></script>
+    <script src="components/sidebar.js"></script>
+
+    <div id="main-content">
+        <div class="user-header">
+            <input id="searchInput" type="text" placeholder="Search users by name or email..." />
+            <button id="addUserBtn" style="display:none;background:#22c55e;">
+                <i class="bx bx-plus" style="vertical-align:middle;"> </i> Add User
+            </button>
+        
+      </button>
+           <button onclick="exportToExcel()" style="background:#2563eb;">
+        <i class="bx bx-spreadsheet" style="vertical-align:middle;"></i> Export to Excel
+      </button>
+      <button onclick="exportToPDF()" style="background:#ef4444;">
+        <i class="bx bxs-file-pdf" style="vertical-align:middle;"></i> Export to PDF
+      </button>
+        
+        </div>
+
+        <table class="user-table" id="userTable">
+            <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Warehouse</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+        </table>
+
+        <div id="pagination" style="margin-top: 1rem; display: flex; gap: 8px; align-items: center; justify-content: flex-end;">
+            <button id="prevPageBtn">Prev</button>
+            <span id="pageInfo"></span>
+            <button id="nextPageBtn">Next</button>
+        </div>
+
+        <p id="noUsersMsg" style="display:none;">No users found.</p>
+    </div>
+
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Add User</h3>
+            <label for="firstNameInput">First Name:</label>
+            <input id="firstNameInput" type="text" />
+
+            <label for="lastNameInput">Last Name:</label>
+            <input id="lastNameInput" type="text" />
+
+            <label for="emailInput">Email:</label>
+            <input id="emailInput" type="email" />
+
+            <label for="passwordInput">Password:</label>
+            <input id="passwordInput" type="password" placeholder="" />
+
+            <label for="roleSelect">Role:</label>
+            <select id="roleSelect">
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="staff" selected>Staff</option>
+            </select>
+
+            <label for="warehouseSelect">Warehouse:</label>
+            <select id="warehouseSelect">
+                <option value="">-- None --</option>
+            </select>
+
+            <div style="margin-top:1rem;">
+                <button class="save" id="saveBtn">Add</button>
+                <button class="cancel" id="cancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <script src="assets/js/script.js"></script>
+
+<script>
+    const searchInput = document.getElementById('searchInput');
+    searchInput.value = ''; // <-- This ensures the input is empty on load
+
+    axios.interceptors.request.use(config => {
+        const token = localStorage.getItem('token');
+        if (token) config.headers.Authorization = `Bearer ${token}`;
+        return config;
+    });
+
+    const currentUserRole = localStorage.getItem('role') || 'staff';
+    const isAdmin = currentUserRole === 'admin';
+
+    const addUserBtn = document.getElementById('addUserBtn');
+    const userTableBody = document.getElementById('userTableBody');
+    const userTable = document.getElementById('userTable');
+    const noUsersMsg = document.getElementById('noUsersMsg');
+    const userModal = document.getElementById('userModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const firstNameInput = document.getElementById('firstNameInput');
+    const lastNameInput = document.getElementById('lastNameInput');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const roleSelect = document.getElementById('roleSelect');
+    const warehouseSelect = document.getElementById('warehouseSelect');
+    const saveBtn = document.getElementById('saveBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const pageInfo = document.getElementById('pageInfo');
+
+    let users = [];
+    let warehouses = [];
+    let editingUserId = null;
+
+    // Pagination state
+    let currentPage = 1;
+    const pageSize = 5; // Users per page
+
+    if (isAdmin && addUserBtn) {
+        addUserBtn.style.display = 'inline-block';
+    }
+
+    function fetchWarehouses() {
+        axios.get('http://localhost:5000/warehouse')
+            .then(res => {
+                warehouses = res.data?.warehouses || [];
+                warehouseSelect.innerHTML = '<option value="">-- None --</option>';
+                warehouses.forEach(wh => {
+                    const opt = document.createElement('option');
+                    opt.value = wh.name;
+                    opt.textContent = wh.name;
+                    warehouseSelect.appendChild(opt);
+                });
+            })
+            .catch(err => console.error('Failed to fetch warehouses:', err));
+    }
+
+    function fetchUsers() {
+        axios.get('http://localhost:5000/auth/users')
+            .then(res => {
+                users = res.data || [];
+                renderUsers();
+            })
+            .catch(err => alert('Error fetching users: ' + err.message));
+    }
+
+    function renderUsers() {
+        const searchTerm = searchInput?.value?.trim().toLowerCase() || '';
+
+        const filtered = searchTerm
+            ? users.filter(user =>
+                (user.firstName || '').toLowerCase().includes(searchTerm) ||
+                (user.lastName || '').toLowerCase().includes(searchTerm) ||
+                (user.email || '').toLowerCase().includes(searchTerm)
+            )
+            : users;
+
+        const start = (currentPage - 1) * pageSize;
+        const paginatedUsers = filtered.slice(start, start + pageSize);
+
+        userTableBody.innerHTML = '';
+
+        if (!paginatedUsers.length) {
+            userTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align:center;">No users found.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        paginatedUsers.forEach(user => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${user.firstName || ''}</td>
+                <td>${user.lastName || ''}</td>
+                <td>${user.email || ''}</td>
+                <td>${user.role || ''}</td>
+                <td>${user.warehouse || '-'}</td>
+                <td class="actions">
+                    ${isAdmin ? `
+                        <button class="edit">Edit</button>
+                        <button class="delete">Delete</button>
+                    ` : '-'}
+                </td>
+            `;
+
+            userTableBody.appendChild(tr);
+
+            if (isAdmin) {
+                const editBtn = tr.querySelector('.edit');
+                const deleteBtn = tr.querySelector('.delete');
+
+                if (editBtn) editBtn.addEventListener('click', () => openEditModal(user));
+                if (deleteBtn) deleteBtn.addEventListener('click', () => deleteUser(user._id));
+            }
+        });
+
+        renderPagination(filtered.length);
+    }
+
+    function renderPagination(totalUsers) {
+        pageInfo.textContent = `Page ${currentPage} of ${Math.ceil(totalUsers / pageSize)}`;
+
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === Math.ceil(totalUsers / pageSize);
+    }
+
+    function openAddModal() {
+        editingUserId = null;
+        modalTitle.textContent = 'Add User';
+        firstNameInput.value = '';
+        lastNameInput.value = '';
+        emailInput.value = '';
+        emailInput.readOnly = false;
+        passwordInput.value = '';
+        passwordInput.placeholder = '';
+        roleSelect.value = 'staff';
+        warehouseSelect.value = '';
+        saveBtn.textContent = 'Add';
+        userModal.classList.add('show');
+        userModal.style.display = 'block';
+    }
+
+    function openEditModal(user) {
+        editingUserId = user._id;
+        modalTitle.textContent = 'Edit User';
+        firstNameInput.value = user.firstName || '';
+        lastNameInput.value = user.lastName || '';
+        emailInput.value = user.email;
+        emailInput.readOnly = true;
+        passwordInput.value = '';
+        passwordInput.placeholder = '(Leave blank to keep current password)';
+        roleSelect.value = user.role;
+        warehouseSelect.value = user.warehouse || '';
+        saveBtn.textContent = 'Update';
+        userModal.classList.add('show');
+        userModal.style.display = 'block';
+    }
+
+    function closeModal() {
+        userModal.classList.remove('show');
+        userModal.style.display = 'none';
+    }
+
+    function saveUser() {
+        const firstName = firstNameInput.value.trim();
+        const lastName = lastNameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        const role = roleSelect.value;
+        const warehouse = warehouseSelect.value;
+
+        if (!firstName || !lastName || !email || (!editingUserId && !password)) {
+            alert('All fields are required except password when updating.');
+            return;
+        }
+
+        const data = { firstName, lastName, email, role, warehouse };
+        if (password) data.password = password;
+
+        const request = editingUserId
+            ? axios.put(`http://localhost:5000/auth/user/${editingUserId}`, data)
+            : axios.post('http://localhost:5000/auth/user', data);
+
+        request.then(() => {
+            alert(editingUserId ? 'User updated' : 'User added');
+            closeModal();
+            fetchUsers();
+        }).catch(err => alert('Error: ' + (err.response?.data?.message || err.message)));
+    }
+
+    function deleteUser(id) {
+        if (!confirm('Are you sure you want to delete this user?')) return;
+        axios.delete(`http://localhost:5000/auth/user/${id}`)
+            .then(() => {
+                alert('User deleted');
+                fetchUsers();
+            })
+            .catch(err => alert('Error deleting user: ' + (err.response?.data?.message || err.message)));
+    }
+
+    function getFilteredUsers() {
+        const searchTerm = searchInput?.value?.trim().toLowerCase() || '';
+        return searchTerm
+            ? users.filter(user =>
+                (user.firstName || '').toLowerCase().includes(searchTerm) ||
+                (user.lastName || '').toLowerCase().includes(searchTerm) ||
+                (user.email || '').toLowerCase().includes(searchTerm)
+            )
+            : users;
+    }
+
+    function getPaginatedUsers(filtered) {
+        const start = (currentPage - 1) * pageSize;
+        return filtered.slice(start, start + pageSize);
+    }
+
+    function exportToExcel() {
+        const filtered = getFilteredUsers();
+        const paginated = getPaginatedUsers(filtered);
+        const data = paginated.map(user => ({
+            "First Name": user.firstName || '',
+            "Last Name": user.lastName || '',
+            "Email": user.email || '',
+            "Role": user.role || '',
+            "Warehouse": user.warehouse || ''
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Users");
+        XLSX.writeFile(wb, "users.xlsx");
+    }
+
+    function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const filtered = getFilteredUsers();
+        const paginated = getPaginatedUsers(filtered);
+        const columns = ["First Name", "Last Name", "Email", "Role", "Warehouse"];
+        const rows = paginated.map(user => [
+            user.firstName || '',
+            user.lastName || '',
+            user.email || '',
+            user.role || '',
+            user.warehouse || ''
+        ]);
+
+        doc.autoTable({
+            head: [columns],
+            body: rows,
+            styles: { fontSize: 9 }
+        });
+
+        doc.save("users.pdf");
+    }
+
+    // Event Listeners
+    if (addUserBtn) addUserBtn.addEventListener('click', openAddModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    saveBtn?.addEventListener('click', saveUser);
+    searchInput?.addEventListener('input', () => {
+        currentPage = 1;
+        renderUsers();
+    });
+    prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderUsers();
+        }
+    });
+    nextPageBtn.addEventListener('click', () => {
+        const totalUsers = users.filter(user =>
+            (user.firstName || '').toLowerCase().includes(searchInput.value.trim().toLowerCase()) ||
+            (user.lastName || '').toLowerCase().includes(searchInput.value.trim().toLowerCase()) ||
+            (user.email || '').toLowerCase().includes(searchInput.value.trim().toLowerCase())
+        ).length;
+
+        if (currentPage < Math.ceil(totalUsers / pageSize)) {
+            currentPage++;
+            renderUsers();
+        }
+    });
+
+    // Initial Load
+    fetchWarehouses();
+    fetchUsers();
+
+    // After getting the element, clear its value to ensure it's empty
+    
+</script>
+
+
+
+</body>
+
+</html>

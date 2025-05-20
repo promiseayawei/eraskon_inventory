@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eraskon Inventory Management - Customers</title>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+ <style>
+    body {
+      background-color: #e2dcdc;
+      color: #090F3B;
+    }
+
+    #main-content {
+      margin-left: 250px;
+      margin-top: 60px;
+      padding: 20px;
+      background: #fff;
+      min-height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+
+    .user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .user-header input {
+      width: 300px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .user-header button {
+      padding: 8px 16px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    table.customer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    table.customer-table th,
+    table.customer-table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    table.customer-table th {
+      background: #090F3B;
+      color: white;
+    }
+
+    .actions button {
+      margin-right: 5px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .edit {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .delete {
+      background: #ef4444;
+      color: white;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      width: 400px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .modal-content button {
+      padding: 10px 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+
+  <div id="main-content">
+    <div class="user-header">
+      <input type="text" id="searchCustomer" placeholder="Search customers..." />
+      <button id="addCustomerBtn">
+        <i class="bx bx-plus"></i> Add Customer
+      </button>
+      <button onclick="exportCustomersToExcel()">
+        <i class="bx bx-spreadsheet"></i> Export to Excel
+      </button>
+    </div>
+
+    <table class="customer-table" id="customerTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Address</th>
+          <th>Company</th>
+          <th>Tax ID</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="customerTableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="modal" id="customerModal">
+    <div class="modal-content">
+      <h3 id="modalTitle">Add Customer</h3>
+
+      <input type="text" id="cname" placeholder="Name" />
+      <input type="email" id="cemail" placeholder="Email" />
+      <input type="text" id="cphone" placeholder="Phone" />
+      
+      <input type="text" id="cstreetLine" placeholder="Street" />
+      <input type="text" id="ccity" placeholder="City" />
+      <input type="text" id="cstate" placeholder="State" />
+      <input type="text" id="ccountry" placeholder="Country" />
+      <input type="text" id="cpostalCode" placeholder="Postal Code" />
+
+      <input type="text" id="ccompany" placeholder="Company" />
+      <input type="text" id="ctaxId" placeholder="Tax ID" />
+
+      <button class="save" id="saveCustomerBtn">Save</button>
+      <button class="cancel" id="cancelCustomerBtn">Cancel</button>
+    </div>
+  </div>
+ <script src="assets/js/script.js"></script>
+  <script>
+    let customers = [];
+    let editingId = null;
+    const tableBody = document.getElementById("customerTableBody");
+    const modal = document.getElementById("customerModal");
+
+    const socket = new WebSocket("ws://localhost:5000");
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "customer-update") fetchCustomers();
+    };
+
+    function fetchCustomers() {
+      axios.get("http://localhost:5000/customers").then((res) => {
+        customers = res.data;
+        renderCustomers();
+      });
+    }
+
+    function renderCustomers() {
+      const search = document.getElementById("searchCustomer").value.toLowerCase();
+      const filtered = customers.filter((c) => c.name.toLowerCase().includes(search));
+      tableBody.innerHTML = filtered
+        .map(
+          (c) => `
+        <tr>
+          <td>${c.name}</td>
+          <td>${c.email || ""}</td>
+          <td>${c.phone || ""}</td>
+          <td>
+            ${[
+              c.streetLine,
+              c.city,
+              c.state,
+              c.country,
+              c.postalCode,
+            ]
+              .filter(Boolean)
+              .join(", ")}
+          </td>
+          <td>${c.company || ""}</td>
+          <td>${c.taxId || ""}</td>
+          <td class="actions">
+            <button class="edit" onclick="editCustomer('${c._id}')">Edit</button>
+            <button class="delete" onclick="deleteCustomer('${c._id}')">Delete</button>
+          </td>
+        </tr>
+      `
+        )
+        .join("");
+    }
+
+    function openModal() {
+      modal.classList.add("show");
+    }
+    function closeModal() {
+      modal.classList.remove("show");
+      editingId = null;
+      document.querySelectorAll("#customerModal input").forEach((i) => (i.value = ""));
+    }
+
+    document.getElementById("addCustomerBtn").onclick = () => {
+      document.getElementById("modalTitle").textContent = "Add Customer";
+      openModal();
+    };
+
+    document.getElementById("cancelCustomerBtn").onclick = closeModal;
+
+    document.getElementById("saveCustomerBtn").onclick = () => {
+      const data = {
+        name: document.getElementById("cname").value,
+        email: document.getElementById("cemail").value,
+        phone: document.getElementById("cphone").value,
+        streetLine: document.getElementById("cstreetLine").value,
+        city: document.getElementById("ccity").value,
+        state: document.getElementById("cstate").value,
+        country: document.getElementById("ccountry").value,
+        postalCode: document.getElementById("cpostalCode").value,
+        company: document.getElementById("ccompany").value,
+        taxId: document.getElementById("ctaxId").value,
+      };
+
+      const req = editingId
+        ? axios.put(`http://localhost:5000/customers/${editingId}`, data)
+        : axios.post("http://localhost:5000/customers", data);
+
+      req.then(() => {
+        socket.send(JSON.stringify({ type: "customer-update" }));
+        fetchCustomers();
+        closeModal();
+      });
+    };
+
+    function editCustomer(id) {
+      const c = customers.find((c) => c._id === id);
+      document.getElementById("modalTitle").textContent = "Edit Customer";
+      document.getElementById("cname").value = c.name || "";
+      document.getElementById("cemail").value = c.email || "";
+      document.getElementById("cphone").value = c.phone || "";
+      document.getElementById("cstreetLine").value = c.streetLine || "";
+      document.getElementById("ccity").value = c.city || "";
+      document.getElementById("cstate").value = c.state || "";
+      document.getElementById("ccountry").value = c.country || "";
+      document.getElementById("cpostalCode").value = c.postalCode || "";
+      document.getElementById("ccompany").value = c.company || "";
+      document.getElementById("ctaxId").value = c.taxId || "";
+
+      editingId = id;
+      openModal();
+    }
+
+    function deleteCustomer(id) {
+      if (confirm("Delete this customer?")) {
+        axios.delete(`http://localhost:5000/customers/${id}`).then(() => {
+          socket.send(JSON.stringify({ type: "customer-update" }));
+          fetchCustomers();
+        });
+      }
+    }
+
+    function exportCustomersToExcel() {
+      const table = document.getElementById("customerTable");
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Customers" });
+      XLSX.writeFile(wb, "customers.xlsx");
+    }
+
+    document.getElementById("searchCustomer").addEventListener("input", renderCustomers);
+
+    fetchCustomers();
+  </script>
+</body>
+
+</html>

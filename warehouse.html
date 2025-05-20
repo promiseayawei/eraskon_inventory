@@ -4,17 +4,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Eraskon Inventory Management</title>
-
-  <!-- Boxicons CSS -->
+  <title>Eraskon Inventory Management - Warehouses</title>
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- Excel Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
   <style>
+    /* Reuse your theme and table styles */
     :root {
       --bg-light: #e2dcdc;
       --bg-dark: #090F3B;
@@ -32,425 +36,354 @@
     }
 
     body.dark {
-
       --bg-light: #090F3B;
-      --bg-dark: #e2dcdc;
       --text-light: #e2dcdc;
-      --text-dark: #090F3B;
       --card-bg-light: #090F3B;
-      --card-bg-dark: #050d4a;
-      --input-border: #ccc;
     }
 
-    .product-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: flex-start;
-    }
-
-    .invoice-panel {
-      position: sticky;
-      top: 100px;
-      align-self: flex-start;
-      background: var(--container-bg);
+    #main-content {
+      margin-left: 250px;
+      margin-top: 60px;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 300px;
-      max-height: calc(100vh - 120px);
+      background: #fff;
+      min-height: calc(100vh - 60px);
       overflow-y: auto;
-      margin-left: auto;
     }
 
-    .product-card {
-      background-color: var(--container-bg);
-      border-radius: 12px;
-      padding: 16px;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      width: calc(33.333% - 13.34px);
-      /* Three cards per row with gap compensation */
-      flex: 0 0 calc(33.333% - 13.34px);
-      box-sizing: border-box;
-    }
-
-    body.dark .product-card {
-      background-color: var(--card-bg-dark);
-    }
-
-    .product-card img {
-      width: 100%;
-      height: auto;
-      max-height: 100%;
-      /* Increased max height */
-      object-fit: cover;
-      /* Changed from 'contain' to 'cover' for better visual fit */
-      aspect-ratio: 4 / 4;
-      /* Maintain consistent aspect ratio */
-      border-radius: 12px;
-      /* Optional: soft rounded corners for modern look */
-      margin-bottom: 1rem;
-      transition: transform 0.3s ease;
-    }
-
-    .product-card img:hover {
-      transform: scale(1.05);
-      /* Subtle hover effect to make it interactive */
-    }
-
-
-    .main-content {
-      padding: 1rem;
-    }
-
-    .product-grid {
+    .user-header {
       display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-
-
-    .quantity-control {
-      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
-      margin: 0.5rem 0;
+      margin-bottom: 1rem;
     }
 
-    .quantity-control button {
-      background: #007bff;
-      color: #fff;
+    .user-header input {
+      width: 300px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .user-header button {
+      padding: 8px 16px;
+      background: #2563eb;
+      color: white;
       border: none;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      display: flex;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    table.user-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    table.user-table th,
+    table.user-table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    table.user-table th {
+      background: var(--text-light);
+      color: white;
+    }
+
+    .actions button {
+      margin-right: 5px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .edit {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .delete {
+      background: #ef4444;
+      color: white;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
       justify-content: center;
       align-items: center;
-      font-size: 16px;
+      z-index: 1000;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      width: 400px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .modal-content button {
+      padding: 10px 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+
+    .pagination button {
+      margin: 2px;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      background: #f3f4f6;
       cursor: pointer;
-      transition: background 0.3s;
     }
 
-    .quantity-control button:hover {
-      background: #0056b3;
+    .pagination button.active {
+      background: #2563eb;
+      color: white;
     }
 
-    .quantity-control input[type="number"] {
-      width: 60px;
-      padding: 0.3rem;
-      text-align: center;
+    .export-buttons button {
+      margin-right: 10px;
     }
 
-    @media screen and (max-width: 1024px) {
-      .product-card {
-        width: calc(50% - 10px);
-        /* Two per row on medium screens */
-        flex: 0 0 calc(50% - 10px);
-      }
+    .save {
+      background-color: #2563eb;
+      color: white;
     }
 
-    @media screen and (max-width: 768px) {
-      .product-layout {
-        flex-direction: column;
-      }
-
-      .invoice-panel {
-        position: static;
-        width: 100%;
-        margin-left: 0;
-        max-height: none;
-      }
-    }
-
-
-    @media screen and (max-width: 600px) {
-      .product-card {
-        width: 100%;
-        /* Full width on mobile */
-        flex: 0 0 100%;
-      }
+    .cancel {
+      background-color: #6b7280;
+      color: white;
     }
   </style>
 </head>
 
-
 <body>
- <!-- Load Navbar -->
+
   <script src="components/navbar.js"></script>
-
-  <!-- Load Sidebar -->
   <script src="components/sidebar.js"></script>
-    
-  <!-- Main Content -->
-  <main id="app" class="main-content">
-    <section class="product-page">
-      <h2 style="margin: 20px 0;">Products</h2>
-      <div class="search-box">
-        <input type="text" v-model="searchTerm" placeholder="Search products...">
-      </div>
 
-      <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
-        <!-- Product Grid -->
-        <div class="product-grid" style="flex: 1;">
-          <div class="product-card" v-for="product in filteredProducts" :key="product.id">
-            <img :src="product.image" :alt="product.name" />
-            <div class="product-header">
-              <h3>{{ product.name }}</h3>
-              <p>{{ product.description }}</p>
-            </div>
-            <div class="variant-selector">
-              <label>Variant:</label>
-              <select v-model="product.selectedVariant">
-                <option v-for="variant in product.variants" :value="variant">
-                  {{ variant.size }} - ₦{{ variant.price }} ({{ variant.stock }} available)
-                </option>
-              </select>
-            </div>
-            <div class="quantity-control">
-              <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
-              <input type="number" v-model.number="product.quantity" min="1" />
-              <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
-            </div>
-            <p>Stock: {{ product.selectedVariant.stock }}</p>
-            <button class="order-btn" @click="addToCart(product)">Order</button>
-          </div>
-        </div>
+  <div id="main-content">
+    <div class="user-header">
+      <input type="text" id="searchWarehouse" placeholder="Search warehouses..." />
+      <button style="background: #22c55e;" id="addWarehouseBtn">  <i class="bx bx-plus" style="vertical-align:middle;"></i>Add Warehouse
+      </button>
+      <button onclick="exportToExcel()" style="background:#2563eb;">
+        <i class="bx bx-spreadsheet" style="vertical-align:middle;"></i> Export to Excel
+      </button>
+      <button onclick="exportToPDF()" style="background:#ef4444;">
+        <i class="bx bxs-file-pdf" style="vertical-align:middle;"></i> Export to PDF
+      </button>
+    </div>
 
-        <!-- Invoice Panel -->
-        <div class="invoice-panel" v-if="cart.length">
-          <h3>Invoice Summary</h3>
-          <ul>
-            <li v-for="(item, index) in cart" :key="index">
-              {{ item.name }} ({{ item.variant.size }}) - {{ item.quantity }} x ₦{{ item.variant.price }} = ₦{{ item.variant.price * item.quantity }}
-            </li>
-          </ul>
-          <p><strong>Total:</strong> ₦{{ cartTotal }}</p>
-          <button @click="generateInvoice">Download Invoice</button>
-        </div>
 
-        <!-- Empty Cart Fallback -->
-        <div class="invoice-panel" v-else>
-          <h3>Invoice Summary</h3>
-          <p>Your cart is empty. Add products to generate an invoice.</p>
-        </div>
-      </div>
-    </section>
 
-  </main>
-  <!-- JavaScript -->
-  <!-- JavaScript -->
+    <table class="user-table" id="warehouseTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Country</th>
+          <th>Location</th>
+          <th>Capacity</th>
+          <th>Manager</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="warehouseTableBody"></tbody>
+    </table>
+    <div id="pagination" class="pagination" style="margin-top: 10px; text-align: center;"></div>
+
+  </div>
+
+  <div class="modal" id="warehouseModal">
+    <div class="modal-content">
+      <h3 id="modalTitle">Add Warehouse</h3>
+      <input type="text" id="name" placeholder="Name" />
+      <input type="text" id="country" placeholder="Country" />
+      <input type="text" id="location" placeholder="Location" />
+      <input type="text" id="address" placeholder="Address" />
+      <input type="number" id="capacity" placeholder="Capacity" />
+      <input type="text" id="manager" placeholder="Manager" />
+      <button class="save" id="saveWarehouseBtn">Save</button>
+      <button class="cancel" id="cancelWarehouseBtn">Cancel</button>
+    </div>
+  </div>
+
+
   <script src="assets/js/script.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-
-
   <script>
-    new Vue({
-      el: '#app',
-      data: {
-        isDarkMode: localStorage.getItem("darkMode") === "true",
-        searchTerm: '',
-        cart: [],
-        products: [{
-            id: 1,
-            name: 'ERASKO GOLD20W-50',
-            description: 'High-performance multi-grade oil',
-            image: 'assets/images/erasko_gold.png',
-            quantity: 1,
-            variants: [{
-                size: '1L',
-                price: 3000,
-                stock: 25
-              },
-              {
-                size: '3L',
-                price: 8000,
-                stock: 20
-              },
-              {
-                size: '25L',
-                price: 60000,
-                stock: 15
-              },
-              {
-                size: '50L',
-                price: 110000,
-                stock: 10
-              }
-            ],
-            selectedVariant: {
-              size: '1L',
-              price: 3000,
-              stock: 25
-            }
-          },
-          {
-            id: 2,
-            name: 'ERASKO POWER20W-50',
-            description: 'Reliable and durable engine oil',
-            image: 'assets/images/erasko_power.png',
-            quantity: 1,
-            variants: [{
-                size: '1L',
-                price: 2800,
-                stock: 30
-              },
-              {
-                size: '3L',
-                price: 7500,
-                stock: 25
-              },
-              {
-                size: '25L',
-                price: 58000,
-                stock: 12
-              },
-              {
-                size: '50L',
-                price: 105000,
-                stock: 8
-              }
-            ],
-            selectedVariant: {
-              size: '1L',
-              price: 2800,
-              stock: 30
-            }
-          },
-          {
-            id: 3,
-            name: 'ERASKO DMO',
-            description: 'Diesel Motor Oil for heavy-duty engines',
-            image: 'assets/images/erasko_dmo.png',
-            quantity: 1,
-            variants: [{
-                size: '1L',
-                price: 3200,
-                stock: 18
-              },
-              {
-                size: '5L',
-                price: 15000,
-                stock: 10
-              },
-              {
-                size: '25L',
-                price: 62000,
-                stock: 7
-              }
-            ],
-            selectedVariant: {
-              size: '1L',
-              price: 3200,
-              stock: 18
-            }
-          },
-          {
-            id: 4,
-            name: 'ERASKO HDSAE40',
-            description: 'Heavy-duty SAE40 engine oil',
-            image: 'assets/images/erasko_hd.png',
-            quantity: 1,
-            variants: [{
-                size: '1L',
-                price: 2900,
-                stock: 22
-              },
-              {
-                size: '25L',
-                price: 59000,
-                stock: 10
-              },
-              {
-                size: '50L',
-                price: 112000,
-                stock: 5
-              }
-            ],
-            selectedVariant: {
-              size: '1L',
-              price: 2900,
-              stock: 22
-            }
-          }
-        ]
-      },
-      computed: {
-        cartTotal() {
-          return this.cart.reduce((sum, item) => sum + (item.variant.price * item.quantity), 0);
-        },
-        filteredProducts() {
-          const term = this.searchTerm.toLowerCase();
-          return this.products.filter(product =>
-            product.name.toLowerCase().includes(term) ||
-            product.description.toLowerCase().includes(term)
-          );
-        }
-      },
-      methods: {
-        toggleDarkMode() {
-          this.isDarkMode = !this.isDarkMode;
-          localStorage.setItem("darkMode", this.isDarkMode);
-        },
-        increaseQty(product) {
-          if (product.quantity < product.selectedVariant.stock) product.quantity++;
-        },
-        decreaseQty(product) {
-          if (product.quantity > 1) product.quantity--;
-        },
-        addToCart(product) {
-          const existing = this.cart.find(i => i.id === product.id && i.variant.size === product.selectedVariant.size);
-          const maxQty = product.selectedVariant.stock;
+    let currentPage = 1;
+    const itemsPerPage = 2;
 
-          if (existing) {
-            if (existing.quantity + product.quantity > maxQty) {
-              alert(`Only ${maxQty - existing.quantity} more in stock for this variant.`);
-              return;
-            }
-            existing.quantity += product.quantity;
-          } else {
-            if (product.quantity > maxQty) {
-              alert(`Only ${maxQty} available in stock.`);
-              return;
-            }
-            this.cart.push({
-              id: product.id,
-              name: product.name,
-              variant: product.selectedVariant,
-              quantity: product.quantity
-            });
-          }
-          product.quantity = 1;
-        },
-        generateInvoice() {
-          const lines = this.cart.map(item => `${item.name} (${item.variant.size}) x ${item.quantity} = ₦${item.variant.price * item.quantity}`);
-          const content = `INVOICE\n\n${lines.join('\n')}\n\nTOTAL: ₦${this.cartTotal}`;
-          const blob = new Blob([content], {
-            type: 'text/plain'
-          });
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = 'invoice.txt';
-          a.click();
-          this.cart = [];
-        }
-      },
-      watch: {
-        isDarkMode(val) {
-          document.body.classList.toggle('dark', val);
-        }
-      },
-      mounted() {
-        document.getElementById("darkLight").addEventListener("click", function() {
-          app.toggleDarkMode(); // Make sure 'app' is the Vue instance
+    const addBtn = document.getElementById('addWarehouseBtn');
+    const modal = document.getElementById('warehouseModal');
+    const saveBtn = document.getElementById('saveWarehouseBtn');
+    const cancelBtn = document.getElementById('cancelWarehouseBtn');
+    const modalTitle = document.getElementById('modalTitle');
+    const tableBody = document.getElementById('warehouseTableBody');
+    const searchInput = document.getElementById('searchWarehouse');
+
+    let warehouses = [];
+    let editingId = null;
+
+    function fetchWarehouses() {
+      axios.get('http://localhost:5000/warehouse')
+        .then(res => {
+          warehouses = res.data || [];
+          currentPage = 1; // reset to page 1
+          renderPaginatedWarehouses();
         });
-        document.body.classList.toggle('dark', this.isDarkMode);
+    }
+
+    function renderPaginatedWarehouses() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const filtered = warehouses.filter(w =>
+        (w.name || "").toLowerCase().includes(searchTerm) ||
+        (w.location || "").toLowerCase().includes(searchTerm)
+      );
+
+      const totalPages = Math.ceil(filtered.length / itemsPerPage);
+      const start = (currentPage - 1) * itemsPerPage;
+      const paginated = filtered.slice(start, start + itemsPerPage);
+
+      tableBody.innerHTML = paginated.map(w => `
+      <tr>
+        <td>${w.name || '-'}</td>
+        <td>${w.country || '-'}</td>
+        <td>${w.location || '-'}</td>
+        <td>${w.capacity || '-'}</td>
+        <td>${w.manager || '-'}</td>
+        <td class="actions">
+          <button class="edit" onclick="editWarehouse('${w._id}')">Edit</button>
+          <button class="delete" onclick="deleteWarehouse('${w._id}')">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+
+      renderPaginationControls(totalPages);
+    }
+
+    function renderPaginationControls(totalPages) {
+      const container = document.getElementById("pagination");
+      container.innerHTML = "";
+
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.className = i === currentPage ? "active" : "";
+        btn.onclick = () => {
+          currentPage = i;
+          renderPaginatedWarehouses();
+        };
+        container.appendChild(btn);
       }
+    }
+
+    function openModal() {
+      modal.classList.add('show');
+    }
+
+    function closeModal() {
+      modal.classList.remove('show');
+      document.querySelectorAll('#warehouseModal input').forEach(input => input.value = '');
+      editingId = null;
+    }
+
+    addBtn.onclick = () => {
+      modalTitle.textContent = 'Add Warehouse';
+      openModal();
+    };
+
+    cancelBtn.onclick = closeModal;
+
+    saveBtn.onclick = () => {
+      const data = {
+        name: document.getElementById('name').value,
+        country: document.getElementById('country').value,
+        location: document.getElementById('location').value,
+        address: document.getElementById('address').value,
+        capacity: +document.getElementById('capacity').value,
+        manager: document.getElementById('manager').value,
+      };
+
+      const request = editingId
+        ? axios.put(`http://localhost:5000/warehouse/${editingId}`, data)
+        : axios.post('http://localhost:5000/warehouse', data);
+
+      request.then(fetchWarehouses).finally(closeModal);
+    };
+
+    function editWarehouse(id) {
+      const w = warehouses.find(w => w._id === id);
+      if (!w) return;
+      modalTitle.textContent = 'Edit Warehouse';
+      document.getElementById('name').value = w.name || '';
+      document.getElementById('country').value = w.country || '';
+      document.getElementById('location').value = w.location || '';
+      document.getElementById('address').value = w.address || '';
+      document.getElementById('capacity').value = w.capacity || '';
+      document.getElementById('manager').value = w.manager || '';
+      editingId = id;
+      openModal();
+    }
+
+    function deleteWarehouse(id) {
+      if (confirm('Are you sure?')) {
+        axios.delete(`http://localhost:5000/warehouse/${id}`)
+          .then(fetchWarehouses)
+          .catch(err => alert('Delete failed: ' + (err.response?.data?.message || err.message)));
+      }
+    }
+
+    function exportToExcel() {
+      const table = document.getElementById("warehouseTable");
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Warehouses" });
+      XLSX.writeFile(wb, "warehouses.xlsx");
+    }
+
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const rows = Array.from(document.querySelectorAll("#warehouseTable tbody tr"))
+        .map(tr => Array.from(tr.children).slice(0, 5).map(td => td.textContent.trim()));
+
+      doc.autoTable({
+        head: [["Name", "Country", "Location", "Capacity", "Manager"]],
+        body: rows
+      });
+      doc.save("warehouses.pdf");
+    }
+
+    // Handle search input
+    searchInput.addEventListener('input', () => {
+      currentPage = 1;
+      renderPaginatedWarehouses();
     });
+
+    // Initial load
+    fetchWarehouses();
   </script>
+
 </body>
 
 </html>
