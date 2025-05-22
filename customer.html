@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-        /* Your base styles here */
-            :root {
+    /* Your base styles here */
+    :root {
       --bg-light: #e2dcdc;
       --bg-dark: #090F3B;
       --text-light: #090F3B;
@@ -39,305 +39,325 @@
     }
 
 
-        #main-content {
-            margin-left: 250px;
-            /* Adjust based on sidebar width */
-            margin-top: 60px;
-            /* Adjust based on navbar height */
-            padding: 20px;
-            background: #fff;
-            min-height: calc(100vh - 60px);
-            overflow-y: auto;
-        }
+    #main-content {
+      margin-left: 250px;
+      /* Adjust based on sidebar width */
+      margin-top: 60px;
+      /* Adjust based on navbar height */
+      padding: 20px;
+      background: #fff;
+      min-height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
 
-        /* User management specific styles */
-        .user-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
+    /* User management specific styles */
+    .user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
 
-        .user-header input[type="text"] {
-            width: 300px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
+    .user-header input[type="text"] {
+      width: 300px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
 
-        .user-header button {
-            padding: 8px 16px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+    .user-header button {
+      padding: 8px 16px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-        table.user-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
+    table.user-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
 
-        table.user-table th,
-        table.user-table td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
+    table.user-table th,
+    table.user-table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
 
-        table.user-table th {
-            background: var(--text-light);
-        }
+    table.user-table th {
+      background: var(--text-light);
+    }
 
-        table.user-table td.actions button {
-            margin-right: 5px;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
+    table.user-table td.actions button {
+      margin-right: 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
 
-        table.user-table td.actions button.edit {
-            background: #3b82f6;
-            color: white;
-        }
+    table.user-table td.actions button.edit {
+      background: #3b82f6;
+      color: white;
+    }
 
-        table.user-table td.actions button.delete {
-            background: #ef4444;
-            color: white;
-        }
+    table.user-table td.actions button.delete {
+      background: #ef4444;
+      color: white;
+    }
 
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            /* Hide modal by default */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      /* Hide modal by default */
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
 
-        .modal.show {
-            display: flex;
-            /* Show modal when .show is added */
-        }
+    .modal.show {
+      display: flex;
+      /* Show modal when .show is added */
+    }
 
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            width: 380px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      width: 380px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
 
-        .modal-content h3 {
-            margin-top: 0;
-            margin-bottom: 1rem;
-            font-weight: 700;
-            color: #334155;
-        }
+    .modal-content h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      color: #334155;
+    }
 
-        .modal-content label {
-            display: block;
-            margin: 10px 0 4px;
-            font-weight: 600;
-            color: #475569;
-        }
+    .modal-content label {
+      display: block;
+      margin: 10px 0 4px;
+      font-weight: 600;
+      color: #475569;
+    }
 
-        .modal-content input,
-        .modal-content select {
-            width: 100%;
-            padding: 8px;
-            font-size: 1rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            outline: none;
-        }
+    .modal-content input,
+    .modal-content select {
+      width: 100%;
+      padding: 8px;
+      font-size: 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      outline: none;
+    }
 
-        .modal-content button {
-            margin-top: 15px;
-            padding: 10px 16px;
-            font-weight: 600;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+    .modal-content button {
+      margin-top: 15px;
+      padding: 10px 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
-        .modal-content button.save {
-            background-color: #2563eb;
-            color: white;
-            margin-right: 10px;
-        }
+    .modal-content button.save {
+      background-color: #2563eb;
+      color: white;
+      margin-right: 10px;
+    }
 
-        .modal-content button.cancel {
-            background-color: #6b7280;
-            color: white;
-        }
+    .modal-content button.cancel {
+      background-color: #6b7280;
+      color: white;
+    }
 
-        #pagination {
-            margin-top: 1rem;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            justify-content: flex-end;
-        }
+    #pagination {
+      margin-top: 1rem;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
 
-        #pagination button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-        }
+    #pagination button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
 
-        #pagination button:disabled {
-            background: #e2e8f0;
-            color: #a0aec0;
-            cursor: not-allowed;
-        }
+    #pagination button:disabled {
+      background: #e2e8f0;
+      color: #a0aec0;
+      cursor: not-allowed;
+    }
 
-        #pagination #pageInfo {
-            font-weight: 500;
-            color: #4a5568;
-        }
+    #pagination #pageInfo {
+      font-weight: 500;
+      color: #4a5568;
+    }
 
-        @media (max-width: 900px) {
-  #main-content {
-    margin-left: 0 !important;
-    width: 100vw !important;
-    min-width: 0 !important;
-    box-sizing: border-box;
-    padding: 10px;
-    min-height: unset;
-  }
-  .user-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  .user-header input[type="text"] {
-    width: 100%;
-    min-width: 0;
-  }
-  .user-header button {
-    width: 100%;
-    margin: 0 0 5px 0;
-  }
-  .modal-content {
-    width: 95vw;
-    min-width: 0;
-    padding: 10px;
-  }
-  table.customer-table th, table.customer-table td {
-    padding: 8px 4px;
-    font-size: 0.95em;
-  }
-}
+    @media (max-width: 900px) {
+      #main-content {
+        margin-left: 0 !important;
+        width: 100vw !important;
+        min-width: 0 !important;
+        box-sizing: border-box;
+        padding: 10px;
+        min-height: unset;
+      }
 
-/* Stack table on very small screens and wrap text in cards */
-@media (max-width: 600px) {
-  table.customer-table,
-  table.customer-table thead,
-  table.customer-table tbody,
-  table.customer-table th,
-  table.customer-table td,
-  table.customer-table tr {
-    display: block;
-    width: 100%;
-  }
-  table.customer-table thead {
-    display: none;
-  }
-  table.customer-table tr {
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: var(--card-bg-light);
-    color: var(--text-light);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    padding: 8px 0;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    transition: background 0.3s, color 0.3s;
-  }
-  body.dark table.customer-table tr {
-    background: var(--card-bg-dark);
-    color: var(--text-dark);
-    border: 1px solid #222;
-  }
-  table.customer-table td {
-    border: none;
-    position: relative;
-    padding-left: 50%;
-    min-height: 36px;
-    text-align: left;
-    background: none;
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    max-width: 100%;
-    box-sizing: border-box;
-    color: var(--text-light);
-  }
-  table.customer-table td:before {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    width: 45%;
-    white-space: nowrap;
-    font-weight: bold;
-    color: #888;
-    content: attr(data-label);
-  }
-  table.customer-table td.actions {
-    padding-left: 8px;
-  }
-}
+      .user-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
 
-/* Button color accuracy */
-.user-header button,
-button.save,
-button.cancel {
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.user-header button#addCustomerBtn {
-  background: #22c55e;
-}
-.user-header button[onclick*="exportCustomersToExcel"] {
-  background: #2563eb;
-}
-.user-header button[onclick*="exportCustomersToPDF"] {
-  background: #ef4444;
-}
-button.save {
-  background: #2563eb;
-}
-button.cancel {
-  background: #6b7280;
-}
-table.customer-table td.actions button.edit {
-  background: #3b82f6;
-  color: #fff;
-}
-table.customer-table td.actions button.delete {
-  background: #ef4444;
-  color: #fff;
-}
-    </style>
+      .user-header input[type="text"] {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .user-header button {
+        width: 100%;
+        margin: 0 0 5px 0;
+      }
+
+      .modal-content {
+        width: 95vw;
+        min-width: 0;
+        padding: 10px;
+      }
+
+      table.customer-table th,
+      table.customer-table td {
+        padding: 8px 4px;
+        font-size: 0.95em;
+      }
+    }
+
+    /* Stack table on very small screens and wrap text in cards */
+    @media (max-width: 600px) {
+
+      table.customer-table,
+      table.customer-table thead,
+      table.customer-table tbody,
+      table.customer-table th,
+      table.customer-table td,
+      table.customer-table tr {
+        display: block;
+        width: 100%;
+      }
+
+      table.customer-table thead {
+        display: none;
+      }
+
+      table.customer-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: var(--card-bg-light);
+        color: var(--text-light);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        padding: 8px 0;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        transition: background 0.3s, color 0.3s;
+      }
+
+      body.dark table.customer-table tr {
+        background: var(--card-bg-dark);
+        color: var(--text-dark);
+        border: 1px solid #222;
+      }
+
+      table.customer-table td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        min-height: 36px;
+        text-align: left;
+        background: none;
+        white-space: normal;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        max-width: 100%;
+        box-sizing: border-box;
+        color: var(--text-light);
+      }
+
+      table.customer-table td:before {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+        color: #888;
+        content: attr(data-label);
+      }
+
+      table.customer-table td.actions {
+        padding-left: 8px;
+      }
+    }
+
+    /* Button color accuracy */
+    .user-header button,
+    button.save,
+    button.cancel {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .user-header button#addCustomerBtn {
+      background: #22c55e;
+    }
+
+    .user-header button[onclick*="exportCustomersToExcel"] {
+      background: #2563eb;
+    }
+
+    .user-header button[onclick*="exportCustomersToPDF"] {
+      background: #ef4444;
+    }
+
+    button.save {
+      background: #2563eb;
+    }
+
+    button.cancel {
+      background: #6b7280;
+    }
+
+    table.customer-table td.actions button.edit {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    table.customer-table td.actions button.delete {
+      background: #ef4444;
+      color: #fff;
+    }
+  </style>
 </head>
 
 <body>
@@ -393,9 +413,11 @@ table.customer-table td.actions button.delete {
     </div>
   </div>
   <script src="assets/js/script.js"></script>
-   <script src="config.js"></script>
+  <script src="config.js"></script>
 
   <script>
+    const API_BASE = window.BASE_URL;
+
     let customers = [];
     let editingId = null;
     const tableBody = document.getElementById("customerTableBody");
