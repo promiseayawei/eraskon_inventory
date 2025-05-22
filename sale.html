@@ -21,45 +21,48 @@
   <!-- Animate.css for card animation -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
- <style>
-        /* Your base styles here */
-            /* Root color variables for light and dark mode */
-:root {
-  --bg-light: #e2dcdc;
-  --bg-dark: #090F3B;
-  --text-light: #090F3B;
-  --text-dark: #f1f1f1;
-  --card-bg-light: #fff;
-  --card-bg-dark: #1e293b;
-  --icon-sales: #2563eb;
-  --icon-orders: #22c55e;
-  --icon-customers: #f59e42;
-  --icon-returns: #ef4444;
-  --input-border: #ccc;
-}
+  <style>
+    /* Your base styles here */
+    /* Root color variables for light and dark mode */
+    :root {
+      --bg-light: #e2dcdc;
+      --bg-dark: #090F3B;
+      --text-light: #090F3B;
+      --text-dark: #f1f1f1;
+      --card-bg-light: #fff;
+      --card-bg-dark: #1e293b;
+      --icon-sales: #2563eb;
+      --icon-orders: #22c55e;
+      --icon-customers: #f59e42;
+      --icon-returns: #ef4444;
+      --input-border: #ccc;
+    }
 
-/* Light mode */
-body {
-  background-color: var(--bg-light);
-  color: var(--text-light);
-  transition: background-color 0.5s, color 0.5s;
-}
-.card.bg-white,
-.bg-white {
-  background: var(--card-bg-light) !important;
-  color: var(--text-light) !important;
-}
-.card-title, .card-text {
-  color: var(--text-light);
-}
+    /* Light mode */
+    body {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.5s, color 0.5s;
+    }
+
+    .card.bg-white,
+    .bg-white {
+      background: var(--card-bg-light) !important;
+      color: var(--text-light) !important;
+    }
+
+    .card-title,
+    .card-text {
+      color: var(--text-light);
+    }
 
 
-body.dark .card.bg-dark,
-.dark .card.bg-dark,
-body.dark .bg-gray-800,
-.dark .bg-gray-800 {
-  background: var(--card-bg-dark) !important;
-   color: var(--text-dark);
+    body.dark .card.bg-dark,
+    .dark .card.bg-dark,
+    body.dark .bg-gray-800,
+    .dark .bg-gray-800 {
+      background: var(--card-bg-dark) !important;
+      color: var(--text-dark);
 
       --bg-light: #090F3B;
       --bg-dark: #e2dcdc;
@@ -69,352 +72,392 @@ body.dark .bg-gray-800,
       --card-bg-dark: #050d4a;
       --input-border: #ccc;
     }
-/* Card icon color pattern */
-.card-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  margin: 0 auto 1rem auto;
-  font-size: 2rem;
-  transition: background 0.3s;
-}
-.icon-sales { background: var(--icon-sales); color: #fff; }
-.icon-orders { background: var(--icon-orders); color: #fff; }
-.icon-customers { background: var(--icon-customers); color: #fff; }
-.icon-returns { background: var(--icon-returns); color: #fff; }
 
-        #main-content {
-            margin-left: 250px;
-            /* Adjust based on sidebar width */
-            margin-top: 60px;
-            /* Adjust based on navbar height */
-            padding: 20px;
-            background: #fff;
-            min-height: calc(100vh - 60px);
-            overflow-y: auto;
-        }
+    /* Card icon color pattern */
+    .card-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      margin: 0 auto 1rem auto;
+      font-size: 2rem;
+      transition: background 0.3s;
+    }
 
-        /* User management specific styles */
-        .user-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
+    .icon-sales {
+      background: var(--icon-sales);
+      color: #fff;
+    }
 
-        .user-header input[type="text"] {
-            width: 300px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
+    .icon-orders {
+      background: var(--icon-orders);
+      color: #fff;
+    }
 
-        .user-header button {
-            padding: 8px 16px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+    .icon-customers {
+      background: var(--icon-customers);
+      color: #fff;
+    }
 
-        table.user-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
+    .icon-returns {
+      background: var(--icon-returns);
+      color: #fff;
+    }
 
-        table.user-table th,
-        table.user-table td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
+    #main-content {
+      margin-left: 250px;
+      /* Adjust based on sidebar width */
+      margin-top: 60px;
+      /* Adjust based on navbar height */
+      padding: 20px;
+      background: #fff;
+      min-height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
 
-        table.user-table th {
-            background: var(--text-light);
-        }
+    /* User management specific styles */
+    .user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
 
-        table.user-table td.actions button {
-            margin-right: 5px;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
+    .user-header input[type="text"] {
+      width: 300px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
 
-        table.user-table td.actions button.edit {
-            background: #3b82f6;
-            color: white;
-        }
+    .user-header button {
+      padding: 8px 16px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-        table.user-table td.actions button.delete {
-            background: #ef4444;
-            color: white;
-        }
+    table.user-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
 
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            /* Hide modal by default */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+    table.user-table th,
+    table.user-table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
 
-        .modal.show {
-            display: flex;
-            /* Show modal when .show is added */
-        }
+    table.user-table th {
+      background: var(--text-light);
+    }
 
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            width: 380px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
+    table.user-table td.actions button {
+      margin-right: 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
 
-        .modal-content h3 {
-            margin-top: 0;
-            margin-bottom: 1rem;
-            font-weight: 700;
-            color: #334155;
-        }
+    table.user-table td.actions button.edit {
+      background: #3b82f6;
+      color: white;
+    }
 
-        .modal-content label {
-            display: block;
-            margin: 10px 0 4px;
-            font-weight: 600;
-            color: #475569;
-        }
+    table.user-table td.actions button.delete {
+      background: #ef4444;
+      color: white;
+    }
 
-        .modal-content input,
-        .modal-content select {
-            width: 100%;
-            padding: 8px;
-            font-size: 1rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            outline: none;
-        }
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      /* Hide modal by default */
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
 
-        .modal-content button {
-            margin-top: 15px;
-            padding: 10px 16px;
-            font-weight: 600;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+    .modal.show {
+      display: flex;
+      /* Show modal when .show is added */
+    }
 
-        .modal-content button.save {
-            background-color: #2563eb;
-            color: white;
-            margin-right: 10px;
-        }
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      width: 380px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
 
-        .modal-content button.cancel {
-            background-color: #6b7280;
-            color: white;
-        }
+    .modal-content h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      color: #334155;
+    }
 
-        #pagination {
-            margin-top: 1rem;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            justify-content: flex-end;
-        }
+    .modal-content label {
+      display: block;
+      margin: 10px 0 4px;
+      font-weight: 600;
+      color: #475569;
+    }
 
-        #pagination button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-        }
+    .modal-content input,
+    .modal-content select {
+      width: 100%;
+      padding: 8px;
+      font-size: 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      outline: none;
+    }
 
-        #pagination button:disabled {
-            background: #e2e8f0;
-            color: #a0aec0;
-            cursor: not-allowed;
-        }
+    .modal-content button {
+      margin-top: 15px;
+      padding: 10px 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
-        #pagination #pageInfo {
-            font-weight: 500;
-            color: #4a5568;
-        }
+    .modal-content button.save {
+      background-color: #2563eb;
+      color: white;
+      margin-right: 10px;
+    }
 
-        @media (max-width: 900px) {
-  #main-content {
-    margin-left: 0 !important;
-    width: 100vw !important;
-    min-width: 0 !important;
-    box-sizing: border-box;
-    padding: 10px;
-    min-height: unset;
-  }
-  .user-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  .user-header input[type="text"] {
-    width: 100%;
-    min-width: 0;
-  }
-  .user-header button {
-    width: 100%;
-    margin: 0 0 5px 0;
-  }
-  .modal-content {
-    width: 95vw;
-    min-width: 0;
-    padding: 10px;
-  }
-  table.customer-table th, table.customer-table td {
-    padding: 8px 4px;
-    font-size: 0.95em;
-  }
-}
+    .modal-content button.cancel {
+      background-color: #6b7280;
+      color: white;
+    }
 
-/* Mobile responsive user card/table styles */
-@media (max-width: 600px) {
-  table.user-table,
-  table.user-table thead,
-  table.user-table tbody,
-  table.user-table th,
-  table.user-table td,
-  table.user-table tr {
-    display: block;
-    width: 100%;
-  }
-  table.user-table thead {
-    display: none;
-  }
-  table.user-table tr {
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: var(--card-bg-light);
-    color: var(--text-light);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    padding: 8px 0;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    transition: background 0.3s, color 0.3s;
-  }
-  body.dark table.user-table tr {
-    background: var(--card-bg-dark);
-    color: var(--text-dark);
-    border: 1px solid #222;
-  }
-  table.user-table td {
-    border: none;
-    position: relative;
-    padding-left: 50%;
-    min-height: 36px;
-    text-align: left;
-    background: none;
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    max-width: 100%;
-    box-sizing: border-box;
-    color: inherit;
-  }
-  table.user-table td:before {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    width: 45%;
-    white-space: nowrap;
-    font-weight: bold;
-    color: #888;
-    content: attr(data-label);
-  }
-  table.user-table td.actions {
-    padding-left: 8px;
-  }
-}
+    #pagination {
+      margin-top: 1rem;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
 
-/* Add margin around the table for both light and dark mode */
-.bg-white, .dark\:bg-gray-800 {
-  margin-bottom: 2rem;
-  padding: 1.5rem !important;
-}
+    #pagination button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
 
-table.min-w-full {
-  margin: 2rem auto; /* Add top and bottom margin, center horizontally */
-  border-radius: 0.75rem;
-  overflow: hidden;
-  background: var(--card-bg-light);
-  color: var(--text-light);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
+    #pagination button:disabled {
+      background: #e2e8f0;
+      color: #a0aec0;
+      cursor: not-allowed;
+    }
 
-body.dark table.min-w-full {
-  background: var(--card-bg-dark);
-  color: var(--text-dark);
-}
+    #pagination #pageInfo {
+      font-weight: 500;
+      color: #4a5568;
+    }
 
-/* Button color accuracy */
-.user-header button,
-button.save,
-button.cancel {
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.user-header button#addCustomerBtn {
-  background: #22c55e;
-}
-.user-header button[onclick*="exportCustomersToExcel"] {
-  background: #2563eb;
-}
-.user-header button[onclick*="exportCustomersToPDF"] {
-  background: #ef4444;
-}
-button.save {
-  background: #2563eb;
-}
-button.cancel {
-  background: #6b7280;
-}
-table.customer-table td.actions button.edit {
-  background: #3b82f6;
-  color: #fff;
-}
-table.customer-table td.actions button.delete {
-  background: #ef4444;
-  color: #fff;
-}
+    @media (max-width: 900px) {
+      #main-content {
+        margin-left: 0 !important;
+        width: 100vw !important;
+        min-width: 0 !important;
+        box-sizing: border-box;
+        padding: 10px;
+        min-height: unset;
+      }
 
-/* Card amount and description color for light/dark mode */
-.card-text.fw-bold.mb-2,
-.card-text.small {
-  color: var(--text-light);
-}
-body.dark .card-text.fw-bold.mb-2,
-body.dark .card-text.small {
-  color: var(--text-dark);
-}
-    </style>
+      .user-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+
+      .user-header input[type="text"] {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .user-header button {
+        width: 100%;
+        margin: 0 0 5px 0;
+      }
+
+      .modal-content {
+        width: 95vw;
+        min-width: 0;
+        padding: 10px;
+      }
+
+      table.customer-table th,
+      table.customer-table td {
+        padding: 8px 4px;
+        font-size: 0.95em;
+      }
+    }
+
+    /* Mobile responsive user card/table styles */
+    @media (max-width: 600px) {
+
+      table.user-table,
+      table.user-table thead,
+      table.user-table tbody,
+      table.user-table th,
+      table.user-table td,
+      table.user-table tr {
+        display: block;
+        width: 100%;
+      }
+
+      table.user-table thead {
+        display: none;
+      }
+
+      table.user-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: var(--card-bg-light);
+        color: var(--text-light);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        padding: 8px 0;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        transition: background 0.3s, color 0.3s;
+      }
+
+      body.dark table.user-table tr {
+        background: var(--card-bg-dark);
+        color: var(--text-dark);
+        border: 1px solid #222;
+      }
+
+      table.user-table td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        min-height: 36px;
+        text-align: left;
+        background: none;
+        white-space: normal;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        max-width: 100%;
+        box-sizing: border-box;
+        color: inherit;
+      }
+
+      table.user-table td:before {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+        color: #888;
+        content: attr(data-label);
+      }
+
+      table.user-table td.actions {
+        padding-left: 8px;
+      }
+    }
+
+    /* Add margin around the table for both light and dark mode */
+    .bg-white,
+    .dark\:bg-gray-800 {
+      margin-bottom: 2rem;
+      padding: 1.5rem !important;
+    }
+
+    table.min-w-full {
+      margin: 2rem auto;
+      /* Add top and bottom margin, center horizontally */
+      border-radius: 0.75rem;
+      overflow: hidden;
+      background: var(--card-bg-light);
+      color: var(--text-light);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    body.dark table.min-w-full {
+      background: var(--card-bg-dark);
+      color: var(--text-dark);
+    }
+
+    /* Button color accuracy */
+    .user-header button,
+    button.save,
+    button.cancel {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .user-header button#addCustomerBtn {
+      background: #22c55e;
+    }
+
+    .user-header button[onclick*="exportCustomersToExcel"] {
+      background: #2563eb;
+    }
+
+    .user-header button[onclick*="exportCustomersToPDF"] {
+      background: #ef4444;
+    }
+
+    button.save {
+      background: #2563eb;
+    }
+
+    button.cancel {
+      background: #6b7280;
+    }
+
+    table.customer-table td.actions button.edit {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    table.customer-table td.actions button.delete {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    /* Card amount and description color for light/dark mode */
+    .card-text.fw-bold.mb-2,
+    .card-text.small {
+      color: var(--text-light);
+    }
+
+    body.dark .card-text.fw-bold.mb-2,
+    body.dark .card-text.small {
+      color: var(--text-dark);
+    }
+  </style>
 </head>
 
 
@@ -433,12 +476,10 @@ body.dark .card-text.small {
     <!-- Beautified Bootstrap Cards with Animation -->
     <div class="row g-4 mb-5">
       <div class="col-sm-6 col-md-4 col-lg-3" v-for="(card, index) in performanceCards" :key="index">
-        <div
-          class="card h-100 p-3 border-0 shadow-lg animate__animated animate__fadeInUp"
+        <div class="card h-100 p-3 border-0 shadow-lg animate__animated animate__fadeInUp"
           :class="darkMode ? 'bg-dark text-white' : 'bg-white text-dark'"
           :style="`animation-delay: ${index * 100}ms; animation-duration: 600ms; border-radius: 1rem; transition: transform 0.3s ease, box-shadow 0.3s ease;`"
-          @mouseover="hoverIndex = index"
-          @mouseleave="hoverIndex = null"
+          @mouseover="hoverIndex = index" @mouseleave="hoverIndex = null"
           :class="{ 'shadow-lg': hoverIndex === index, 'shadow': hoverIndex !== index }">
           <div class="card-body text-center">
             <div class="mb-3">
@@ -461,7 +502,8 @@ body.dark .card-text.small {
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
       <div class="mb-4 flex justify-between items-center">
         <h2 class="text-xl font-semibold">Orders</h2>
-        <input type="text" v-model="searchQuery" placeholder="Search..." class="border px-3 py-2 rounded dark:bg-gray-700 dark:text-white" />
+        <input type="text" v-model="searchQuery" placeholder="Search..."
+          class="border px-3 py-2 rounded dark:bg-gray-700 dark:text-white" />
       </div>
       <div class="overflow-x-auto">
         <table class="min-w-full table-auto text-sm">
@@ -488,9 +530,11 @@ body.dark .card-text.small {
 
       <!-- Pagination -->
       <div class="mt-4 flex justify-center items-center gap-4">
-        <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded">Prev</button>
+        <button @click="prevPage" :disabled="currentPage === 1"
+          class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded">Prev</button>
         <span>Page {{ currentPage }} of {{ totalPages }}</span>
-        <button @click="nextPage" :disabled="currentPage === totalPages" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded">Next</button>
+        <button @click="nextPage" :disabled="currentPage === totalPages"
+          class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded">Next</button>
       </div>
     </div>
     </div>
@@ -500,10 +544,10 @@ body.dark .card-text.small {
   <!-- JavaScript -->
   <script src="assets/js/script.js"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script> <!-- ✅ Vue 3 -->
-   <script src="config.js"></script>
+  <script src="config.js"></script>
 
   <script>
-    const API_BASE = 'window.API_BASE';
+    const API_BASE = window.BASE_URL;
     const {
       createApp
     } = Vue;
