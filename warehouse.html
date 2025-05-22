@@ -230,8 +230,11 @@
 
 
   <script src="assets/js/script.js"></script>
-
+  <script src="config.js"></script>
   <script>
+     const API_BASE = window.BASE_URL;
+
+
     let currentPage = 1;
     const itemsPerPage = 2;
 
@@ -247,7 +250,7 @@
     let editingId = null;
 
     function fetchWarehouses() {
-      axios.get('http://localhost:5000/warehouse')
+      axios.get(`${API_BASE}/warehouse`)
         .then(res => {
           warehouses = res.data || [];
           currentPage = 1; // reset to page 1
@@ -327,8 +330,8 @@
       };
 
       const request = editingId
-        ? axios.put(`http://localhost:5000/warehouse/${editingId}`, data)
-        : axios.post('http://localhost:5000/warehouse', data);
+        ? axios.put(`${API_BASE}/warehouse/${editingId}`, data)
+        : axios.post(`${API_BASE}/warehouse`, data);
 
       request.then(fetchWarehouses).finally(closeModal);
     };
@@ -349,7 +352,7 @@
 
     function deleteWarehouse(id) {
       if (confirm('Are you sure?')) {
-        axios.delete(`http://localhost:5000/warehouse/${id}`)
+        axios.delete(`${API_BASE}/warehouse/${id}`)
           .then(fetchWarehouses)
           .catch(err => alert('Delete failed: ' + (err.response?.data?.message || err.message)));
       }

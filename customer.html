@@ -9,119 +9,335 @@
   <link rel="stylesheet" href="assets/css/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
- <style>
+  <style>
+        /* Your base styles here */
+            :root {
+      --bg-light: #e2dcdc;
+      --bg-dark: #090F3B;
+      --text-light: #090F3B;
+      --text-dark: #f1f1f1;
+      --card-bg-light: #e2dcdc;
+      --card-bg-dark: #050d4a;
+      --input-border: #ccc;
+    }
+
     body {
-      background-color: #e2dcdc;
-      color: #090F3B;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.5s ease, color 0.5s ease;
     }
 
-    #main-content {
-      margin-left: 250px;
-      margin-top: 60px;
-      padding: 20px;
-      background: #fff;
-      min-height: calc(100vh - 60px);
-      overflow-y: auto;
+    body.dark {
+
+      --bg-light: #090F3B;
+      --bg-dark: #e2dcdc;
+      --text-light: #e2dcdc;
+      --text-dark: #090F3B;
+      --card-bg-light: #090F3B;
+      --card-bg-dark: #050d4a;
+      --input-border: #ccc;
     }
 
-    .user-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
 
-    .user-header input {
-      width: 300px;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
+        #main-content {
+            margin-left: 250px;
+            /* Adjust based on sidebar width */
+            margin-top: 60px;
+            /* Adjust based on navbar height */
+            padding: 20px;
+            background: #fff;
+            min-height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
 
-    .user-header button {
-      padding: 8px 16px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-weight: 600;
-      cursor: pointer;
-    }
+        /* User management specific styles */
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
 
-    table.customer-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
+        .user-header input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-    table.customer-table th,
-    table.customer-table td {
-      padding: 12px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
+        .user-header button {
+            padding: 8px 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-    table.customer-table th {
-      background: #090F3B;
-      color: white;
-    }
+        table.user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
 
-    .actions button {
-      margin-right: 5px;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
+        table.user-table th,
+        table.user-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
 
-    .edit {
-      background: #3b82f6;
-      color: white;
-    }
+        table.user-table th {
+            background: var(--text-light);
+        }
 
-    .delete {
-      background: #ef4444;
-      color: white;
-    }
+        table.user-table td.actions button {
+            margin-right: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
 
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
+        table.user-table td.actions button.edit {
+            background: #3b82f6;
+            color: white;
+        }
 
-    .modal.show {
-      display: flex;
-    }
+        table.user-table td.actions button.delete {
+            background: #ef4444;
+            color: white;
+        }
 
-    .modal-content {
-      background: white;
-      padding: 25px;
-      border-radius: 8px;
-      width: 400px;
-    }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            /* Hide modal by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-    .modal-content input {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
+        .modal.show {
+            display: flex;
+            /* Show modal when .show is added */
+        }
 
-    .modal-content button {
-      padding: 10px 16px;
-      font-weight: bold;
-      border: none;
-      border-radius: 4px;
-      margin-right: 10px;
-    }
-  </style>
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 380px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .modal-content label {
+            display: block;
+            margin: 10px 0 4px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 8px;
+            font-size: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .modal-content button {
+            margin-top: 15px;
+            padding: 10px 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-content button.save {
+            background-color: #2563eb;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .modal-content button.cancel {
+            background-color: #6b7280;
+            color: white;
+        }
+
+        #pagination {
+            margin-top: 1rem;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        #pagination button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #pagination button:disabled {
+            background: #e2e8f0;
+            color: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        #pagination #pageInfo {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        @media (max-width: 900px) {
+  #main-content {
+    margin-left: 0 !important;
+    width: 100vw !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    padding: 10px;
+    min-height: unset;
+  }
+  .user-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .user-header input[type="text"] {
+    width: 100%;
+    min-width: 0;
+  }
+  .user-header button {
+    width: 100%;
+    margin: 0 0 5px 0;
+  }
+  .modal-content {
+    width: 95vw;
+    min-width: 0;
+    padding: 10px;
+  }
+  table.customer-table th, table.customer-table td {
+    padding: 8px 4px;
+    font-size: 0.95em;
+  }
+}
+
+/* Stack table on very small screens and wrap text in cards */
+@media (max-width: 600px) {
+  table.customer-table,
+  table.customer-table thead,
+  table.customer-table tbody,
+  table.customer-table th,
+  table.customer-table td,
+  table.customer-table tr {
+    display: block;
+    width: 100%;
+  }
+  table.customer-table thead {
+    display: none;
+  }
+  table.customer-table tr {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: var(--card-bg-light);
+    color: var(--text-light);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    padding: 8px 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.dark table.customer-table tr {
+    background: var(--card-bg-dark);
+    color: var(--text-dark);
+    border: 1px solid #222;
+  }
+  table.customer-table td {
+    border: none;
+    position: relative;
+    padding-left: 50%;
+    min-height: 36px;
+    text-align: left;
+    background: none;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    box-sizing: border-box;
+    color: var(--text-light);
+  }
+  table.customer-table td:before {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 45%;
+    white-space: nowrap;
+    font-weight: bold;
+    color: #888;
+    content: attr(data-label);
+  }
+  table.customer-table td.actions {
+    padding-left: 8px;
+  }
+}
+
+/* Button color accuracy */
+.user-header button,
+button.save,
+button.cancel {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.user-header button#addCustomerBtn {
+  background: #22c55e;
+}
+.user-header button[onclick*="exportCustomersToExcel"] {
+  background: #2563eb;
+}
+.user-header button[onclick*="exportCustomersToPDF"] {
+  background: #ef4444;
+}
+button.save {
+  background: #2563eb;
+}
+button.cancel {
+  background: #6b7280;
+}
+table.customer-table td.actions button.edit {
+  background: #3b82f6;
+  color: #fff;
+}
+table.customer-table td.actions button.delete {
+  background: #ef4444;
+  color: #fff;
+}
+    </style>
 </head>
 
 <body>
@@ -162,7 +378,7 @@
       <input type="text" id="cname" placeholder="Name" />
       <input type="email" id="cemail" placeholder="Email" />
       <input type="text" id="cphone" placeholder="Phone" />
-      
+
       <input type="text" id="cstreetLine" placeholder="Street" />
       <input type="text" id="ccity" placeholder="City" />
       <input type="text" id="cstate" placeholder="State" />
@@ -176,7 +392,9 @@
       <button class="cancel" id="cancelCustomerBtn">Cancel</button>
     </div>
   </div>
- <script src="assets/js/script.js"></script>
+  <script src="assets/js/script.js"></script>
+   <script src="config.js"></script>
+
   <script>
     let customers = [];
     let editingId = null;
@@ -190,7 +408,7 @@
     };
 
     function fetchCustomers() {
-      axios.get("http://localhost:5000/customers").then((res) => {
+      axios.get(`${API_BASE}/customer`).then((res) => {
         customers = res.data;
         renderCustomers();
       });
@@ -202,12 +420,11 @@
       tableBody.innerHTML = filtered
         .map(
           (c) => `
-        <tr>
-          <td>${c.name}</td>
-          <td>${c.email || ""}</td>
-          <td>${c.phone || ""}</td>
-          <td>
-            ${[
+      <tr>
+        <td data-label="Name">${c.name}</td>
+        <td data-label="Email">${c.email || ""}</td>
+        <td data-label="Phone">${c.phone || ""}</td>
+        <td data-label="Address">${[
               c.streetLine,
               c.city,
               c.state,
@@ -215,16 +432,16 @@
               c.postalCode,
             ]
               .filter(Boolean)
-              .join(", ")}
-          </td>
-          <td>${c.company || ""}</td>
-          <td>${c.taxId || ""}</td>
-          <td class="actions">
-            <button class="edit" onclick="editCustomer('${c._id}')">Edit</button>
-            <button class="delete" onclick="deleteCustomer('${c._id}')">Delete</button>
-          </td>
-        </tr>
-      `
+              .join(", ")
+            }</td>
+        <td data-label="Company">${c.company || ""}</td>
+        <td data-label="Tax ID">${c.taxId || ""}</td>
+        <td data-label="Actions" class="actions">
+          <button class="edit" onclick="editCustomer('${c._id}')">Edit</button>
+          <button class="delete" onclick="deleteCustomer('${c._id}')">Delete</button>
+        </td>
+      </tr>
+    `
         )
         .join("");
     }
@@ -260,8 +477,8 @@
       };
 
       const req = editingId
-        ? axios.put(`http://localhost:5000/customers/${editingId}`, data)
-        : axios.post("http://localhost:5000/customers", data);
+        ? axios.put(`${API_BASE}/customer/${editingId}`, data)
+        : axios.post(`${API_BASE}/customer`, data);
 
       req.then(() => {
         socket.send(JSON.stringify({ type: "customer-update" }));
@@ -290,7 +507,7 @@
 
     function deleteCustomer(id) {
       if (confirm("Delete this customer?")) {
-        axios.delete(`http://localhost:5000/customers/${id}`).then(() => {
+        axios.delete(`${API_BASE}/customer/${id}`).then(() => {
           socket.send(JSON.stringify({ type: "customer-update" }));
           fetchCustomers();
         });

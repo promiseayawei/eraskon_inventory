@@ -119,6 +119,11 @@
       color: #f1f1f1;
     }
   </style>
+   <script src="/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="components/spinner.js"></script>
+  <script src="assets/js/utils.js"></script>
+  
 </head>
 
 <body>
@@ -233,10 +238,10 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="/config.js"></script>
-  <script>
-    const API_BASE = 'http://localhost:5000/auth';
+     
+<script>
+    // Set the API base URL from the config file
+    const API_BASE = window.BASE_URL;
 
     function showMessage(id, message, type = "success") {
       const box = document.getElementById(id);
@@ -252,7 +257,8 @@
       const email = e.target.querySelector("input[type='text']").value;
       const password = e.target.querySelector("input[type='password']").value;
 
-      axios.post(`${API_BASE}/login`, { email, password })
+      window.showSpinner();
+      axios.post(`${API_BASE}/auth/login`, { email, password })
         .then(response => {
           const { token, user } = response.data;
 
@@ -271,7 +277,7 @@
           } else if (user.role === "manager") {
             setTimeout(() => window.location.href = "store.html", 1500);
           } else if (user.role === "staff") {
-            setTimeout(() => window.location.href = "order.html", 1500);
+            setTimeout(() => window.location.href = "store.html", 1500);
           } else if (user.role === "branch_manager") {
             setTimeout(() => window.location.href = "store.html", 1500);
           } else {
@@ -300,7 +306,7 @@
         return;
       }
 
-      axios.post(`${API_BASE}/register`, { email, firstName, lastName, password })
+      axios.post(`${API_BASE}/auth/register`, { email, firstName, lastName, password })
         .then(res => showMessage("signupMessageBox", res.data.message || "Account activated!", "success"))
         .catch(err => {
           const msg = err.response?.data?.error || "Activation failed.";
@@ -313,7 +319,7 @@
       e.preventDefault();
       const email = prompt("Enter your email address:");
       if (email) {
-        axios.post(`${API_BASE}/forgot-password`, { email })
+        axios.post(`${API_BASE}/auth/forgot-password`, { email })
           .then(res => showMessage("loginMessageBox", res.data.message || "Password reset link sent!", "success"))
           .catch(err => {
             const msg = err.response?.data?.error || "Password reset failed.";

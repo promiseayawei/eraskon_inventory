@@ -47,7 +47,7 @@ document.write(`
           </a>
         </li>
         <li class="item">
-          <a href="sales.html" class="nav_link">
+          <a href="sale.html" class="nav_link">
             <span class="navlink_icon"><i class="bx bx-loader-circle"></i></span>
             <span class="navlink">Sales</span>
           </a>

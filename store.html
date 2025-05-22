@@ -174,6 +174,33 @@
         flex: 0 0 100%;
       }
     }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--card-bg-light);
+      color: var(--text-light);
+      padding: 2rem;
+      border-radius: 12px;
+      min-width: 300px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    body.dark .modal-content {
+      background: var(--card-bg-dark);
+      color: var(--text-dark);
+    }
   </style>
 </head>
 
@@ -210,6 +237,14 @@
                 </option>
               </select>
             </div>
+            <div v-if="product.batchTracking && product.batches && product.batches.length">
+              <label>Select Batch:</label>
+              <select v-model="product.selectedBatch">
+                <option v-for="batch in product.batches" :value="batch">
+                  {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
+                </option>
+              </select>
+            </div>
             <div class="quantity-control">
               <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
               <input type="number" v-model.number="product.quantity" min="1" />
@@ -225,18 +260,55 @@
           <h3>Invoice Summary</h3>
           <ul>
             <li v-for="(item, index) in cart" :key="index">
-              {{ item.name }} ({{ item.variant.size }}) - {{ item.quantity }} x ₦{{ item.variant.price }} = ₦{{
-              item.variant.price * item.quantity }}
+              {{ item.name }} ({{ item.variant.size }}) - {{ item.quantity }} x ₦{{ item.variant.price }} = ₦{{ item.variant.price * item.quantity }}
             </li>
           </ul>
           <p><strong>Total:</strong> ₦{{ cartTotal }}</p>
-          <button @click="generateInvoice">Download Invoice</button>
+          <button @click="generateInvoice">Generate Invoice</button>
+          <button @click="generateInvoicePDF">Generate PDF Invoice</button>
+          <button @click="postOrder" style="margin-left: 10px;">Submit Order</button>
         </div>
 
         <!-- Empty Cart Fallback -->
         <div class="invoice-panel" v-else>
           <h3>Invoice Summary</h3>
           <p>Your cart is empty. Add products to generate an invoice.</p>
+        </div>
+
+        <!-- Customer Information Panel -->
+        <div class="invoice-panel" style="margin-bottom: 1rem;">
+          <h3>Customer Information</h3>
+          <label for="customerSelect">Select Customer:</label>
+          <select id="customerSelect" v-model="selectedCustomerId" @change="onCustomerSelect">
+            <option value="">-- Select Customer --</option>
+            <option v-for="c in customers" :value="c._id">
+              {{ c.name }} ({{ c.email || c.phone || 'No contact' }})
+            </option>
+          </select>
+          <button @click="showAddCustomerModal = true" style="margin: 10px 0;">Add New Customer</button>
+          <div v-if="selectedCustomer">
+            <p><strong>Name:</strong> {{ selectedCustomer.name }}</p>
+            <p><strong>Email:</strong> {{ selectedCustomer.email }}</p>
+            <p><strong>Phone:</strong> {{ selectedCustomer.phone }}</p>
+            <p><strong>Company:</strong> {{ selectedCustomer.company }}</p>
+            <p><strong>Tax ID:</strong> {{ selectedCustomer.taxId }}</p>
+          </div>
+        </div>
+
+        <!-- Modal for adding a new customer -->
+        <div v-if="showAddCustomerModal" class="modal-overlay">
+          <div class="modal-content">
+            <h3>Add Customer</h3>
+            <input v-model="newCustomer.name" placeholder="Customer Name" required>
+            <input v-model="newCustomer.email" placeholder="Email">
+            <input v-model="newCustomer.phone" placeholder="Phone">
+            <input v-model="newCustomer.company" placeholder="Company">
+            <input v-model="newCustomer.taxId" placeholder="Tax ID">
+            <div style="margin-top: 1rem;">
+              <button @click="addCustomer">Save</button>
+              <button @click="showAddCustomerModal = false">Cancel</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -250,16 +322,29 @@
 
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script>
-    const API_BASE = 'http://localhost:5000';
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="config.js"></script>
+<script>
+   const API_BASE = window.BASE_URL;
 
-    new Vue({
-      el: '#app',
-      data: {
-        isDarkMode: localStorage.getItem("darkMode") === "true",
-        searchTerm: '',
-        cart: [],
-        products: [] // Will be populated from API
+  new Vue({
+    el: '#app',
+    data: {
+      isDarkMode: localStorage.getItem("darkMode") === "true",
+      searchTerm: '',
+      cart: [],
+      products: [], // Will be populated from API
+        customers: [],
+        selectedCustomerId: '',
+        showAddCustomerModal: false,
+        newCustomer: {
+          name: '',
+          email: '',
+          phone: '',
+          company: '',
+          taxId: ''
+        }
       },
       computed: {
         cartTotal() {
@@ -271,6 +356,9 @@
             product.name.toLowerCase().includes(term) ||
             (product.description || '').toLowerCase().includes(term)
           );
+        },
+        selectedCustomer() {
+          return this.customers.find(c => c._id === this.selectedCustomerId) || null;
         }
       },
       methods: {
@@ -309,15 +397,140 @@
           product.quantity = 1;
         },
         generateInvoice() {
-          const lines = this.cart.map(item => `${item.name} (${item.variant.sku}) x ${item.quantity} = ₦${item.variant.price * item.quantity}`);
-          const content = `INVOICE\n\n${lines.join('\n')}\n\nTOTAL: ₦${this.cartTotal}`;
+          if (!this.selectedCustomer) {
+            alert("Please select a customer before generating the invoice.");
+            return;
+          }
+          // 1. Add Eraskon company details and beautify invoice (plain text version)
+          const eraskonInfo = [
+            `========= COMPANY DETAILS =========`,
+            `Eraskon Nigeria Limited`,
+            `EL-AL Court, Plot 35, Chief Yesufu Abiodun Oniru Road,`,
+            `VI, Lagos State, Nigeria.`,
+            `===================================`
+          ].join('\n');
+          const customer = this.selectedCustomer;
+          const customerInfo = [
+            `Customer: ${customer.name}`,
+            `Email: ${customer.email || '-'}`,
+            `Phone: ${customer.phone || '-'}`,
+            `Company: ${customer.company || '-'}`,
+            `Tax ID: ${customer.taxId || '-'}`
+          ].join('\n');
+          const lines = this.cart.map(
+            (item, idx) =>
+              `${idx + 1}. ${item.name} (${item.variant.sku}) x ${item.quantity} = ₦${item.variant.price * item.quantity}`
+          );
+          const content = [
+            `********** INVOICE **********`,
+            eraskonInfo,
+            customerInfo,
+            `\n--------- ITEMS ---------`,
+            lines.join('\n'),
+            `-------------------------`,
+            `TOTAL: ₦${this.cartTotal}`,
+            `****************************`
+          ].join('\n\n');
+
+          // 2. Download invoice as .txt
           const blob = new Blob([content], { type: 'text/plain' });
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
           a.download = 'invoice.txt';
           a.click();
+
+          // 3. Share invoice to WhatsApp
+          const whatsappMsg = encodeURIComponent(content);
+          const whatsappUrl = `https://wa.me/?text=${whatsappMsg}`;
+          window.open(whatsappUrl, '_blank');
           this.cart = [];
         },
+        async generateInvoicePDF() {
+          if (!this.selectedCustomer) {
+            alert("Please select a customer before generating the invoice.");
+            return;
+          }
+
+          // 1. Prepare company and customer info
+          const eraskonLogo = 'data:image/png;base64,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'; // Use your logo URL or base64
+          const eraskonInfo = [
+            "Eraskon Nigeria Limited",
+            "EL-AL Court, Plot 35, Chief Yesufu Abiodun Oniru Road,",
+            "VI, Lagos State, Nigeria."
+          ].join('\n');
+          const customer = this.selectedCustomer;
+          const customerInfo = [
+            `Name: ${customer.name}`,
+            `Email: ${customer.email || '-'}`,
+            `Phone: ${customer.phone || '-'}`,
+            `Company: ${customer.company || '-'}`,
+            `Tax ID: ${customer.taxId || '-'}`
+          ].join('\n');
+
+          // 2. Prepare product table
+          const tableBody = this.cart.map((item, idx) => [
+            idx + 1,
+            item.name,
+            item.variant.size,
+            item.variant.sku,
+            item.quantity,
+            `₦${item.variant.price}`,
+            `₦${item.variant.price * item.quantity}`
+          ]);
+
+          // 3. Create PDF
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+
+          // Add logo
+          const imgProps = {
+            url: eraskonLogo,
+            x: 80,
+            y: 10,
+            width: 50,
+            height: 20
+          };
+          // Draw logo (async)
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = function () {
+            doc.addImage(img, 'PNG', imgProps.x, imgProps.y, imgProps.width, imgProps.height);
+
+            // Company Info
+            doc.setFontSize(14);
+            doc.text("INVOICE", 105, 40, { align: "center" });
+            doc.setFontSize(10);
+            doc.text(eraskonInfo, 105, 48, { align: "center" });
+
+            // Customer Info
+            doc.setFontSize(11);
+            doc.text("Bill To:", 14, 60);
+            doc.setFontSize(10);
+            doc.text(customerInfo, 14, 65);
+
+            // Table
+            doc.autoTable({
+              startY: 80,
+              head: [["#", "Product", "Size", "SKU", "Qty", "Unit Price", "Total"]],
+              body: tableBody,
+              theme: 'grid',
+              styles: { fontSize: 10, cellPadding: 2 },
+              headStyles: { fillColor: [37, 99, 235], textColor: 255 },
+              alternateRowStyles: { fillColor: [240, 245, 255] }
+            });
+
+            // Total
+            const finalY = doc.lastAutoTable.finalY || 90;
+            doc.setFontSize(12);
+            doc.setTextColor(37, 99, 235);
+            doc.text(`TOTAL: ₦${this.cartTotal}`, 160, finalY + 10);
+
+            // Save PDF
+            doc.save("invoice.pdf");
+          }.bind(this);
+          img.src = eraskonLogo;
+        },
+
         async fetchProducts() {
           try {
             const response = await axios.get(`${API_BASE}/product-variant`);
@@ -326,6 +539,8 @@
               name: pv.name,
               image: pv.image,
               quantity: 1,
+              batchNumber: pv.batchNumber,
+              description: pv.description,  
               variants: [
                 {
                   sku: pv.sku,
@@ -346,8 +561,32 @@
             alert("Error loading products. Check console for details.");
           }
         },
+        async fetchCustomers() {
+          try {
+            const res = await axios.get(`${API_BASE}/customer`);
+            this.customers = Array.isArray(res.data) ? res.data : (res.data.customers || []);
+          } catch (err) {
+            console.error("Failed to load customers:", err);
+          }
+        },
+        onCustomerSelect() {
+          // Optionally handle customer selection logic here
+        },
+        async addCustomer() {
+          try {
+            const res = await axios.post(`${API_BASE}/customer`, this.newCustomer);
+            const added = res.data.customer || res.data;
+            this.customers.push(added);
+            this.selectedCustomerId = added._id;
+            this.showAddCustomerModal = false;
+            this.newCustomer = { name: '', email: '', phone: '', company: '', taxId: '' };
+          } catch (err) {
+            alert("Failed to add customer. Please check details.");
+          }
+        },
         async postOrder() {
           try {
+            const token = localStorage.getItem('token');
             const payload = {
               items: this.cart.map(item => ({
                 productVariantId: item.id,
@@ -356,14 +595,51 @@
                 price: item.variant.price
               })),
               total: this.cartTotal,
-              createdAt: new Date()
+              createdAt: new Date(),
+              customerId: this.selectedCustomerId
             };
-            const res = await axios.post(`${API_BASE}/order`, payload);
-            alert("Order submitted successfully!");
+
+            // 1. Submit the order
+            const orderRes = await axios.post(`${API_BASE}/order`, payload, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // 2. For each item, deduct stock by posting to stock-movement
+            for (const item of this.cart) {
+              let batchNumber;
+              if (item.variant.batchTracking && Array.isArray(item.variant.batches) && item.variant.batches.length > 0) {
+                // Find a batch with enough quantity, or just use the first batch
+                const batch = item.variant.batches.find(b => b.quantity >= item.quantity) || item.variant.batches[0];
+                batchNumber = batch ? batch.batchNumber : undefined;
+              } else {
+                batchNumber = item.variant.batchNumber || undefined;
+              }
+
+              if (!batchNumber) {
+                alert(`No valid batch found for ${item.name}.`);
+                return;
+              }
+
+              await axios.post(`${API_BASE}/stock-movement`, {
+                productVariantId: item.id,
+                type: "transfer",
+                quantity: item.quantity,
+                warehouse: item.variant.warehouse, // You may want to use batch.warehouse if batchTracking
+                destinationWarehouse: this.selectedCustomer?.warehouse || undefined,
+                destinationCustomer: this.selectedCustomerId,
+                reference: `Order#${orderRes.data.orderCode || new Date().toISOString()}`,
+                reason: "Stock Transfer",
+                batchNumber
+              }, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+            }
+
+            alert("Order submitted and stock updated successfully!");
             this.cart = [];
           } catch (err) {
-            console.error("Order post failed:", err);
-            alert("Error posting order. Check console.");
+            console.error("Order/stock post failed:", err.response?.data || err);
+            alert("Error submitting order or updating stock. Check console.");
           }
         }
       },
@@ -378,6 +654,7 @@
         });
         document.body.classList.toggle('dark', this.isDarkMode);
         this.fetchProducts(); // Load from API
+        this.fetchCustomers(); // Load customers for selection
       }
     });
   </script>

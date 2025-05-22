@@ -250,16 +250,18 @@
       </table>
     </section>
   </div>
-
-    <script>
+<script src="assets/js/script.js"></script>
+ <script src="config.js"></script>
+<script>
+   
     async function loadReports() {
       try {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
 
         const [ordersRes, stockMovementsRes] = await Promise.all([
-          fetch('http://localhost:5000/order', { headers }),
-          fetch('http://localhost:5000/stock-movement', { headers })
+          fetch(`${API_BASE}/order`, { headers }),
+          fetch(`${API_BASE}/stock-movement`, { headers })
         ]);
 
         if (!ordersRes.ok || !stockMovementsRes.ok) {

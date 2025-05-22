@@ -86,39 +86,33 @@
   <!-- JavaScript -->
   <script src="assets/js/script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+ <script src="config.js"></script>
 
 
   <script>
+     const API_BASE = window.BASE_URL;
+
     function toggleSidebar() {
       document.body.classList.toggle('collapsed');
     }
-  
+
     new Vue({
       el: '#app',
       data: {
         cards: [
-          { title: 'Total Products', value: 150 },
-          { title: 'Total Sales', value: 75 },
-          { title: 'Available Stock', value: 100 }
+          { title: 'Total Products', value: 0 },
+          { title: 'Total Sales', value: 0 },
+          { title: 'Available Stock', value: 0 }
         ],
         search: '',
         sortKey: '',
         sortAsc: true,
         selectedMonth: 'all',
-        products: [
-          { id: 1, name: 'ERASKO GOLD20W-50', category: 'Lubricants', stock: 40 },
-          { id: 2, name: 'ERASKO POWER20W-50', category: 'Lubricants', stock: 30 },
-          { id: 3, name: 'ERASKO DMO', category: 'Lubricant', stock: 25 },
-          { id: 4, name: 'ERASKO HDSAE40', category: 'Lubricant', stock: 20 }
-        ],
+        products: [],
+        orders: [],
         salesChart: null,
         productChart: null,
-        salesData: {
-          Jan: [10, 20],
-          Feb: [25, 15],
-          Mar: [15, 22],
-          Apr: [20, 18]
-        }
+        salesData: {}
       },
       computed: {
         availableMonths() {
@@ -157,23 +151,69 @@
           a.click();
         },
         getTextColor() {
-          return document.body.classList.contains('dark-mode') ? '#ffffff' : '#000000';  // Dynamically check if dark mode is enabled
+          return document.body.classList.contains('dark-mode') ? '#ffffff' : '#000000';
+        },
+        async fetchData() {
+          try {
+            const token = localStorage.getItem('token');
+            // Fetch products
+            const prodRes = await fetch(`${API_BASE}/products`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const prodData = await prodRes.json();
+            this.products = Array.isArray(prodData) ? prodData : (prodData.products || []);
+            // Fetch orders
+            const orderRes = await fetch(`${API_BASE}/order`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const orderData = await orderRes.json();
+            this.orders = Array.isArray(orderData) ? orderData : (orderData.orders || []);
+            // Update cards
+            let totalAmount = 0;
+            if (this.orders.length) {
+              totalAmount = this.orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+            }
+            this.cards = [
+              { title: 'Total Products', value: this.products.length },
+              { title: 'Total Sales', value: this.orders.length },
+              { title: 'Available Stock', value: this.products.reduce((sum, p) => sum + (p.stock || 0), 0) },
+              { title: 'Total Amount', value: `₦${totalAmount.toLocaleString()}` }
+            ];
+            // Prepare salesData for chart
+            this.prepareSalesData();
+            this.drawChart();
+          } catch (err) {
+            alert('Error loading data: ' + err.message);
+          }
+        },
+        prepareSalesData() {
+          // Example: group orders by month for salesData
+          const salesData = {};
+          this.orders.forEach(order => {
+            const date = new Date(order.createdAt);
+            const month = date.toLocaleString('default', { month: 'short' });
+            if (!salesData[month]) salesData[month] = [0, 0];
+            // Example: order.channel === 'online' or 'offline'
+            if (order.channel === 'online') salesData[month][0] += 1;
+            else salesData[month][1] += 1;
+          });
+          this.salesData = salesData;
         },
         drawChart() {
           const lineColor1 = this.getCSSVar('--blue-color') || '#4A90E2';
           const lineColor2 = '#FF6B6B';
           const barColor = this.getCSSVar('--grey-color') || '#777';
-          const textColor = this.getTextColor();  // Use the dynamically determined text color based on the mode
-  
+          const textColor = this.getTextColor();
+
           if (this.salesChart) this.salesChart.destroy();
           if (this.productChart) this.productChart.destroy();
-  
+
           const ctxSales = document.getElementById("salesChart").getContext("2d");
           const ctxProduct = document.getElementById("productChart").getContext("2d");
-  
+
           let labels = [];
           let dataset1 = [], dataset2 = [];
-  
+
           if (this.selectedMonth === 'all') {
             labels = Object.keys(this.salesData);
             dataset1 = labels.map(m => this.salesData[m][0]);
@@ -183,7 +223,7 @@
             dataset1 = [this.salesData[this.selectedMonth][0]];
             dataset2 = [this.salesData[this.selectedMonth][1]];
           }
-  
+
           // Sales chart (line chart)
           this.salesChart = new Chart(ctxSales, {
             type: "line",
@@ -230,19 +270,19 @@
               },
               scales: {
                 x: {
-                  ticks: { color: textColor },  // Set x-axis label color dynamically
+                  ticks: { color: textColor },
                   grid: { color: textColor + '20' }
                 },
                 y: {
                   beginAtZero: true,
-                  ticks: { color: textColor },  // Set y-axis label color dynamically
+                  ticks: { color: textColor },
                   grid: { color: textColor + '20' }
                 }
               }
             },
             plugins: [ChartDataLabels]
           });
-  
+
           // Product chart (bar chart)
           this.productChart = new Chart(ctxProduct, {
             type: "bar",
@@ -276,13 +316,13 @@
               },
               scales: {
                 x: {
-                  ticks: { color: textColor },  // Set x-axis label color dynamically
-                  grid: { display: false }  // Removes background lines behind bars
+                  ticks: { color: textColor },
+                  grid: { display: false }
                 },
                 y: {
                   beginAtZero: true,
-                  ticks: { color: textColor },  // Set y-axis label color dynamically
-                  grid: { display: false }  // Removes background lines
+                  ticks: { color: textColor },
+                  grid: { display: false }
                 }
               }
             },
@@ -291,7 +331,7 @@
         }
       },
       mounted() {
-        this.drawChart();
+        this.fetchData();
         const observer = new MutationObserver(() => this.drawChart());
         observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
       }

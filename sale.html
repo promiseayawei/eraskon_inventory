@@ -21,24 +21,45 @@
   <!-- Animate.css for card animation -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-  <style>
-    :root {
-      --bg-light: #e2dcdc;
-      --bg-dark: #090F3B;
-      --text-light: #090F3B;
-      --text-dark: #f1f1f1;
-      --card-bg-light: #e2dcdc;
-      --card-bg-dark: #050d4a;
-      --input-border: #ccc;
-    }
+ <style>
+        /* Your base styles here */
+            /* Root color variables for light and dark mode */
+:root {
+  --bg-light: #e2dcdc;
+  --bg-dark: #090F3B;
+  --text-light: #090F3B;
+  --text-dark: #f1f1f1;
+  --card-bg-light: #fff;
+  --card-bg-dark: #1e293b;
+  --icon-sales: #2563eb;
+  --icon-orders: #22c55e;
+  --icon-customers: #f59e42;
+  --icon-returns: #ef4444;
+  --input-border: #ccc;
+}
 
-    body {
-      background-color: var(--bg-light);
-      color: var(--text-light);
-      transition: background-color 0.5s ease, color 0.5s ease;
-    }
+/* Light mode */
+body {
+  background-color: var(--bg-light);
+  color: var(--text-light);
+  transition: background-color 0.5s, color 0.5s;
+}
+.card.bg-white,
+.bg-white {
+  background: var(--card-bg-light) !important;
+  color: var(--text-light) !important;
+}
+.card-title, .card-text {
+  color: var(--text-light);
+}
 
-    body.dark {
+
+body.dark .card.bg-dark,
+.dark .card.bg-dark,
+body.dark .bg-gray-800,
+.dark .bg-gray-800 {
+  background: var(--card-bg-dark) !important;
+   color: var(--text-dark);
 
       --bg-light: #090F3B;
       --bg-dark: #e2dcdc;
@@ -48,155 +69,352 @@
       --card-bg-dark: #050d4a;
       --input-border: #ccc;
     }
+/* Card icon color pattern */
+.card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin: 0 auto 1rem auto;
+  font-size: 2rem;
+  transition: background 0.3s;
+}
+.icon-sales { background: var(--icon-sales); color: #fff; }
+.icon-orders { background: var(--icon-orders); color: #fff; }
+.icon-customers { background: var(--icon-customers); color: #fff; }
+.icon-returns { background: var(--icon-returns); color: #fff; }
 
+        #main-content {
+            margin-left: 250px;
+            /* Adjust based on sidebar width */
+            margin-top: 60px;
+            /* Adjust based on navbar height */
+            padding: 20px;
+            background: #fff;
+            min-height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
 
-    .fade-enter-active,
-    .fade-leave-active {
-      transition: all 0.5s ease;
-    }
+        /* User management specific styles */
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
 
-    .fade-enter-from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
+        .user-header input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-    .fade-enter-to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+        .user-header button {
+            padding: 8px 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-    .product-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: flex-start;
-    }
+        table.user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
 
-    .invoice-panel {
-      position: sticky;
-      top: 100px;
-      align-self: flex-start;
-      background: var(--container-bg);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 300px;
-      max-height: calc(100vh - 120px);
-      overflow-y: auto;
-      margin-left: auto;
-    }
+        table.user-table th,
+        table.user-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
 
-    .product-card {
-      background-color: var(--container-bg);
-      border-radius: 12px;
-      padding: 16px;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      width: calc(33.333% - 13.34px);
-      /* Three cards per row with gap compensation */
-      flex: 0 0 calc(33.333% - 13.34px);
-      box-sizing: border-box;
-    }
+        table.user-table th {
+            background: var(--text-light);
+        }
 
-    body.dark .product-card {
-      background-color: var(--card-bg-dark);
-    }
+        table.user-table td.actions button {
+            margin-right: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
 
-    .product-card img {
-      width: 100%;
-      height: auto;
-      max-height: 100%;
-      /* Increased max height */
-      object-fit: cover;
-      /* Changed from 'contain' to 'cover' for better visual fit */
-      aspect-ratio: 4 / 4;
-      /* Maintain consistent aspect ratio */
-      border-radius: 12px;
-      /* Optional: soft rounded corners for modern look */
-      margin-bottom: 1rem;
-      transition: transform 0.3s ease;
-    }
+        table.user-table td.actions button.edit {
+            background: #3b82f6;
+            color: white;
+        }
 
-    .product-card img:hover {
-      transform: scale(1.05);
-      /* Subtle hover effect to make it interactive */
-    }
+        table.user-table td.actions button.delete {
+            background: #ef4444;
+            color: white;
+        }
 
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            /* Hide modal by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-    .main-content {
-      padding: 1rem;
-    }
+        .modal.show {
+            display: flex;
+            /* Show modal when .show is added */
+        }
 
-    .product-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 380px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
 
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            color: #334155;
+        }
 
+        .modal-content label {
+            display: block;
+            margin: 10px 0 4px;
+            font-weight: 600;
+            color: #475569;
+        }
 
-    .quantity-control {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 0.5rem 0;
-    }
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 8px;
+            font-size: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            outline: none;
+        }
 
-    .quantity-control button {
-      background: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
+        .modal-content button {
+            margin-top: 15px;
+            padding: 10px 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-    .quantity-control button:hover {
-      background: #0056b3;
-    }
+        .modal-content button.save {
+            background-color: #2563eb;
+            color: white;
+            margin-right: 10px;
+        }
 
-    .quantity-control input[type="number"] {
-      width: 60px;
-      padding: 0.3rem;
-      text-align: center;
-    }
+        .modal-content button.cancel {
+            background-color: #6b7280;
+            color: white;
+        }
 
-    @media screen and (max-width: 1024px) {
-      .product-card {
-        width: calc(50% - 10px);
-        /* Two per row on medium screens */
-        flex: 0 0 calc(50% - 10px);
-      }
-    }
+        #pagination {
+            margin-top: 1rem;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: flex-end;
+        }
 
-    @media screen and (max-width: 768px) {
-      .product-layout {
-        flex-direction: column;
-      }
+        #pagination button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
 
-      .invoice-panel {
-        position: static;
-        width: 100%;
-        margin-left: 0;
-        max-height: none;
-      }
-    }
+        #pagination button:disabled {
+            background: #e2e8f0;
+            color: #a0aec0;
+            cursor: not-allowed;
+        }
 
+        #pagination #pageInfo {
+            font-weight: 500;
+            color: #4a5568;
+        }
 
-    @media screen and (max-width: 600px) {
-      .product-card {
-        width: 100%;
-        /* Full width on mobile */
-        flex: 0 0 100%;
-      }
-    }
-  </style>
+        @media (max-width: 900px) {
+  #main-content {
+    margin-left: 0 !important;
+    width: 100vw !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    padding: 10px;
+    min-height: unset;
+  }
+  .user-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .user-header input[type="text"] {
+    width: 100%;
+    min-width: 0;
+  }
+  .user-header button {
+    width: 100%;
+    margin: 0 0 5px 0;
+  }
+  .modal-content {
+    width: 95vw;
+    min-width: 0;
+    padding: 10px;
+  }
+  table.customer-table th, table.customer-table td {
+    padding: 8px 4px;
+    font-size: 0.95em;
+  }
+}
+
+/* Mobile responsive user card/table styles */
+@media (max-width: 600px) {
+  table.user-table,
+  table.user-table thead,
+  table.user-table tbody,
+  table.user-table th,
+  table.user-table td,
+  table.user-table tr {
+    display: block;
+    width: 100%;
+  }
+  table.user-table thead {
+    display: none;
+  }
+  table.user-table tr {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: var(--card-bg-light);
+    color: var(--text-light);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    padding: 8px 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.dark table.user-table tr {
+    background: var(--card-bg-dark);
+    color: var(--text-dark);
+    border: 1px solid #222;
+  }
+  table.user-table td {
+    border: none;
+    position: relative;
+    padding-left: 50%;
+    min-height: 36px;
+    text-align: left;
+    background: none;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    box-sizing: border-box;
+    color: inherit;
+  }
+  table.user-table td:before {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 45%;
+    white-space: nowrap;
+    font-weight: bold;
+    color: #888;
+    content: attr(data-label);
+  }
+  table.user-table td.actions {
+    padding-left: 8px;
+  }
+}
+
+/* Add margin around the table for both light and dark mode */
+.bg-white, .dark\:bg-gray-800 {
+  margin-bottom: 2rem;
+  padding: 1.5rem !important;
+}
+
+table.min-w-full {
+  margin: 2rem auto; /* Add top and bottom margin, center horizontally */
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--card-bg-light);
+  color: var(--text-light);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+body.dark table.min-w-full {
+  background: var(--card-bg-dark);
+  color: var(--text-dark);
+}
+
+/* Button color accuracy */
+.user-header button,
+button.save,
+button.cancel {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.user-header button#addCustomerBtn {
+  background: #22c55e;
+}
+.user-header button[onclick*="exportCustomersToExcel"] {
+  background: #2563eb;
+}
+.user-header button[onclick*="exportCustomersToPDF"] {
+  background: #ef4444;
+}
+button.save {
+  background: #2563eb;
+}
+button.cancel {
+  background: #6b7280;
+}
+table.customer-table td.actions button.edit {
+  background: #3b82f6;
+  color: #fff;
+}
+table.customer-table td.actions button.delete {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Card amount and description color for light/dark mode */
+.card-text.fw-bold.mb-2,
+.card-text.small {
+  color: var(--text-light);
+}
+body.dark .card-text.fw-bold.mb-2,
+body.dark .card-text.small {
+  color: var(--text-dark);
+}
+    </style>
 </head>
 
 
@@ -206,7 +424,7 @@
 
   <!-- Load Sidebar -->
   <script src="components/sidebar.js"></script>
-    
+
   <!-- Main Content -->
   <main id="app" class="main-content ">
 
@@ -224,11 +442,15 @@
           :class="{ 'shadow-lg': hoverIndex === index, 'shadow': hoverIndex !== index }">
           <div class="card-body text-center">
             <div class="mb-3">
-              <i class="bi bi-bar-chart-fill fs-2" v-if="card.icon"></i>
+              <span :class="['card-icon', card.iconClass]">
+                <i :class="['bx', card.icon]"></i>
+              </span>
             </div>
             <h5 class="card-title fw-semibold">{{ card.title }}</h5>
             <h3 class="card-text fw-bold mb-2">{{ card.amount }}</h3>
-            <p class="card-text small text-muted">{{ card.description }}</p>
+            <p class="card-text small" :style="darkMode ? 'color: var(--text-light);' : 'color: var(--text-light);'">
+              {{ card.description }}
+            </p>
           </div>
         </div>
       </div>
@@ -254,11 +476,11 @@
           </thead>
           <tbody>
             <tr v-for="(order, index) in paginatedOrders" :key="index" class="border-t dark:border-gray-700">
-              <td class="px-4 py-2">{{ order.id }}</td>
-              <td class="px-4 py-2">{{ order.customer }}</td>
-              <td class="px-4 py-2">₦{{ order.amount }}</td>
+              <td class="px-4 py-2">{{ order.orderCode }}</td>
+              <td class="px-4 py-2">{{ order.customer.name }}</td>
+              <td class="px-4 py-2">₦{{ order.total }}</td>
               <td class="px-4 py-2">{{ order.status }}</td>
-              <td class="px-4 py-2">{{ order.date }}</td>
+              <td class="px-4 py-2">{{ order.createdAt }}</td>
             </tr>
           </tbody>
         </table>
@@ -278,7 +500,7 @@
   <!-- JavaScript -->
   <script src="assets/js/script.js"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script> <!-- ✅ Vue 3 -->
-
+   <script src="config.js"></script>
 
   <script>
     const {
@@ -290,47 +512,13 @@
         return {
           isDark: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
           hoverIndex: null,
-          performanceCards: [{
-              title: 'Total Sales',
-              amount: '₦150,000',
-              description: 'This month’s sales',
-              icon: 'bi-bar-chart-fill'
-            },
-            {
-              title: 'Orders',
-              amount: '240',
-              description: 'Completed orders',
-              icon: 'bi-cart-fill'
-            },
-            {
-              title: 'Customers',
-              amount: '1,200',
-              description: 'Active users',
-              icon: 'bi-people-fill'
-            },
-            {
-              title: 'Returns',
-              amount: '12',
-              description: 'Returned items',
-              icon: 'bi-arrow-counterclockwise'
-            }
-          ],
-
-
-
           darkMode: localStorage.getItem('darkMode') === 'true',
           searchQuery: '',
           currentPage: 1,
           rowsPerPage: 10,
-          orders: Array.from({
-            length: 50
-          }, (_, i) => ({
-            id: `ORD${i + 1}`,
-            customer: `Customer ${i + 1}`,
-            amount: Math.floor(Math.random() * 9000 + 1000),
-            status: i % 2 === 0 ? 'Completed' : 'Pending',
-            date: new Date().toISOString().split('T')[0]
-          }))
+          orders: [],
+          customers: new Set(),
+          returns: 0
         };
       },
       computed: {
@@ -347,6 +535,43 @@
         paginatedOrders() {
           const start = (this.currentPage - 1) * this.rowsPerPage;
           return this.filteredOrders.slice(start, start + this.rowsPerPage);
+        },
+        performanceCards() {
+          // Calculate values from orders
+          const totalSales = this.orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+          const orderCount = this.orders.length;
+          const customerSet = new Set(this.orders.map(o => o.customer?.name || o.customer));
+          const returnsCount = this.orders.filter(o => (o.status || '').toLowerCase() === 'returned').length;
+          return [
+            {
+              title: 'Total Sales',
+              amount: `₦${totalSales.toLocaleString()}`,
+              description: "This month's sales",
+              icon: 'bx-bar-chart-alt-2',
+              iconClass: 'icon-sales'
+            },
+            {
+              title: 'Orders',
+              amount: orderCount,
+              description: 'Completed orders',
+              icon: 'bx-cart',
+              iconClass: 'icon-orders'
+            },
+            {
+              title: 'Customers',
+              amount: customerSet.size,
+              description: 'Active users',
+              icon: 'bx-user',
+              iconClass: 'icon-customers'
+            },
+            {
+              title: 'Returns',
+              amount: returnsCount,
+              description: 'Returned items',
+              icon: 'bx-undo',
+              iconClass: 'icon-returns'
+            }
+          ];
         }
       },
       watch: {
@@ -367,10 +592,24 @@
         },
         prevPage() {
           if (this.currentPage > 1) this.currentPage--;
+        },
+        async fetchOrders() {
+          try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/order`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Failed to fetch orders');
+            const data = await res.json();
+            this.orders = Array.isArray(data) ? data : (data.orders || []);
+          } catch (err) {
+            alert('Error loading orders: ' + err.message);
+          }
         }
       },
       mounted() {
         document.documentElement.classList.toggle('dark', this.darkMode);
+        this.fetchOrders();
       }
     }).mount('#app');
   </script>
