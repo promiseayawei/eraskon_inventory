@@ -200,7 +200,7 @@ input, select {
   <script src="components/sidebar.js"></script>
    
     <main id="app" class="main-content">
-    <h1>Product Manager</h1>
+    <h1>Category Manager</h1>
 
     <form @submit.prevent="submitForm">
         <label>Name</label>
@@ -211,14 +211,7 @@ input, select {
         <textarea v-model="form.description" rows="3"></textarea>
         <span class="error" v-if="errors.description">{{ errors.description }}</span>
 
-        <label>Category</label>
-        <select v-model="form.category" required>
-            <option disabled value="">-- Select Category --</option>
-            <option v-for="cat in categories" :value="cat._id" :key="cat._id">{{ cat.name }}</option>
-        </select>
-        <span class="error" v-if="errors.category">{{ errors.category }}</span>
-
-        <button type="submit">{{ form._id ? 'Update' : 'Add' }} Product</button>
+        <button type="submit">{{ form._id ? 'Update' : 'Add' }} Category</button>
         <button type="button" v-if="form._id" @click="resetForm"
             style="background:#aaa;margin-left:10px;">Cancel</button>
         <div v-if="formError" class="error">{{ formError }}</div>
@@ -229,7 +222,7 @@ input, select {
         <input
             type="text"
             v-model="search"
-            placeholder="Search products..."
+            placeholder="Search categories..."
             style="max-width: 260px;"
         />
         <div style="margin-left:auto;">
@@ -239,28 +232,26 @@ input, select {
         </div>
     </div>
 
-    <table v-if="pagedProducts.length">
+    <table v-if="pagedCategories.length">
         <thead>
             <tr>
                 <th>Name</th>
                 <th>Description</th>
-                <th>Category</th>
                 <th style="width:90px;">Actions</th>
             </tr>
         </thead>
         <tbody>
-            <tr v-for="prod in pagedProducts" :key="prod._id">
-                <td>{{ prod.name }}</td>
-                <td>{{ prod.description }}</td>
-                <td>{{ getCategoryName(prod.category) }}</td>
+            <tr v-for="cat in pagedCategories" :key="cat._id">
+                <td>{{ cat.name }}</td>
+                <td>{{ cat.description }}</td>
                 <td>
-                    <button @click="editProduct(prod)" style="padding:4px 10px;">Edit</button>
-                    <button @click="deleteProduct(prod._id)" style="padding:4px 10px;background:#e53e3e;">Delete</button>
+                    <button @click="editCategory(cat)" style="padding:4px 10px;">Edit</button>
+                    <button @click="deleteCategory(cat._id)" style="padding:4px 10px;background:#e53e3e;">Delete</button>
                 </td>
             </tr>
         </tbody>
     </table>
-    <div v-else style="margin-top:32px;color:#888;">No products found.</div>
+    <div v-else style="margin-top:32px;color:#888;">No categories found.</div>
 </main>
 
    <script src="assets/js/script.js"></script>
@@ -277,13 +268,11 @@ input, select {
         new Vue({
             el: '#app',
             data: {
-                products: [],
                 categories: [],
                 form: {
                     _id: '',
                     name: '',
-                    description: '',
-                    category: ''
+                    description: ''
                 },
                 errors: {},
                 formError: '',
@@ -292,44 +281,34 @@ input, select {
                 perPage: 10
             },
             computed: {
-                filteredProducts() {
-                    if (!this.search.trim()) return this.products;
+                filteredCategories() {
+                    if (!this.search.trim()) return this.categories;
                     const s = this.search.trim().toLowerCase();
-                    return this.products.filter(p =>
-                        (p.name && p.name.toLowerCase().includes(s)) ||
-                        (p.description && p.description.toLowerCase().includes(s)) ||
-                        (this.getCategoryName(p.category).toLowerCase().includes(s))
+                    return this.categories.filter(c =>
+                        (c.name && c.name.toLowerCase().includes(s)) ||
+                        (c.description && c.description.toLowerCase().includes(s))
                     );
                 },
                 totalPages() {
-                    return Math.max(1, Math.ceil(this.filteredProducts.length / this.perPage));
+                    return Math.max(1, Math.ceil(this.filteredCategories.length / this.perPage));
                 },
-                pagedProducts() {
+                pagedCategories() {
                     const start = (this.page - 1) * this.perPage;
-                    return this.filteredProducts.slice(start, start + this.perPage);
+                    return this.filteredCategories.slice(start, start + this.perPage);
                 }
             },
             watch: {
                 search() {
                     this.page = 1;
                 },
-                filteredProducts() {
+                filteredCategories() {
                     if (this.page > this.totalPages) this.page = this.totalPages;
                 }
             },
             mounted() {
-                this.fetchProducts();
                 this.fetchCategories();
             },
             methods: {
-                async fetchProducts() {
-                    try {
-                        const res = await axios.get(`${API_BASE}/products`);
-                        this.products = res.data;
-                    } catch (err) {
-                        console.error('Error fetching products:', err);
-                    }
-                },
                 async fetchCategories() {
                     try {
                         const res = await axios.get(`${API_BASE}/category`);
@@ -338,19 +317,11 @@ input, select {
                         console.error('Error fetching categories:', err);
                     }
                 },
-                getCategoryName(catId) {
-                    const cat = this.categories.find(c => c._id === catId || (typeof catId === 'object' && c._id === catId?._id));
-                    return cat ? cat.name : '';
-                },
                 validateForm() {
                     this.errors = {};
                     let valid = true;
                     if (!this.form.name.trim()) {
                         this.errors.name = "Name is required";
-                        valid = false;
-                    }
-                    if (!this.form.category) {
-                        this.errors.category = "Category is required";
                         valid = false;
                     }
                     return valid;
@@ -361,46 +332,43 @@ input, select {
                     try {
                         if (this.form._id) {
                             // Update
-                            await axios.put(`${API_BASE}/products/${this.form._id}`, {
+                            await axios.put(`${API_BASE}/category/${this.form._id}`, {
                                 name: this.form.name,
-                                description: this.form.description,
-                                category: this.form.category
+                                description: this.form.description
                             });
                         } else {
                             // Create
-                            await axios.post(`${API_BASE}/products`, {
+                            await axios.post(`${API_BASE}/category`, {
                                 name: this.form.name,
-                                description: this.form.description,
-                                category: this.form.category
+                                description: this.form.description
                             });
                         }
                         this.resetForm();
-                        this.fetchProducts();
+                        this.fetchCategories();
                     } catch (err) {
                         this.formError = err.response?.data?.message || 'Submit failed';
                     }
                 },
-                editProduct(prod) {
+                editCategory(cat) {
                     this.form = {
-                        _id: prod._id,
-                        name: prod.name,
-                        description: prod.description,
-                        category: typeof prod.category === 'object' ? prod.category._id : prod.category
+                        _id: cat._id,
+                        name: cat.name,
+                        description: cat.description
                     };
                     this.formError = '';
                     this.errors = {};
                 },
-                async deleteProduct(id) {
-                    if (!confirm('Are you sure you want to delete this product?')) return;
+                async deleteCategory(id) {
+                    if (!confirm('Are you sure you want to delete this category?')) return;
                     try {
-                        await axios.delete(`${API_BASE}/products/${id}`);
-                        this.fetchProducts();
+                        await axios.delete(`${API_BASE}/category/${id}`);
+                        this.fetchCategories();
                     } catch (err) {
                         alert('Delete failed');
                     }
                 },
                 resetForm() {
-                    this.form = { _id: '', name: '', description: '', category: '' };
+                    this.form = { _id: '', name: '', description: '' };
                     this.formError = '';
                     this.errors = {};
                 }

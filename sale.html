@@ -519,7 +519,9 @@
           <tbody>
             <tr v-for="(order, index) in paginatedOrders" :key="index" class="border-t dark:border-gray-700">
               <td class="px-4 py-2">{{ order.orderCode }}</td>
-              <td class="px-4 py-2">{{ order.customer?.name || order.customer || 'N/A' }}</td>
+              <td class="px-4 py-2">
+                {{ order.customer && order.customer.name ? order.customer.name : 'N/A' }}
+              </td>
               <td class="px-4 py-2">₦{{ order.total }}</td>
               <td class="px-4 py-2">{{ order.status }}</td>
               <td class="px-4 py-2">{{ order.createdAt }}</td>
@@ -646,6 +648,7 @@
             });
             if (!res.ok) throw new Error('Failed to fetch orders');
             const data = await res.json();
+            console.log('Orders fetched:', data);
             this.orders = Array.isArray(data) ? data : (data.orders || []);
           } catch (err) {
             alert('Error loading orders: ' + err.message);

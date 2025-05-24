@@ -32,12 +32,12 @@ document.write(`
             <i class="bx bx-chevron-right arrow-left"></i>
           </div>
           <ul class="menu_items submenu">
-            <a href="store.html" class="nav_link sublink bx bx-store">store</a>
-            <a href="product.html" class="nav_link sublink bx bx-product">products</a>
-            <a href="customer.html" class="nav_link sublink bx bx-user">customers</a>
-            <a href="report.html" class="nav_link sublink bx bx-chart">reports</a>
-            <a href="setting.html" class="nav_link sublink bx bx-cog">settings</a>
-          </ul>
+            <a href="store.html" class="nav_link sublink">store</a>
+            <a href="product.html" class="nav_link sublink">products</a>
+            <a href="customer.html" class="nav_link sublink">customers</a>
+            <a href="report.html" class="nav_link sublink">reports</a>
+            <a href="setting.html" class="nav_link sublink">settings</a>
+            </ul>
         </li>
         <li class="item">
           <div href="#" class="nav_link submenu_item">
@@ -46,10 +46,14 @@ document.write(`
             <i class="bx bx-chevron-right arrow-left"></i>
           </div>
           <ul class="menu_items submenu">
-            <a href="user.html" class="nav_link sublink">users</a>
-            <a href="role.html" class="nav_link sublink">roles</a>
+            <a href="user.html" class="nav_link sublink">Users</a>
+            <a href="role.html" class="nav_link sublink">Roles</a>
+            <a href="warehouse.html" class="nav_link sublink">Warehouses</a>
+            <a href="stock-movement.html" class="nav_link sublink">Stock Movement</a>
             <a href="stats.html" class="nav_link sublink">Analytics</a>
+            <a href="category.html" class="nav_link sublink">Category</a>
             <a href="product.html" class="nav_link sublink">Products</a>
+            <a href="product-variant.html" class="nav_link sublink">Product-variant</a>
           </ul>
         </li>
       </ul>

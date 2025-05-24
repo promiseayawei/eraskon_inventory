@@ -373,8 +373,28 @@
           if (product.quantity > 1) product.quantity--;
         },
         addToCart(product) {
-          const existing = this.cart.find(i => i.id === product.id && i.variant.sku === product.selectedVariant.sku);
+          // If batch tracking is enabled, ensure a batch is selected
+          if (product.batchTracking && (!product.selectedBatch || !product.selectedBatch.batchNumber)) {
+            alert("Please select a batch for this product.");
+            return;
+          }
+          const existing = this.cart.find(i =>
+            i.id === product.id &&
+            i.variant.sku === product.selectedVariant.sku &&
+            (!product.batchTracking || (i.batchNumber === product.selectedBatch.batchNumber))
+          );
           const maxQty = product.selectedVariant.stock;
+
+          // Determine warehouse ObjectId
+          let warehouseId = null;
+          if (product.batchTracking) {
+            warehouseId = product.selectedBatch?.warehouse;
+          } else if (
+            product.selectedVariant.warehouses &&
+            product.selectedVariant.warehouses.length
+          ) {
+            warehouseId = product.selectedVariant.warehouses[0].warehouse;
+          }
 
           if (existing) {
             if (existing.quantity + product.quantity > maxQty) {
@@ -391,7 +411,9 @@
               id: product.id,
               name: product.name,
               variant: product.selectedVariant,
-              quantity: product.quantity
+              quantity: product.quantity,
+              batchNumber: product.batchTracking ? product.selectedBatch.batchNumber : undefined,
+              warehouse: warehouseId // <-- Add this line
             });
           }
           product.quantity = 1;
@@ -541,19 +563,24 @@
               quantity: 1,
               batchNumber: pv.batchNumber,
               description: pv.description,  
+              batchTracking: pv.batchTracking,
+              batches: pv.batches,
+              warehouses: pv.warehouses, // <-- Add this line
               variants: [
                 {
                   sku: pv.sku,
                   price: pv.price,
                   stock: pv.totalStock,
-                  barcode: pv.barcode
+                  barcode: pv.barcode,
+                  warehouses: pv.warehouses // <-- Add this line
                 }
               ],
               selectedVariant: {
                 sku: pv.sku,
                 price: pv.price,
                 stock: pv.totalStock,
-                barcode: pv.barcode
+                barcode: pv.barcode,
+                warehouses: pv.warehouses // <-- Add this line
               }
             }));
           } catch (err) {
@@ -587,16 +614,21 @@
         async postOrder() {
           try {
             const token = localStorage.getItem('token');
+            // Find the selected customer object
+            const customerObj = this.customers.find(c => c._id === this.selectedCustomerId);
+
             const payload = {
               items: this.cart.map(item => ({
-                productVariantId: item.id,
-                sku: item.variant.sku,
-                quantity: item.quantity,
-                price: item.variant.price
+                ProductVariant: item.id,
+                productVariantName: item.name,
+                qty: item.quantity,
+                unitPrice: item.variant.price,
+                image: item.variant.image || item.image || null
               })),
               total: this.cartTotal,
               createdAt: new Date(),
-              customerId: this.selectedCustomerId
+              customerId: this.selectedCustomerId,
+              customer: customerObj // Send full customer details
             };
 
             // 1. Submit the order
@@ -606,30 +638,20 @@
 
             // 2. For each item, deduct stock by posting to stock-movement
             for (const item of this.cart) {
-              let batchNumber;
-              if (item.variant.batchTracking && Array.isArray(item.variant.batches) && item.variant.batches.length > 0) {
-                // Find a batch with enough quantity, or just use the first batch
-                const batch = item.variant.batches.find(b => b.quantity >= item.quantity) || item.variant.batches[0];
-                batchNumber = batch ? batch.batchNumber : undefined;
-              } else {
-                batchNumber = item.variant.batchNumber || undefined;
+              if (item.variant.batchTracking && !item.batchNumber) {
+                alert(`Batch number missing for ${item.name}. Please remove and re-add with batch.`);
+                continue;
               }
-
-              if (!batchNumber) {
-                alert(`No valid batch found for ${item.name}.`);
-                return;
-              }
-
               await axios.post(`${API_BASE}/stock-movement`, {
-                productVariantId: item.id,
+                productVariant: item.id, // <-- match backend field
                 type: "transfer",
                 quantity: item.quantity,
-                warehouse: item.variant.warehouse, // You may want to use batch.warehouse if batchTracking
+                warehouse: item.warehouse,
                 destinationWarehouse: this.selectedCustomer?.warehouse || undefined,
-                destinationCustomer: this.selectedCustomerId,
+                destinationCustomer: this.selectedCustomerId, // <-- send ObjectId, not name
                 reference: `Order#${orderRes.data.orderCode || new Date().toISOString()}`,
-                reason: "Stock Transfer",
-                batchNumber
+                reason: "Stock transfer",
+                batchNumber: item.batchNumber
               }, {
                 headers: { Authorization: `Bearer ${token}` }
               });

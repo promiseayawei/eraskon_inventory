@@ -237,7 +237,9 @@
             this.prepareSalesData();
             this.drawChart();
           } catch (err) {
-            alert('Error loading data: ' + err.message);
+            alert('Error loading data: ' + err.message + 
+    '\\nAPI: ' + API_BASE + 
+    '\\nToken: ' + (localStorage.getItem('token') ? 'Present' : 'Missing'));
           }
         },
         prepareSalesData() {

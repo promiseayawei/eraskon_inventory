@@ -212,6 +212,22 @@
     </table>
     <div id="pagination" class="pagination" style="margin-top: 10px; text-align: center;"></div>
 
+    <div style="margin-top:40px;">
+      <h2 style="margin-bottom:10px;">Warehouse Stock Balances</h2>
+      <table class="user-table" id="warehouseStockTable">
+        <thead>
+          <tr>
+            <th>Warehouse</th>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Stock</th>
+          </tr>
+        </thead>
+        <tbody id="warehouseStockTableBody"></tbody>
+      </table>
+    </div>
+
   </div>
 
   <div class="modal" id="warehouseModal">
@@ -236,7 +252,7 @@
 
 
     let currentPage = 1;
-    const itemsPerPage = 2;
+    const itemsPerPage = 5;
 
     const addBtn = document.getElementById('addWarehouseBtn');
     const modal = document.getElementById('warehouseModal');
@@ -382,6 +398,56 @@
       currentPage = 1;
       renderPaginatedWarehouses();
     });
+
+    // Fetch and display warehouse stock balances
+    async function fetchWarehouseStock() {
+      try {
+        const res = await axios.get(`${API_BASE}/product-variant`);
+        const variants = res.data || [];
+        const rows = [];
+        variants.forEach(variant => {
+          if (Array.isArray(variant.warehouses)) {
+            variant.warehouses.forEach(w => {
+              rows.push({
+                warehouse: (w.name || w.warehouse?.name || w.warehouse) || '-',
+                product: variant.name,
+                sku: variant.sku,
+                category: (variant.product && variant.product.category && variant.product.category.name)
+                  ? variant.product.category.name
+                  : (variant.category && variant.category.name)
+                    ? variant.category.name
+                    : (variant.category || '-'),
+                stock: w.stock
+              });
+            });
+          }
+        });
+        renderWarehouseStockTable(rows);
+      } catch (err) {
+        document.getElementById('warehouseStockTableBody').innerHTML =
+          `<tr><td colspan="5" style="text-align:center;">Failed to load stock data</td></tr>`;
+      }
+    }
+
+    function renderWarehouseStockTable(rows) {
+      const tbody = document.getElementById('warehouseStockTableBody');
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No stock data</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.warehouse}</td>
+          <td>${row.product}</td>
+          <td>${row.sku}</td>
+          <td>${row.category || '-'}</td>
+          <td>${row.stock}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Call this after the page loads
+    fetchWarehouseStock();
 
     // Initial load
     fetchWarehouses();

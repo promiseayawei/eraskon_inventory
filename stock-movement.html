@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eraskon Inventory Management - Warehouses</title>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- Excel Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    /* Reuse your theme and table styles */
+    :root {
+      --bg-light: #e2dcdc;
+      --bg-dark: #090F3B;
+      --text-light: #090F3B;
+      --text-dark: #f1f1f1;
+      --card-bg-light: #e2dcdc;
+      --card-bg-dark: #050d4a;
+      --input-border: #ccc;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    body.dark {
+      --bg-light: #090F3B;
+      --text-light: #e2dcdc;
+      --card-bg-light: #090F3B;
+    }
+
+    #main-content {
+      margin-left: 250px;
+      margin-top: 60px;
+      padding: 20px;
+      background: #fff;
+      min-height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+
+    .user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .user-header input {
+      width: 300px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .user-header button {
+      padding: 8px 16px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    table.user-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    table.user-table th,
+    table.user-table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    table.user-table th {
+      background: var(--text-light);
+      color: white;
+    }
+
+    .actions button {
+      margin-right: 5px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .edit {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .delete {
+      background: #ef4444;
+      color: white;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      width: 400px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .modal-content button {
+      padding: 10px 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+
+    .pagination button {
+      margin: 2px;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      background: #f3f4f6;
+      cursor: pointer;
+    }
+
+    .pagination button.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    .export-buttons button {
+      margin-right: 10px;
+    }
+
+    .save {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    .cancel {
+      background-color: #6b7280;
+      color: white;
+    }
+
+    /* Tabs styles */
+    #stockTabs {
+      margin-top: 30px;
+    }
+
+    .tab-btn {
+      padding: 10px 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f3f4f6;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .tab-btn.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .tab-content.show {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+
+  <div id="main-content">
+    <div id="stockTabs" style="margin-top:30px;">
+      <div style="display:flex;gap:8px;margin-bottom:18px;">
+        <button class="tab-btn active" data-tab="alertsTab">Low Stock Alerts</button>
+        <button class="tab-btn" data-tab="warehouseStockTab">Warehouse Stock & Low Stock</button>
+        <button class="tab-btn" data-tab="transferTab">Warehouse Transfer</button>
+        <button class="tab-btn" data-tab="overviewTab">Warehouses Overview</button>
+        <button class="tab-btn" data-tab="movementsTab">Stock Movements</button>
+        <button class="tab-btn" data-tab="inTransitTab">Receive In-Transit</button>
+      </div>
+
+      <div id="alertsTab" class="tab-content" style="display:block;">
+        <h2 style="margin-bottom:10px;">Low Stock & Reorder Level Alerts</h2>
+        <div id="lowStockCards"></div>
+      </div>
+
+      <div id="warehouseStockTab" class="tab-content" style="display:none;">
+        <h2 style="margin-bottom:10px;">Warehouse Stock & Low Stock Level</h2>
+        <div id="warehouseStockCards"></div>
+        <div style="margin-top:40px;">
+          <h2 style="margin-bottom:10px;">Warehouse Stock Balances</h2>
+          <table class="user-table" id="warehouseStockTable">
+            <thead>
+              <tr>
+                <th>Warehouse</th>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Category</th>
+                <th>Stock</th>
+              </tr>
+            </thead>
+            <tbody id="warehouseStockTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="transferTab" class="tab-content" style="display:none;">
+        <h2 style="margin-bottom:10px;">Warehouse to Warehouse Transfer</h2>
+        <form id="transferForm" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+          <select id="sourceWarehouse" required style="padding:6px;border-radius:4px;">
+            <option value="">Source Warehouse</option>
+          </select>
+          <select id="destinationWarehouse" required style="padding:6px;border-radius:4px;">
+            <option value="">Destination Warehouse</option>
+          </select>
+          <select id="transferProduct" required style="padding:6px;border-radius:4px;">
+            <option value="">Product Variant</option>
+          </select>
+          <select id="transferBatchNumber" style="padding:6px;border-radius:4px;">
+            <option value="">Select Batch (if any)</option>
+          </select>
+          <input type="number" id="transferQty" min="1" placeholder="Quantity" required style="width:90px;padding:6px;border-radius:4px;">
+          <input type="text" id="transferReason" placeholder="Reason" style="width:120px;padding:6px;border-radius:4px;">
+          <button type="submit" style="background:#2563eb;color:white;padding:8px 16px;border:none;border-radius:4px;">Transfer</button>
+        </form>
+        <div id="transferMsg" style="margin-top:8px;color:#2563eb;font-weight:600;"></div>
+      </div>
+
+      <div id="overviewTab" class="tab-content" style="display:none;">
+        <h2 style="margin-bottom:10px;">Warehouses Overview</h2>
+        <div id="warehouseCards"></div>
+        <div class="user-header" style="margin-top:30px;">
+          <input type="text" id="searchWarehouse" placeholder="Search warehouses..." />
+          <button style="background: #22c55e;" id="addWarehouseBtn"> <i class="bx bx-plus" style="vertical-align:middle;"></i>Add Warehouse</button>
+          <button onclick="exportToExcel()" style="background:#2563eb;">
+            <i class="bx bx-spreadsheet" style="vertical-align:middle;"></i> Export to Excel
+          </button>
+          <button onclick="exportToPDF()" style="background:#ef4444;">
+            <i class="bx bxs-file-pdf" style="vertical-align:middle;"></i> Export to PDF
+          </button>
+        </div>
+        <table class="user-table" id="warehouseTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Country</th>
+              <th>Location</th>
+              <th>Capacity</th>
+              <th>Manager</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="warehouseTableBody"></tbody>
+        </table>
+        <div id="pagination" class="pagination" style="margin-top: 10px; text-align: center;"></div>
+      </div>
+
+      <div id="movementsTab" class="tab-content" style="display:none;">
+        <h2 style="margin-bottom:10px;">Stock Movements by Warehouse</h2>
+        <select id="warehouseMovementFilter" style="padding:6px;border-radius:4px;margin-bottom:10px;">
+          <option value="">All Warehouses</option>
+        </select>
+        <table class="user-table" id="warehouseMovementTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Product Variant</th>
+              <th>Type</th>
+              <th>Quantity</th>
+              <th>Warehouse</th>
+              <th>Destination Warehouse</th>
+              <th>Destination Customer</th>
+              <th>Batch Number</th>
+              <th>Reason</th>
+              <th>Reference</th>
+            </tr>
+          </thead>
+          <tbody id="warehouseMovementTableBody"></tbody>
+        </table>
+        <div style="margin-top:40px;">
+          <h2 style="margin-bottom:10px;">All Stock Movements</h2>
+          <table class="user-table" id="stockMovementTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Product Variant</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Warehouse</th>
+                <th>Destination Warehouse</th>
+                <th>Destination Customer</th>
+                <th>Batch Number</th>
+                <th>Reason</th>
+                <th>Reference</th>
+              </tr>
+            </thead>
+            <tbody id="stockMovementTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="inTransitTab" class="tab-content" style="display:none;">
+        <h2 style="margin-bottom:10px;">Receive In-Transit Stock</h2>
+        <div id="inTransitMovements"></div>
+      </div>
+    </div>
+
+    <!-- Modal for Add/Edit Warehouse -->
+    <div class="modal" id="warehouseModal">
+      <div class="modal-content">
+        <h3 id="modalTitle">Add Warehouse</h3>
+        <input type="text" id="name" placeholder="Name" />
+        <input type="text" id="country" placeholder="Country" />
+        <input type="text" id="location" placeholder="Location" />
+        <input type="text" id="address" placeholder="Address" />
+        <input type="number" id="capacity" placeholder="Capacity" />
+        <input type="text" id="manager" placeholder="Manager" />
+        <button class="save" id="saveWarehouseBtn">Save</button>
+        <button class="cancel" id="cancelWarehouseBtn">Cancel</button>
+      </div>
+    </div>
+
+    <script src="assets/js/script.js"></script>
+    <script src="config.js"></script>
+    <script>
+      // Tab switching logic
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = function () {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+          btn.classList.add('active');
+          document.getElementById(btn.dataset.tab).style.display = 'block';
+        };
+      });
+    </script>
+    
+    <script>
+const API_BASE = window.BASE_URL;
+
+// --- Warehouse CRUD & Table ---
+let warehouses = [];
+let editingId = null;
+let currentPage = 1;
+const itemsPerPage = 5;
+
+const addBtn = document.getElementById('addWarehouseBtn');
+const modal = document.getElementById('warehouseModal');
+const saveBtn = document.getElementById('saveWarehouseBtn');
+const cancelBtn = document.getElementById('cancelWarehouseBtn');
+const modalTitle = document.getElementById('modalTitle');
+const tableBody = document.getElementById('warehouseTableBody');
+const searchInput = document.getElementById('searchWarehouse');
+
+function fetchWarehouses() {
+  axios.get(`${API_BASE}/warehouse`)
+    .then(res => {
+      warehouses = res.data || [];
+      currentPage = 1;
+      renderPaginatedWarehouses();
+      loadWarehousesAndVariants(); // Also update transfer selects
+      renderWarehouseCards();
+      renderWarehouseStockCards();
+    });
+}
+
+function renderPaginatedWarehouses() {
+  const searchTerm = searchInput.value.toLowerCase();
+  const filtered = warehouses.filter(w =>
+    (w.name || "").toLowerCase().includes(searchTerm) ||
+    (w.location || "").toLowerCase().includes(searchTerm)
+  );
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const start = (currentPage - 1) * itemsPerPage;
+  const paginated = filtered.slice(start, start + itemsPerPage);
+
+  tableBody.innerHTML = paginated.map(w => `
+    <tr>
+      <td>${w.name || '-'}</td>
+      <td>${w.country || '-'}</td>
+      <td>${w.location || '-'}</td>
+      <td>${w.capacity || '-'}</td>
+      <td>${w.manager || '-'}</td>
+      <td class="actions">
+        <button class="edit" onclick="editWarehouse('${w._id}')">Edit</button>
+        <button class="delete" onclick="deleteWarehouse('${w._id}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+  renderPaginationControls(totalPages);
+}
+
+function renderPaginationControls(totalPages) {
+  const container = document.getElementById("pagination");
+  container.innerHTML = "";
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    btn.className = i === currentPage ? "active" : "";
+    btn.onclick = () => {
+      currentPage = i;
+      renderPaginatedWarehouses();
+    };
+    container.appendChild(btn);
+  }
+}
+
+function openModal() {
+  modal.classList.add('show');
+}
+function closeModal() {
+  modal.classList.remove('show');
+  document.querySelectorAll('#warehouseModal input').forEach(input => input.value = '');
+  editingId = null;
+}
+
+addBtn.onclick = () => {
+  modalTitle.textContent = 'Add Warehouse';
+  openModal();
+};
+cancelBtn.onclick = closeModal;
+
+saveBtn.onclick = () => {
+  const data = {
+    name: document.getElementById('name').value,
+    country: document.getElementById('country').value,
+    location: document.getElementById('location').value,
+    address: document.getElementById('address').value,
+    capacity: +document.getElementById('capacity').value,
+    manager: document.getElementById('manager').value,
+  };
+  const request = editingId
+    ? axios.put(`${API_BASE}/warehouse/${editingId}`, data)
+    : axios.post(`${API_BASE}/warehouse`, data);
+  request.then(fetchWarehouses).finally(closeModal);
+};
+
+window.editWarehouse = function(id) {
+  const w = warehouses.find(w => w._id === id);
+  if (!w) return;
+  modalTitle.textContent = 'Edit Warehouse';
+  document.getElementById('name').value = w.name || '';
+  document.getElementById('country').value = w.country || '';
+  document.getElementById('location').value = w.location || '';
+  document.getElementById('address').value = w.address || '';
+  document.getElementById('capacity').value = w.capacity || '';
+  document.getElementById('manager').value = w.manager || '';
+  editingId = id;
+  openModal();
+};
+
+window.deleteWarehouse = function(id) {
+  if (confirm('Are you sure?')) {
+    axios.delete(`${API_BASE}/warehouse/${id}`)
+      .then(fetchWarehouses)
+      .catch(err => alert('Delete failed: ' + (err.response?.data?.message || err.message)));
+  }
+};
+
+function exportToExcel() {
+  const table = document.getElementById("warehouseTable");
+  const wb = XLSX.utils.table_to_book(table, { sheet: "Warehouses" });
+  XLSX.writeFile(wb, "warehouses.xlsx");
+}
+function exportToPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const rows = Array.from(document.querySelectorAll("#warehouseTable tbody tr"))
+    .map(tr => Array.from(tr.children).slice(0, 5).map(td => td.textContent.trim()));
+  doc.autoTable({
+    head: [["Name", "Country", "Location", "Capacity", "Manager"]],
+    body: rows
+  });
+  doc.save("warehouses.pdf");
+}
+searchInput.addEventListener('input', () => {
+  currentPage = 1;
+  renderPaginatedWarehouses();
+});
+
+// --- Warehouse Stock Table ---
+async function fetchWarehouseStock() {
+  try {
+    const res = await axios.get(`${API_BASE}/product-variant`);
+    const variants = res.data || [];
+    const rows = [];
+    variants.forEach(variant => {
+      if (Array.isArray(variant.warehouses)) {
+        variant.warehouses.forEach(w => {
+          rows.push({
+            warehouse: (w.name || w.warehouse?.name || w.warehouse) || '-',
+            product: variant.name,
+            sku: variant.sku,
+            category: (variant.product && variant.product.category && variant.product.category.name)
+              ? variant.product.category.name
+              : (variant.category && variant.category.name)
+                ? variant.category.name
+                : (variant.category || '-'),
+            stock: w.stock
+          });
+        });
+      }
+    });
+    renderWarehouseStockTable(rows);
+  } catch (err) {
+    document.getElementById('warehouseStockTableBody').innerHTML =
+      `<tr><td colspan="5" style="text-align:center;">Failed to load stock data</td></tr>`;
+  }
+}
+function renderWarehouseStockTable(rows) {
+  const tbody = document.getElementById('warehouseStockTableBody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No stock data</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(row => `
+    <tr>
+      <td>${row.warehouse}</td>
+      <td>${row.product}</td>
+      <td>${row.sku}</td>
+      <td>${row.category || '-'}</td>
+      <td>${row.stock}</td>
+    </tr>
+  `).join('');
+}
+
+// --- Low Stock & Reorder Level Cards ---
+async function renderLowStockCards() {
+  try {
+    const res = await axios.get(`${API_BASE}/product-variant`);
+    const variants = res.data || [];
+    const lowStock = variants.filter(v =>
+      typeof v.lowStockThreshold === 'number' &&
+      typeof v.totalStock === 'number' &&
+      v.totalStock <= v.lowStockThreshold
+    );
+    const container = document.getElementById('lowStockCards');
+    if (!lowStock.length) {
+      container.innerHTML = `<div style="color:#22c55e;font-weight:600;">All products are above reorder level.</div>`;
+      return;
+    }
+    container.innerHTML = lowStock.map(v => `
+      <div style="background:#fff3cd;border:1px solid #ffeeba;border-radius:8px;box-shadow:0 1px 4px #0001;padding:18px 22px;min-width:220px;flex:1 1 220px;">
+        <div style="font-size:1.1em;font-weight:600;margin-bottom:4px;color:#b45309;">${v.name}</div>
+        <div style="margin-bottom:6px;"><b>SKU:</b> ${v.sku || '-'}</div>
+        <div><b>Stock:</b> <span style="color:#dc2626;font-weight:bold;">${v.totalStock}</span></div>
+        <div><b>Reorder Level:</b> <span style="color:#b45309;">${v.lowStockThreshold}</span></div>
+      </div>
+    `).join('');
+  } catch (err) {
+    document.getElementById('lowStockCards').innerHTML =
+      `<div style="color:#ef4444;">Failed to load low stock data</div>`;
+  }
+}
+
+// --- Warehouse Stock & Low Stock Level Cards ---
+async function renderWarehouseStockCards() {
+  try {
+    // Fetch all warehouses and all product variants
+    const [wRes, vRes] = await Promise.all([
+      axios.get(`${API_BASE}/warehouse`),
+      axios.get(`${API_BASE}/product-variant`)
+    ]);
+    const warehouses = wRes.data || [];
+    const variants = vRes.data || [];
+
+    // For each warehouse, sum up total stock and count low stock variants
+    const cards = warehouses.map(wh => {
+      let totalStock = 0;
+      let lowStockCount = 0;
+      let lowStockList = [];
+      variants.forEach(variant => {
+        if (Array.isArray(variant.warehouses)) {
+          const wStock = variant.warehouses.find(w =>
+            (w.warehouse?._id || w.warehouse) == wh._id
+          );
+          if (wStock) {
+            totalStock += wStock.stock || 0;
+            // Check if this variant is low in this warehouse
+            if (
+              typeof variant.lowStockThreshold === 'number' &&
+              typeof wStock.stock === 'number' &&
+              wStock.stock <= variant.lowStockThreshold
+            ) {
+              lowStockCount++;
+              lowStockList.push(`${variant.name} (${wStock.stock})`);
+            }
+          }
+        }
+      });
+      return {
+        name: wh.name,
+        totalStock,
+        lowStockCount,
+        lowStockList
+      };
+    });
+
+    const container = document.getElementById('warehouseStockCards');
+    if (!cards.length) {
+      container.innerHTML = `<div style="color:#ef4444;">No warehouse data found.</div>`;
+      return;
+    }
+    container.innerHTML = cards.map(card => `
+      <div style="background:#f3f4f6;border-radius:8px;box-shadow:0 1px 4px #0001;padding:18px 22px;min-width:220px;flex:1 1 220px;">
+        <div style="font-size:1.1em;font-weight:600;margin-bottom:4px;">${card.name}</div>
+        <div><b>Total Stock:</b> <span style="color:#2563eb;font-weight:bold;">${card.totalStock}</span></div>
+        <div><b>Low Stock Variants:</b> <span style="color:#dc2626;font-weight:bold;">${card.lowStockCount}</span></div>
+        ${card.lowStockCount > 0 ? `<div style="margin-top:6px;"><b>Low:</b> <span style="color:#b45309;">${card.lowStockList.join(', ')}</span></div>` : ''}
+      </div>
+    `).join('');
+  } catch (err) {
+    document.getElementById('warehouseStockCards').innerHTML =
+      `<div style="color:#ef4444;">Failed to load warehouse stock data</div>`;
+  }
+}
+
+// --- Warehouse Cards (Overview) ---
+function renderWarehouseCards() {
+  const container = document.getElementById('warehouseCards');
+  if (!container) return;
+  container.innerHTML = warehouses.map(w => `
+    <div style="background:#f3f4f6;border-radius:8px;box-shadow:0 1px 4px #0001;padding:18px 22px;min-width:220px;flex:1 1 220px;">
+      <div style="font-size:1.2em;font-weight:600;margin-bottom:4px;">${w.name}</div>
+      <div style="color:#2563eb;font-size:0.98em;">${w.location || ''}</div>
+      <div style="margin:6px 0 2px 0;"><b>Manager:</b> ${w.manager || '-'}</div>
+      <div><b>Capacity:</b> ${w.capacity || '-'}</div>
+      <div><b>Country:</b> ${w.country || '-'}</div>
+    </div>
+  `).join('');
+}
+
+// --- Stock Movements Table ---
+let allMovements = [];
+async function fetchStockMovements() {
+  try {
+    const res = await axios.get(`${API_BASE}/stock-movement`);
+    allMovements = res.data || [];
+    renderStockMovementTable(allMovements);
+    renderWarehouseMovementTable();
+  } catch (err) {
+    document.getElementById('stockMovementTableBody').innerHTML =
+      `<tr><td colspan="10" style="text-align:center;">Failed to load stock movements</td></tr>`;
+  }
+}
+function renderStockMovementTable(movements) {
+  const tbody = document.getElementById('stockMovementTableBody');
+  if (!movements.length) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No stock movements found</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = movements.map(m => `
+    <tr>
+      <td>${new Date(m.createdAt).toLocaleString()}</td>
+      <td>${m.productVariant?.name || m.productVariant?.sku || '-'}</td>
+      <td>${m.type}</td>
+      <td>${m.quantity}</td>
+      <td>${m.warehouse?.name || '-'}</td>
+      <td>${m.destinationWarehouse?.name || m.destinationWarehouse || '-'}</td>
+      <td>${m.destinationCustomer?.name || m.destinationCustomer || '-'}</td>
+      <td>${m.batchNumber || '-'}</td>
+      <td>${m.reason || '-'}</td>
+      <td>${m.reference || '-'}</td>
+    </tr>
+  `).join('');
+}
+
+// --- Warehouse to Warehouse Transfer ---
+let allWarehouses = [];
+let allVariants = [];
+async function loadWarehousesAndVariants() {
+  const [wRes, vRes] = await Promise.all([
+    axios.get(`${API_BASE}/warehouse`),
+    axios.get(`${API_BASE}/product-variant`)
+  ]);
+  allWarehouses = wRes.data || [];
+  allVariants = vRes.data || [];
+  // Populate selects
+  const src = document.getElementById('sourceWarehouse');
+  const dst = document.getElementById('destinationWarehouse');
+  const prod = document.getElementById('transferProduct');
+  if (src && dst && prod) {
+    src.innerHTML = '<option value="">Source Warehouse</option>' +
+      allWarehouses.map(w => `<option value="${w._id}">${w.name}</option>`).join('');
+    dst.innerHTML = '<option value="">Destination Warehouse</option>' +
+      allWarehouses.map(w => `<option value="${w._id}">${w.name}</option>`).join('');
+    prod.innerHTML = '<option value="">Product Variant</option>' +
+      allVariants.map(v => `<option value="${v._id}">${v.name} (${v.sku})</option>`).join('');
+  }
+  // For warehouse filter in movement table
+  const filter = document.getElementById('warehouseMovementFilter');
+  if (filter) {
+    filter.innerHTML = '<option value="">All Warehouses</option>' +
+      allWarehouses.map(w => `<option value="${w._id}">${w.name}</option>`).join('');
+  }
+}
+
+document.getElementById('transferForm').onsubmit = async function(e) {
+  e.preventDefault();
+  const source = document.getElementById('sourceWarehouse').value;
+  const dest = document.getElementById('destinationWarehouse').value;
+  const product = document.getElementById('transferProduct').value;
+  const batchNo = document.getElementById('transferBatchNumber').value;
+  const qty = +document.getElementById('transferQty').value;
+  const reason = document.getElementById('transferReason').value;
+  const msg = document.getElementById('transferMsg');
+  msg.textContent = '';
+  if (!source || !dest || !product || !qty || source === dest) {
+    msg.textContent = "Please select valid source, destination, product, and quantity.";
+    return;
+  }
+  try {
+    await axios.post(`${API_BASE}/stock-movement`, {
+      productVariantId: product,
+      type: "transfer",
+      quantity: qty,
+      warehouse: source,
+      destinationWarehouse: dest,
+      batchNumber: batchNo || undefined,
+      reason
+    });
+    msg.textContent = "Transfer logged successfully!";
+    fetchStockMovements();
+    renderWarehouseStockCards();
+    renderLowStockCards();
+    fetchWarehouseStock();
+    renderInTransitMovements();
+  } catch (err) {
+    msg.textContent = err.response?.data?.message || "Transfer failed";
+  }
+};
+
+// Update batch dropdown when product changes
+document.getElementById('transferProduct').addEventListener('change', function() {
+  const variantId = this.value;
+  const batchSelect = document.getElementById('transferBatchNumber');
+  batchSelect.innerHTML = '<option value="">Select Batch (if any)</option>';
+  if (!variantId) return;
+  const variant = allVariants.find(v => v._id === variantId);
+  if (variant && Array.isArray(variant.batches) && variant.batches.length) {
+    variant.batches.forEach(batch => {
+      batchSelect.innerHTML += `<option value="${batch.number}">${batch.number}</option>`;
+    });
+  }
+});
+
+// --- Stock Movements by Warehouse ---
+function renderWarehouseMovementTable() {
+  const filter = document.getElementById('warehouseMovementFilter')?.value;
+  const tbody = document.getElementById('warehouseMovementTableBody');
+  let filtered = allMovements;
+  if (filter) {
+    filtered = allMovements.filter(m =>
+      (m.warehouse && m.warehouse._id === filter) ||
+      (m.destinationWarehouse && m.destinationWarehouse._id === filter)
+    );
+  }
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No stock movements found</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(m => `
+    <tr>
+      <td>${new Date(m.createdAt).toLocaleString()}</td>
+      <td>${m.productVariant?.name || m.productVariant?.sku || '-'}</td>
+      <td>${m.type}</td>
+      <td>${m.quantity}</td>
+      <td>${m.warehouse?.name || '-'}</td>
+      <td>${m.destinationWarehouse?.name || m.destinationWarehouse || '-'}</td>
+      <td>${m.destinationCustomer?.name || m.destinationCustomer || '-'}</td>
+      <td>${m.batchNumber || '-'}</td>
+      <td>${m.reason || '-'}</td>
+      <td>${m.reference || '-'}</td>
+    </tr>
+  `).join('');
+}
+document.getElementById('warehouseMovementFilter').onchange = renderWarehouseMovementTable;
+
+// --- Initial Load ---
+fetchWarehouses();
+fetchWarehouseStock();
+fetchStockMovements();
+renderLowStockCards();
+renderWarehouseStockCards();
+  </script>
+  
+
+  <script>
+    // Call this after the page loads
+    fetchWarehouseStock();
+    fetchStockMovements();
+
+    // Initial load
+    fetchWarehouses();
+  </script>
+
+  <script>
+  // --- Receive In-Transit Stock Feature ---
+  async function renderInTransitMovements() {
+    try {
+      const res = await axios.get(`${API_BASE}/stock-movement`);
+      const inTransit = (res.data || []).filter(m => m.type === 'in-transit');
+      const container = document.getElementById('inTransitMovements');
+      if (!inTransit.length) {
+        container.innerHTML = `<div style="color:#22c55e;font-weight:600;">No in-transit stock to receive.</div>`;
+        return;
+      }
+      container.innerHTML = `
+        <table class="user-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Product Variant</th>
+              <th>Quantity</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Destination Customer</th>
+              <th>Batch</th>
+              <th>Reason</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${inTransit.map(m => `
+              <tr>
+                <td>${new Date(m.createdAt).toLocaleString()}</td>
+                <td>${m.productVariant?.name || m.productVariant?.sku || '-'}</td>
+                <td>${m.quantity}</td>
+                <td>${m.warehouse?.name || m.warehouse || '-'}</td>
+                <td>${m.destinationWarehouse?.name || 
+                      (Array.isArray(window.allWarehouses) 
+                        ? (window.allWarehouses.find(w => w._id === m.destinationWarehouse)?.name || m.destinationWarehouse || '-') 
+                        : m.destinationWarehouse || '-')
+                    }</td>
+                <td>${m.destinationCustomer?.name || m.destinationCustomer || '-'}</td>
+                <td>${m.batchNumber || '-'}</td>
+                <td>${m.reason || '-'}</td>
+                <td>
+                  <button onclick="receiveInTransit('${m._id}')" style="background:#22c55e;color:white;padding:6px 12px;border:none;border-radius:4px;cursor:pointer;">Receive</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (err) {
+      document.getElementById('inTransitMovements').innerHTML =
+        `<div style="color:#ef4444;">Failed to load in-transit movements</div>`;
+    }
+  }
+
+  window.receiveInTransit = async function(movementId) {
+    if (!confirm('Mark this in-transit stock as received?')) return;
+    try {
+      await axios.put(`${API_BASE}/stock-movement/receive/${movementId}`);
+      alert('Stock received at destination warehouse!');
+      renderInTransitMovements();
+      fetchStockMovements();
+      renderWarehouseStockCards();
+      renderLowStockCards();
+      fetchWarehouseStock();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to receive stock.");
+    }
+  };
+
+  // Call after page loads and after any transfer/receive
+  renderInTransitMovements();
+</script>
+
+</body>
+
+</html>

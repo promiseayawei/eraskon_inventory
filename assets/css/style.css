@@ -702,3 +702,316 @@ body.dark-mode .footer .socials a:hover {
     left: -100%;
   }
 }
+
+/* --- Responsive Table Styles for Stock Movement, Warehouse, and Stock Balance --- */
+@media (max-width: 900px) {
+  #main-content {
+    margin-left: 0 !important;
+    padding: 10px !important;
+    min-width: 0 !important;
+  }
+  .user-header input {
+    width: 100% !important;
+  }
+  .user-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  table.user-table th, table.user-table td {
+    font-size: 0.95rem !important;
+    padding: 8px 4px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  #main-content {
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+    padding: 5px !important;
+    border-radius: 0 !important;
+    min-width: 0 !important;
+  }
+  .user-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+  }
+  .user-header input {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .user-header button {
+    width: 100% !important;
+    margin-bottom: 6px !important;
+  }
+  table.user-table,
+  table.user-table thead,
+  table.user-table tbody,
+  table.user-table th,
+  table.user-table td,
+  table.user-table tr {
+    display: block !important;
+    width: 100% !important;
+  }
+  table.user-table thead {
+    display: none !important;
+  }
+  table.user-table tr {
+    margin-bottom: 12px !important;
+    border-bottom: 2px solid #eee !important;
+    background: #fff !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+  }
+  table.user-table td {
+    border: none !important;
+    position: relative !important;
+    padding-left: 50% !important;
+    min-height: 36px !important;
+    font-size: 0.97rem !important;
+    word-break: break-word !important;
+  }
+  table.user-table td:before {
+    position: absolute !important;
+    left: 10px !important;
+    top: 8px !important;
+    width: 45% !important;
+    white-space: nowrap !important;
+    font-weight: bold !important;
+    color: #2563eb !important;
+    font-size: 0.97rem !important;
+    content: attr(data-label);
+  }
+  /* Stock Movement Table */
+  #stockMovementTable td:nth-child(1):before { content: "Date"; }
+  #stockMovementTable td:nth-child(2):before { content: "Product Variant"; }
+  #stockMovementTable td:nth-child(3):before { content: "Type"; }
+  #stockMovementTable td:nth-child(4):before { content: "Quantity"; }
+  #stockMovementTable td:nth-child(5):before { content: "Warehouse"; }
+  #stockMovementTable td:nth-child(6):before { content: "Destination Warehouse"; }
+  #stockMovementTable td:nth-child(7):before { content: "Destination Customer"; }
+  #stockMovementTable td:nth-child(8):before { content: "Batch Number"; }
+  #stockMovementTable td:nth-child(9):before { content: "Reason"; }
+  #stockMovementTable td:nth-child(10):before { content: "Reference"; }
+  /* Warehouse Table */
+  #warehouseTable td:nth-child(1):before { content: "Name"; }
+  #warehouseTable td:nth-child(2):before { content: "Country"; }
+  #warehouseTable td:nth-child(3):before { content: "Location"; }
+  #warehouseTable td:nth-child(4):before { content: "Capacity"; }
+  #warehouseTable td:nth-child(5):before { content: "Manager"; }
+  #warehouseTable td:nth-child(6):before { content: "Actions"; }
+  /* Stock Balance Table */
+  #warehouseStockTable td:nth-child(1):before { content: "Warehouse"; }
+  #warehouseStockTable td:nth-child(2):before { content: "Product"; }
+  #warehouseStockTable td:nth-child(3):before { content: "SKU"; }
+  #warehouseStockTable td:nth-child(4):before { content: "Category"; }
+  #warehouseStockTable td:nth-child(5):before { content: "Stock"; }
+}
+
+/* --- Tabs Styling --- */
+#stockTabs {
+  margin-top: 30px;
+}
+.tab-btn {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  padding: 10px 18px;
+  font-weight: 600;
+  color: #2563eb;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.2s;
+}
+.tab-btn.active {
+  background: #2563eb;
+  color: #fff;
+}
+.tab-content {
+  animation: fadein .2s;
+}
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* --- Card Styles --- */
+#lowStockCards, #warehouseStockCards, #warehouseCards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+#lowStockCards > div,
+#warehouseStockCards > div,
+#warehouseCards > div {
+  background: #f3f4f6;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px #0001;
+  padding: 18px 22px;
+  min-width: 220px;
+  flex: 1 1 220px;
+}
+#lowStockCards > div {
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+}
+#warehouseStockCards > div {
+  background: #f3f4f6;
+}
+#warehouseCards > div {
+  background: #f3f4f6;
+}
+
+/* --- Table Styles --- */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.user-table th,
+.user-table td {
+  padding: 12px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+.user-table th {
+  background: #2563eb;
+  color: white;
+}
+
+/* --- Pagination --- */
+.pagination button {
+  margin: 2px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background: #f3f4f6;
+  cursor: pointer;
+}
+.pagination button.active {
+  background: #2563eb;
+  color: white;
+}
+
+/* --- Modal Styles --- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal.show {
+  display: flex;
+}
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  width: 400px;
+}
+.modal-content input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.modal-content button {
+  padding: 10px 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+.save {
+  background-color: #2563eb;
+  color: white;
+}
+.cancel {
+  background-color: #6b7280;
+  color: white;
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+  #main-content {
+    margin-left: 0 !important;
+    padding: 10px !important;
+    min-width: 0 !important;
+  }
+  .user-header input {
+    width: 100% !important;
+  }
+  .user-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  table.user-table th, table.user-table td {
+    font-size: 0.95rem !important;
+    padding: 8px 4px !important;
+  }
+}
+@media (max-width: 600px) {
+  #main-content {
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+    padding: 5px !important;
+    border-radius: 0 !important;
+    min-width: 0 !important;
+  }
+  .user-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+  }
+  .user-header input {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .user-header button {
+    width: 100% !important;
+    margin-bottom: 6px !important;
+  }
+  table.user-table,
+  table.user-table thead,
+  table.user-table tbody,
+  table.user-table th,
+  table.user-table td,
+  table.user-table tr {
+    display: block !important;
+    width: 100% !important;
+  }
+  table.user-table thead {
+    display: none !important;
+  }
+  table.user-table tr {
+    margin-bottom: 12px !important;
+    border-bottom: 2px solid #eee !important;
+    background: #fff !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+  }
+  table.user-table td {
+    border: none !important;
+    position: relative !important;
+    padding-left: 50% !important;
+    min-height: 36px !important;
+    font-size: 0.97rem !important;
+    word-break: break-word !important;
+  }
+  table.user-table td:before {
+    position: absolute !important;
+    left: 10px !important;
+    top: 8px !important;
+    width: 45% !important;
+    white-space: nowrap !important;
+    font-weight: bold !important;
+    color: #2563eb !important;
+    font-size: 0.97rem !important;
+    content: attr(data-label);
+  }
+}
