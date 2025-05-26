@@ -83,6 +83,12 @@ document.write(`
             <span class="navlink">Stock</span>
           </a>
         </li>
+        <li class="item">
+          <a href="shipping.html" class="nav_link">
+            <span class="navlink_icon"><i class="bx bx-van"></i></span>
+            <span class="navlink">Shipping</span>
+          </a>
+        </li>
       </ul>
       <!-- Logout in its own section -->
       <div class="sidebar-actions">

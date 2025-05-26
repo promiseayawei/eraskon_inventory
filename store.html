@@ -201,6 +201,34 @@
       background: var(--card-bg-dark);
       color: var(--text-dark);
     }
+
+    .product-list-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .product-list-table th,
+    .product-list-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .product-list-table th {
+      background-color: #f3f4f6;
+      font-weight: 600;
+      color: #2563eb;
+    }
+
+    .product-list-table tr:hover {
+      background-color: #f1f5ff;
+    }
+
+    .active {
+      background: #2563eb;
+      color: #fff;
+    }
   </style>
 </head>
 
@@ -220,9 +248,25 @@
         <input type="text" v-model="searchTerm" placeholder="Search products...">
       </div>
 
+      <!-- Add this toggle button above your product grid -->
+      <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
+        <button
+          :class="{active: productView === 'card'}"
+          @click="productView = 'card'"
+          style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer;">
+          Card View
+        </button>
+        <button
+          :class="{active: productView === 'list'}"
+          @click="productView = 'list'"
+          style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #f3f4f6; color: #2563eb; font-weight: 600; cursor: pointer;">
+          List View
+        </button>
+      </div>
+
       <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
         <!-- Product Grid -->
-        <div class="product-grid" style="flex: 1;">
+        <div v-if="productView === 'card'" class="product-grid" style="flex: 1;">
           <div class="product-card" v-for="product in filteredProducts" :key="product.id">
             <img :src="product.image" :alt="product.name" />
             <div class="product-header">
@@ -253,6 +297,59 @@
             <p>Stock: {{ product.selectedVariant.stock }}</p>
             <button class="order-btn" @click="addToCart(product)">Order</button>
           </div>
+        </div>
+
+        <div v-else class="product-list-view" style="flex: 1;">
+          <table class="product-list-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name & Description</th>
+                <th>Variant</th>
+                <th>Batch</th>
+                <th>Stock</th>
+                <th>Qty</th>
+                <th>Order</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="product in filteredProducts" :key="product.id">
+                <td><img :src="product.image" :alt="product.name" style="width:60px; height:60px; object-fit:cover; border-radius:8px;" /></td>
+                <td>
+                  <strong>{{ product.name }}</strong>
+                  <div style="font-size:0.95em;">{{ product.description }}</div>
+                </td>
+                <td>
+                  <select v-model="product.selectedVariant">
+                    <option v-for="variant in product.variants" :value="variant">
+                      {{ variant.size }} - ₦{{ variant.price }} ({{ variant.stock }} available)
+                    </option>
+                  </select>
+                </td>
+                <td>
+  <div v-if="product.batchTracking && product.batches && product.batches.length">
+    <select v-model="product.selectedBatch">
+      <option v-for="batch in product.batches" :value="batch">
+        {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
+      </option>
+    </select>
+  </div>
+  <div v-else>-</div>
+</td>
+                <td>{{ product.selectedVariant.stock }}</td>
+                <td>
+                  <div class="quantity-control" style="margin:0;">
+                    <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
+                    <input type="number" v-model.number="product.quantity" min="1" style="width:50px;" />
+                    <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
+                  </div>
+                </td>
+                <td>
+                  <button class="order-btn" @click="addToCart(product)">Order</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Invoice Panel -->
@@ -344,7 +441,8 @@
           phone: '',
           company: '',
           taxId: ''
-        }
+        },
+        productView: 'card' // New data property for view mode
       },
       computed: {
         cartTotal() {
@@ -532,7 +630,7 @@
 
             // Table
             doc.autoTable({
-              startY: 80,
+              startY: 100, // <-- Increased from 80 to 100 for more top margin
               head: [["#", "Product", "Size", "SKU", "Qty", "Unit Price", "Total"]],
               body: tableBody,
               theme: 'grid',
@@ -556,33 +654,31 @@
         async fetchProducts() {
           try {
             const response = await axios.get(`${API_BASE}/product-variant`);
-            this.products = response.data.map(pv => ({
-              id: pv._id,
-              name: pv.name,
-              image: pv.image,
-              quantity: 1,
-              batchNumber: pv.batchNumber,
-              description: pv.description,  
-              batchTracking: pv.batchTracking,
-              batches: pv.batches,
-              warehouses: pv.warehouses, // <-- Add this line
-              variants: [
-                {
-                  sku: pv.sku,
-                  price: pv.price,
-                  stock: pv.totalStock,
-                  barcode: pv.barcode,
-                  warehouses: pv.warehouses // <-- Add this line
-                }
-              ],
-              selectedVariant: {
-                sku: pv.sku,
-                price: pv.price,
-                stock: pv.totalStock,
-                barcode: pv.barcode,
-                warehouses: pv.warehouses // <-- Add this line
-              }
-            }));
+            this.products = response.data.map(pv => {
+  const variants = [
+    {
+      sku: pv.sku,
+      price: pv.price,
+      stock: pv.totalStock,
+      barcode: pv.barcode,
+      warehouses: pv.warehouses
+    }
+  ];
+  return {
+    id: pv._id,
+    name: pv.name,
+    image: pv.image,
+    quantity: 1,
+    batchNumber: pv.batchNumber,
+    description: pv.description,  
+    batchTracking: pv.batchTracking,
+    batches: pv.batches,
+    warehouses: pv.warehouses,
+    variants,
+    selectedVariant: variants[0], // Reference to the actual variant object
+    selectedBatch: pv.batches && pv.batches.length ? pv.batches[0] : null // Reference to batch object
+  };
+});
           } catch (err) {
             console.error("Failed to load products:", err);
             alert("Error loading products. Check console for details.");

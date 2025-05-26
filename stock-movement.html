@@ -790,8 +790,8 @@ function renderWarehouseMovementTable() {
   let filtered = allMovements;
   if (filter) {
     filtered = allMovements.filter(m =>
-      (m.warehouse && m.warehouse._id === filter) ||
-      (m.destinationWarehouse && m.destinationWarehouse._id === filter)
+      (m.warehouse && (m.warehouse._id === filter || m.warehouse === filter)) ||
+      (m.destinationWarehouse && (m.destinationWarehouse._id === filter || m.destinationWarehouse === filter))
     );
   }
   if (!filtered.length) {
@@ -804,8 +804,8 @@ function renderWarehouseMovementTable() {
       <td>${m.productVariant?.name || m.productVariant?.sku || '-'}</td>
       <td>${m.type}</td>
       <td>${m.quantity}</td>
-      <td>${m.warehouse?.name || '-'}</td>
-      <td>${m.destinationWarehouse?.name || m.destinationWarehouse || '-'}</td>
+      <td>${m.warehouse?.name || getWarehouseNameById(m.warehouse?._id || m.warehouse) || '-'}</td>
+      <td>${m.destinationWarehouse?.name || getWarehouseNameById(m.destinationWarehouse?._id || m.destinationWarehouse) || '-'}</td>
       <td>${m.destinationCustomer?.name || m.destinationCustomer || '-'}</td>
       <td>${m.batchNumber || '-'}</td>
       <td>${m.reason || '-'}</td>
@@ -907,6 +907,193 @@ renderWarehouseStockCards();
   renderInTransitMovements();
 </script>
 
+<script>
+  async function loadReports() {
+    try {
+      const API_BASE = window.BASE_URL;
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // Fetch data
+      const [ordersRes, stockMovementsRes] = await Promise.all([
+        axios.get(`${API_BASE}/order`, { headers }),
+        axios.get(`${API_BASE}/stock-movement`, { headers })
+      ]);
+      const orders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.orders || []);
+      const stockMovements = Array.isArray(stockMovementsRes.data) ? stockMovementsRes.data : (stockMovementsRes.data.stockMovements || stockMovementsRes.data);
+
+      // Pagination and search state
+      const itemsPerPage = 10;
+      let salesPage = 1, orderPage = 1, stockPage = 1;
+      let salesSearch = '', orderSearch = '', stockSearch = '';
+
+      // --- Render Functions ---
+      function renderSalesTable() {
+        const table = document.getElementById('salesReportTable');
+        if (!table) return; // Prevent error if table is missing
+        const tbody = table.querySelector('tbody');
+        if (!tbody) return;
+        let filtered = orders.filter(o =>
+          (o.orderCode || '').toLowerCase().includes(salesSearch) ||
+          (o.customer?.name || '').toLowerCase().includes(salesSearch) ||
+          (o.channel || '').toLowerCase().includes(salesSearch) ||
+          (o.status || '').toLowerCase().includes(salesSearch) ||
+          (o.paymentMethod || '').toLowerCase().includes(salesSearch)
+        );
+        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+        salesPage = Math.min(salesPage, totalPages);
+        const paginated = filtered.slice((salesPage - 1) * itemsPerPage, salesPage * itemsPerPage);
+        tbody.innerHTML = paginated.map(o => `
+          <tr>
+            <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
+            <td>${o.orderCode || '-'}</td>
+            <td>${o.customer?.name || '-'}</td>
+            <td>${o.channel || '-'}</td>
+            <td>${o.status || '-'}</td>
+            <td>₦${o.total ? Number(o.total).toLocaleString() : '0'}</td>
+            <td>${o.paymentMethod || '-'}</td>
+          </tr>
+        `).join('');
+        // Pagination controls
+        const pagDiv = document.getElementById('salesPagination');
+        pagDiv.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement('button');
+          btn.textContent = i;
+          btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i===salesPage?'#2563eb':'#fff'};color:${i===salesPage?'#fff':'#2563eb'};cursor:pointer;`;
+          btn.onclick = () => { salesPage = i; renderSalesTable(); };
+          pagDiv.appendChild(btn);
+        }
+        // Total
+        const salesTotal = filtered.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+        document.getElementById('salesTotal').textContent = `₦${salesTotal.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+      }
+
+      function renderOrderTable() {
+        const table = document.getElementById('orderReportTable');
+        if (!table) return;
+        const tbody = table.querySelector('tbody');
+        if (!tbody) return;
+        let filtered = orders.filter(o =>
+          (o.orderCode || '').toLowerCase().includes(orderSearch) ||
+          (Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '-').join(', ').toLowerCase() : '').includes(orderSearch) ||
+          (o.status || '').toLowerCase().includes(orderSearch)
+        );
+        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+        orderPage = Math.min(orderPage, totalPages);
+        const paginated = filtered.slice((orderPage - 1) * itemsPerPage, orderPage * itemsPerPage);
+        tbody.innerHTML = paginated.map(o => {
+          const qty = Array.isArray(o.items) ? o.items.reduce((sum, item) => sum + (item.qty || 0), 0) : 0;
+          const discount = Array.isArray(o.discounts)
+            ? o.discounts.reduce((sum, d) => {
+                if (d.type === 'fixed') return sum + (d.value || 0);
+                if (d.type === 'percent') return sum + ((o.subTotal || 0) * (d.value || 0)) / 100;
+                return sum;
+              }, 0)
+            : 0;
+          return `
+            <tr>
+              <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
+              <td>${o.orderCode || '-'}</td>
+              <td>${Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '-').join(', ') : '-'}</td>
+              <td>${qty}</td>
+              <td>₦${o.subTotal ? Number(o.subTotal).toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
+              <td>₦${discount ? discount.toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
+              <td>₦${o.tax ? Number(o.tax).toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
+              <td>₦${o.total ? Number(o.total).toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
+            </tr>
+          `;
+        }).join('');
+        // Pagination controls
+        const pagDiv = document.getElementById('orderPagination');
+        pagDiv.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement('button');
+          btn.textContent = i;
+          btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i===orderPage?'#2563eb':'#fff'};color:${i===orderPage?'#fff':'#2563eb'};cursor:pointer;`;
+          btn.onclick = () => { orderPage = i; renderOrderTable(); };
+          pagDiv.appendChild(btn);
+        }
+        // Total
+        const ordersTotal = filtered.reduce((sum, o) => sum + (Number(o.subTotal) || 0), 0);
+        document.getElementById('ordersTotal').textContent = `₦${ordersTotal.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+      }
+
+      function renderStockTable() {
+        const table = document.getElementById('stockMovementTable');
+        if (!table) return;
+        const tbody = table.querySelector('tbody');
+        if (!tbody) return;
+        let filtered = Array.isArray(stockMovements) ? stockMovements.filter(m =>
+          (m.productVariant?.name || '').toLowerCase().includes(stockSearch) ||
+          (m.type || '').toLowerCase().includes(stockSearch) ||
+          (m.warehouse?.name || '').toLowerCase().includes(stockSearch) ||
+          (m.batchNumber || '').toLowerCase().includes(stockSearch) ||
+          (m.reason || '').toLowerCase().includes(stockSearch) ||
+          (m.reference || '').toLowerCase().includes(stockSearch)
+        ) : [];
+        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+        stockPage = Math.min(stockPage, totalPages);
+        const paginated = filtered.slice((stockPage - 1) * itemsPerPage, stockPage * itemsPerPage);
+        tbody.innerHTML = paginated.length ? paginated.map(m => `
+          <tr>
+            <td>${m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '-'}</td>
+            <td>${m.productVariant?.name || '-'}</td>
+            <td>${m.type || '-'}</td>
+            <td>${m.quantity || 0}</td>
+            <td>${m.warehouse?.name || '-'}</td>
+            <td>${m.batchNumber || '-'}</td>
+            <td>${m.reason || '-'}</td>
+            <td>${m.reference || '-'}</td>
+          </tr>
+        `).join('') : `<tr><td colspan="8" style="text-align:center;">No stock movement data</td></tr>`;
+        // Pagination controls
+        const pagDiv = document.getElementById('stockPagination');
+        pagDiv.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement('button');
+          btn.textContent = i;
+          btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i===stockPage?'#2563eb':'#fff'};color:${i===stockPage?'#fff':'#2563eb'};cursor:pointer;`;
+          btn.onclick = () => { stockPage = i; renderStockTable(); };
+          pagDiv.appendChild(btn);
+        }
+      }
+
+      // --- Event Listeners for Search ---
+      if (document.getElementById('salesSearch')) {
+        document.getElementById('salesSearch').addEventListener('input', e => {
+          salesSearch = e.target.value.trim().toLowerCase();
+          salesPage = 1;
+          renderSalesTable();
+        });
+      }
+      if (document.getElementById('orderSearch')) {
+        document.getElementById('orderSearch').addEventListener('input', e => {
+          orderSearch = e.target.value.trim().toLowerCase();
+          orderPage = 1;
+          renderOrderTable();
+        });
+      }
+      if (document.getElementById('stockSearch')) {
+        document.getElementById('stockSearch').addEventListener('input', e => {
+          stockSearch = e.target.value.trim().toLowerCase();
+          stockPage = 1;
+          renderStockTable();
+        });
+      }
+
+      // --- Initial Render ---
+      if (document.getElementById('salesReportTable')) renderSalesTable();
+      if (document.getElementById('orderReportTable')) renderOrderTable();
+      if (document.getElementById('stockMovementTable')) renderStockTable();
+    } catch (err) {
+      alert('Error loading reports: ' + (err.response?.data?.message || err.message));
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadReports);
+</script>
 </body>
 
 </html>

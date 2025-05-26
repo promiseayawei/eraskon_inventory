@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Eraskon Inventory Management - Shipping</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+
+  <div class="container">
+    <h1>Shipping & Logistics</h1>
+
+    <section>
+      <h2>Shipment Tracker</h2>
+      <table id="shippingTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Shipment ID</th>
+            <th>Order Code</th>
+            <th>Carrier</th>
+            <th>Tracking No.</th>
+            <th>Status</th>
+            <th>Estimated Delivery</th>
+            <th>Cost</th>
+            <th>Delivery Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Populated via JS -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    async function loadShipping() {
+      try {
+        const API_BASE = window.BASE_URL;
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const res = await axios.get(`${API_BASE}/shipping`, { headers });
+        const shipments = Array.isArray(res.data) ? res.data : res.data.shippings || [];
+
+        const shippingTable = document.querySelector('#shippingTable tbody');
+        shippingTable.innerHTML = shipments.map(s => `
+          <tr>
+            <td>${new Date(s.createdAt).toLocaleDateString()}</td>
+            <td>${s._id || '-'}</td>
+            <td>${s.orderCode || '-'}</td>
+            <td>${s.carrier || '-'}</td>
+            <td>${s.trackingNumber || '-'}</td>
+            <td>${s.status || 'Pending'}</td>
+            <td>${s.estimatedDelivery ? new Date(s.estimatedDelivery).toLocaleDateString() : '-'}</td>
+            <td>₦${s.cost?.toLocaleString(undefined, {minimumFractionDigits: 2}) || '0.00'}</td>
+            <td>${s.deliveryAddress || '-'}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        alert('Error loading shipping data: ' + (err.response?.data?.message || err.message));
+        console.error(err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadShipping);
+  </script>
+</body>
+</html>

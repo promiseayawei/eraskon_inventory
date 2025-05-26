@@ -145,6 +145,17 @@ body {
   background: var(--container-bg);
 }
 
+/* Align the main report container to the right */
+.container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: 0;
+  padding: 16px;
+  background: var(--container-bg, #fff);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px #0001;
+}
+
 .grid {
   border-top: 1px solid var(--grid-color);
 }
@@ -572,51 +583,68 @@ body.dark-mode .footer .socials a:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+  align-items: stretch; /* Make all cards the same height */
 }
+
 .product-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
   background-color: var(--container-bg);
   border-radius: 12px;
   padding: 16px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  width: 300px;
-  flex: 1 0 300px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: calc(33.333% - 13.34px);
+  flex: 0 0 calc(33.333% - 13.34px);
+  box-sizing: border-box;
+  min-height: 420px; /* Ensures cards are tall enough for content */
 }
-.product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-.product-img {
+
+.product-card img {
   width: 100%;
-  height: 150px;
-  object-fit: contain;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
   margin-bottom: 1rem;
 }
-.desc {
-  font-size: 0.9rem;
-  color: #777;
+
+.product-header {
+  flex: 0 0 auto;
+  margin-bottom: 0.5rem;
 }
-.price {
-  font-weight: bold;
-  margin: 0.5rem 0;
+
+.variant-selector,
+.quantity-control,
+.product-card > p,
+.product-card > button {
+  margin-bottom: 0.5rem;
 }
+
+.variant-selector,
 .quantity-control {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  flex: 0 0 auto;
 }
-.quantity-control button {
-  padding: 6px 10px;
-  background: var(--blue-color);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+
+.order-btn {
+  margin-top: auto;
+  width: 100%;
 }
-.quantity-control input {
-  width: 50px;
-  text-align: center;
+
+@media screen and (max-width: 1024px) {
+  .product-card {
+    width: calc(50% - 10px);
+    flex: 0 0 calc(50% - 10px);
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .product-card {
+    width: 100%;
+    flex: 0 0 100%;
+    min-height: 0;
+  }
 }
 .search-box {
   margin: 1rem 0;
@@ -722,6 +750,9 @@ body.dark-mode .footer .socials a:hover {
     font-size: 0.95rem !important;
     padding: 8px 4px !important;
   }
+  #stockTabs {
+    margin-top: 80px !important; /* Ensure enough space for navbar on tablet/mobile */
+  }
 }
 
 @media (max-width: 600px) {
@@ -811,7 +842,7 @@ body.dark-mode .footer .socials a:hover {
 
 /* --- Tabs Styling --- */
 #stockTabs {
-  margin-top: 30px;
+  margin-top: 80px; /* Adjust this value to match your navbar height */
 }
 .tab-btn {
   background: #f3f4f6;
@@ -834,6 +865,53 @@ body.dark-mode .footer .socials a:hover {
 @keyframes fadein {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Responsive Tabs */
+@media (max-width: 900px) {
+  #stockTabs > div:first-child {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .tab-btn {
+    min-width: 120px;
+    font-size: 0.98em;
+    padding: 8px 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  #stockTabs {
+    margin-top: 80px !important;
+  }
+  #stockTabs > div:first-child {
+    flex-direction: column !important;
+    gap: 0 !important;
+    display: flex !important;
+    width: 100%;
+  }
+  .tab-btn {
+    width: 100% !important;
+    border-radius: 0 !important;
+    border-left: 4px solid #2563eb !important;
+    border-right: 4px solid #2563eb !important;
+    border-top: none !important;
+    border-bottom: 1px solid #ccc !important;
+    margin-bottom: 0 !important;
+    font-size: 1em !important;
+    text-align: left !important;
+    padding: 14px 16px !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .tab-btn.active {
+    border-left: 4px solid #22c55e !important;
+    background: #2563eb !important;
+    color: #fff !important;
+  }
+  .tab-content {
+    padding: 0 2px !important;
+  }
 }
 
 /* --- Card Styles --- */
@@ -954,7 +1032,11 @@ body.dark-mode .footer .socials a:hover {
     font-size: 0.95rem !important;
     padding: 8px 4px !important;
   }
+  #stockTabs {
+    margin-top: 80px !important; /* Ensure enough space for navbar on tablet/mobile */
+  }
 }
+
 @media (max-width: 600px) {
   #main-content {
     margin-left: 0 !important;
@@ -1014,4 +1096,180 @@ body.dark-mode .footer .socials a:hover {
     font-size: 0.97rem !important;
     content: attr(data-label);
   }
+  /* Stock Movement Table */
+  #stockMovementTable td:nth-child(1):before { content: "Date"; }
+  #stockMovementTable td:nth-child(2):before { content: "Product Variant"; }
+  #stockMovementTable td:nth-child(3):before { content: "Type"; }
+  #stockMovementTable td:nth-child(4):before { content: "Quantity"; }
+  #stockMovementTable td:nth-child(5):before { content: "Warehouse"; }
+  #stockMovementTable td:nth-child(6):before { content: "Destination Warehouse"; }
+  #stockMovementTable td:nth-child(7):before { content: "Destination Customer"; }
+  #stockMovementTable td:nth-child(8):before { content: "Batch Number"; }
+  #stockMovementTable td:nth-child(9):before { content: "Reason"; }
+  #stockMovementTable td:nth-child(10):before { content: "Reference"; }
+  /* Warehouse Table */
+  #warehouseTable td:nth-child(1):before { content: "Name"; }
+  #warehouseTable td:nth-child(2):before { content: "Country"; }
+  #warehouseTable td:nth-child(3):before { content: "Location"; }
+  #warehouseTable td:nth-child(4):before { content: "Capacity"; }
+  #warehouseTable td:nth-child(5):before { content: "Manager"; }
+  #warehouseTable td:nth-child(6):before { content: "Actions"; }
+  /* Stock Balance Table */
+  #warehouseStockTable td:nth-child(1):before { content: "Warehouse"; }
+  #warehouseStockTable td:nth-child(2):before { content: "Product"; }
+  #warehouseStockTable td:nth-child(3):before { content: "SKU"; }
+  #warehouseStockTable td:nth-child(4):before { content: "Category"; }
+  #warehouseStockTable td:nth-child(5):before { content: "Stock"; }
+}
+
+/* --- Report Table Alignment and Spacing Fix --- */
+
+/* Ensure container centers and spaces tables */
+.container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: 0;
+  padding: 16px;
+  background: var(--container-bg, #fff);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px #0001;
+}
+
+/* Add margin to top of Sales Report */
+#salesReportTable {
+  margin-top: 32px;
+}
+
+/* Space between report sections */
+section {
+  margin-bottom: 40px;
+}
+
+/* Table styling for alignment and fit */
+#salesReportTable,
+#orderReportTable,
+#stockMovementTable {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 4px #0001;
+  border-radius: 10px;
+  overflow: hidden;
+  table-layout: auto;
+}
+
+#salesReportTable th, #salesReportTable td,
+#orderReportTable th, #orderReportTable td,
+#stockMovementTable th, #stockMovementTable td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 1em;
+  vertical-align: middle;
+}
+
+#salesReportTable th, #orderReportTable th, #stockMovementTable th {
+  background: #f3f4f6;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+#salesReportTable tfoot td,
+#orderReportTable tfoot td,
+#stockMovementTable tfoot td {
+  background: #f9fafb;
+  font-weight: bold;
+  color: #2563eb;
+  border-bottom: none;
+}
+
+/* Responsive adjustments for report tables */
+@media (max-width: 900px) {
+  .container {
+    padding: 8px;
+  }
+  #salesReportTable,
+  #orderReportTable,
+  #stockMovementTable,
+  #salesReportTable th, #salesReportTable td,
+  #orderReportTable th, #orderReportTable td,
+  #stockMovementTable th, #stockMovementTable td {
+    font-size: 0.97em;
+  }
+}
+
+@media (max-width: 700px) {
+  .container {
+    padding: 2px;
+  }
+  #salesReportTable,
+  #orderReportTable,
+  #stockMovementTable {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  #salesReportTable thead,
+  #orderReportTable thead,
+  #stockMovementTable thead {
+    display: none;
+  }
+  #salesReportTable tbody tr,
+  #orderReportTable tbody tr,
+  #stockMovementTable tbody tr {
+    display: block;
+    margin-bottom: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 1px 4px #0001;
+    padding: 8px 0;
+  }
+  #salesReportTable td,
+  #orderReportTable td,
+  #stockMovementTable td {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
+    position: relative;
+    font-size: 1em;
+    min-width: 120px;
+    box-sizing: border-box;
+  }
+  #salesReportTable td:last-child,
+  #orderReportTable td:last-child,
+  #stockMovementTable td:last-child {
+    border-bottom: none;
+  }
+  /* Data labels for mobile */
+  #salesReportTable td:nth-child(1)::before { content: "Date: "; font-weight: bold; color: #2563eb; min-width: 90px;}
+  #salesReportTable td:nth-child(2)::before { content: "Order Code: "; font-weight: bold; color: #2563eb;}
+  #salesReportTable td:nth-child(3)::before { content: "Customer: "; font-weight: bold; color: #2563eb;}
+  #salesReportTable td:nth-child(4)::before { content: "Channel: "; font-weight: bold; color: #2563eb;}
+  #salesReportTable td:nth-child(5)::before { content: "Status: "; font-weight: bold; color: #2563eb;}
+  #salesReportTable td:nth-child(6)::before { content: "Total: "; font-weight: bold; color: #2563eb;}
+  #salesReportTable td:nth-child(7)::before { content: "Payment Method: "; font-weight: bold; color: #2563eb;}
+  #orderReportTable td:nth-child(1)::before { content: "Date: "; font-weight: bold; color: #2563eb;}
+  #orderReportTable td:nth-child(2)::before { content: "Order Code: "; font-weight: bold; color: #2563eb;}
+  #orderReportTable td:nth-child(3)::before { content: "Items: "; font-weight: bold; color: #2563eb;}
+  #orderReportTable td:nth-child(4)::before { content: "Qty: "; font-weight: bold; color: #2563eb;}
+  #orderReportTable td:nth-child(5)::before { content: "Subtotal: "; font-weight: bold; color: #2563eb;}
+  #orderReportTable td:nth-child(6)::before { content: "Discount: "; font-weight: bold; color: #2563eb;}
+  #orderReportTable td:nth-child(7)::before { content: "Tax: "; font-weight: bold; color: #2563eb;}
+  #orderReportTable td:nth-child(8)::before { content: "Total: "; font-weight: bold; color: #2563eb;}
+  #stockMovementTable td:nth-child(1)::before { content: "Date: "; font-weight: bold; color: #2563eb;}
+  #stockMovementTable td:nth-child(2)::before { content: "Product Variant: "; font-weight: bold; color: #2563eb;}
+  #stockMovementTable td:nth-child(3)::before { content: "Type: "; font-weight: bold; color: #2563eb;}
+  #stockMovementTable td:nth-child(4)::before { content: "Quantity: "; font-weight: bold; color: #2563eb;}
+  #stockMovementTable td:nth-child(5)::before { content: "Warehouse: "; font-weight: bold; color: #2563eb;}
+  #stockMovementTable td:nth-child(6)::before { content: "Batch: "; font-weight: bold; color: #2563eb;}
+  #stockMovementTable td:nth-child(7)::before { content: "Reason: "; font-weight: bold; color: #2563eb;}
+  #stockMovementTable td:nth-child(8)::before { content: "Reference: "; font-weight: bold; color: #2563eb;}
 }
