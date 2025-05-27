@@ -12,93 +12,446 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <!-- Excel Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
   <!-- PDF Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-
- 
 </head>
+<style>
+  #report-tabs {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-left: 0;
+      }
+
+      .tab-btn {
+        background: #fff;
+        border: 1px solid #2563eb;
+        color: #2563eb;
+        padding: 10px 18px;
+        border-radius: 6px 6px 0 0;
+        cursor: pointer;
+        font-weight: 600;
+        outline: none;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      .tab-btn.active,
+      .tab-btn:focus {
+        background: #2563eb;
+        color: #fff;
+        border-bottom: 2px solid #fff;
+        z-index: 2;
+      }
+
+      .tab-content {
+        display: none;
+        animation-duration: 0.5s;
+        background: #fff;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 2px 8px #0001;
+        padding: 0;
+        margin-bottom: 32px;
+      }
+
+      .tab-content.active {
+        display: block;
+        animation-name: fadeIn;
+      }
+
+      @media (max-width: 900px) {
+        #report-tabs {
+          flex-direction: column;
+          gap: 0;
+        }
+
+        .tab-btn {
+          border-radius: 0;
+          border-left: 0;
+          border-right: 0;
+          width: 100%;
+          text-align: left;
+          padding: 12px 10px;
+          font-size: 1em;
+        }
+
+        .tab-content {
+          border-radius: 0 0 8px 8px;
+          padding: 0;
+        }
+      }
+  /* Make main-content not overlap sidebar and fit page */
+  #main-content {
+    margin-left: 240px;
+    /* Adjust this to your sidebar width */
+    margin-top: 64px;
+    /* Height of your navbar (adjust if needed) */
+    padding: 32px 24px 24px 24px;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  /* Make all tables fit to page width and scroll horizontally if needed */
+  #main-content table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 2px 8px #0001;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 24px;
+  }
+
+  /* Responsive table wrapper for horizontal scroll on small screens */
+  #main-content section {
+    padding: 24px 16px;
+    background: #fff;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px #0001;
+  }
+
+  /* Prevent table cells from overflowing */
+  #main-content th,
+  #main-content td {
+    white-space: nowrap;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  /* Responsive: on small screens, reduce left margin */
+  @media (max-width: 900px) {
+    #main-content {
+      margin-left: 60px;
+      margin-top: 56px;
+      /* Adjust if your mobile navbar is shorter */
+      padding: 16px 4px 4px 4px;
+    }
+
+    #main-content table {
+      min-width: 600px;
+    }
+  }
+
+  /* Add or update these styles in your <style> section */
+
+  @media (max-width: 600px) {
+
+    /* Stack export and search controls vertically on mobile */
+    .user-header,
+    .tab-content>section>div[style*="display:flex"] {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 10px !important;
+    }
+
+    .user-header>div,
+    .tab-content>section>div[style*="display:flex"]>div {
+      margin-bottom: 8px;
+    }
+
+    /* Make export buttons full width on mobile */
+    .user-header button,
+    .tab-content button,
+    .tab-content input[type="text"] {
+      width: 100% !important;
+      margin-bottom: 6px;
+      min-width: 0 !important;
+      box-sizing: border-box;
+    }
+
+    /* Pagination buttons: wrap and fill width */
+    #salesPagination,
+    #orderPagination,
+    #stockPagination,
+    #profitPagination {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      width: 100%;
+      gap: 6px !important;
+      margin-top: 6px;
+    }
+
+    #salesPagination button,
+    #orderPagination button,
+    #stockPagination button,
+    #profitPagination button {
+      min-width: 38px;
+      margin-bottom: 4px;
+    }
+
+    /* Table: allow horizontal scroll on small screens */
+    #main-content table {
+      min-width: 500px;
+      font-size: 0.95em;
+    }
+
+    #main-content section {
+      padding: 12px 4px;
+      border-radius: 0;
+      margin-bottom: 16px;
+    }
+  }
+
+  /* Update your mobile styles for export and pagination buttons to fit in one row and scroll horizontally if needed */
+
+@media (max-width: 600px) {
+  /* Export and pagination controls: fit in one row, scroll if overflow */
+  .user-header > div,
+  .tab-content > section > div > div {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    overflow-x: auto;
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  .user-header button,
+  .tab-content button {
+    width: auto !important;
+    min-width: 110px;
+    margin-bottom: 0;
+    flex: 0 0 auto;
+  }
+
+  /* Pagination buttons: fit in one row, scroll if overflow */
+  #salesPagination,
+  #orderPagination,
+  #stockPagination,
+  #profitPagination {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    gap: 6px !important;
+    margin-top: 6px;
+    scrollbar-width: thin;
+  }
+  #salesPagination button,
+  #orderPagination button,
+  #stockPagination button,
+  #profitPagination button {
+    min-width: 38px;
+    margin-bottom: 0;
+    flex: 0 0 auto;
+  }
+}
+
+/* Add or update this in your <style> section for mobile card alignment */
+
+@media (max-width: 600px) {
+  #main-content section {
+    padding: 10px 2px;
+    border-radius: 0;
+    margin-bottom: 12px;
+    box-shadow: none;
+    background: transparent !important;
+    width: 100% !important;
+  }
+  .card, .report-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 0 12px 0 !important;
+    box-sizing: border-box;
+    display: block;
+    background: transparent !important;
+  }
+  /* Stack flex containers vertically */
+  .user-header,
+  .tab-content > section > div[style*="display:flex"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+}
+
+/* Make tables scrollable and fit 100% width on mobile view */
+
+@media (max-width: 600px) {
+  #main-content table {
+    width: 100% !important;
+    min-width: 500px;
+    font-size: 0.95em;
+    display: block;
+    overflow-x: auto;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* Add margin-top for tabs on mobile view */
+@media (max-width: 600px) {
+  #report-tabs {
+    margin-top: 3em !important;
+  }
+}
+
+/* Make all data-carrying tables 100% width and scrollable on mobile */
+
+@media (max-width: 600px) {
+  #main-content table,
+  #main-content table thead,
+  #main-content table tbody,
+  #main-content table tfoot,
+  #main-content table tr,
+  #main-content table th,
+  #main-content table td {
+    display: block;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+  #main-content table {
+    overflow-x: auto;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    min-width: 0 !important;
+  }
+  #main-content table tr {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  #main-content table th,
+  #main-content table td {
+    flex: 1 0 120px;
+    min-width: 120px;
+    max-width: 100vw;
+    word-break: break-word;
+    white-space: normal;
+    padding: 8px 6px;
+  }
+}
+</style>
 
 <body>
-
   <script src="components/navbar.js"></script>
   <script src="components/sidebar.js"></script>
 
-  <div class="container">
-    <h1>Reports</h1>
+  <div style="margin-top: 1em;" id="report-header"
+    style="background:#f3f4f6;padding:18px 24px 12px 24px;margin-left:240px;">
 
-    <!-- Sales Report -->
-    <section>
-      <h2 style="margin-top: 1em;">Sales Report</h2>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <input id="salesSearch" type="text" placeholder="Search Sales..." style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;min-width:180px;">
-        <div id="salesPagination" style="display:flex;gap:4px;"></div>
-      </div>
-      <table id="salesReportTable">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Order Code</th>
-            <th>Customer</th>
-            <th>Channel</th>
-            <th>Status</th>
-            <th>Total</th>
-            <th>Payment Method</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Filled dynamically -->
-        </tbody>
-        <!-- Sales Report Table Total -->
-        <tfoot>
-          <tr>
-            <td colspan="5" style="text-align:right;font-weight:bold;">Total Sales:</td>
-            <td id="salesTotal" style="font-weight:bold;color:#2563eb;"></td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
-    </section>
+  </div>
 
-    <!-- Order Report -->
-    <section>
-      <h2>Order Report</h2>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <input id="orderSearch" type="text" placeholder="Search Orders..." style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;min-width:180px;">
-        <div id="orderPagination" style="display:flex;gap:4px;"></div>
-      </div>
-      <table id="orderReportTable">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Order Code</th>
-            <th>Items</th>
-            <th>Qty</th>
-            <th>Subtotal</th>
-            <th>Discount</th>
-            <th>Tax</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Filled dynamically -->
-        </tbody>
-        <!-- Order Report Table Total -->
-        <tfoot>
-          <tr>
-            <td colspan="7" style="text-align:right;font-weight:bold;">Total Orders:</td>
-            <td id="ordersTotal" style="font-weight:bold;color:#2563eb;"></td>
-          </tr>
-        </tfoot>
-      </table>
-    </section>
+  <div id="main-content">
+    <!-- Tab Navigation -->
+    <div id="report-tabs" style="margin-bottom:24px; margin-top: 1em;">
+      <button class="tab-btn active" data-tab="salesTab"><i class="fa fa-chart-line"></i> Sales</button>
+      <button class="tab-btn" data-tab="orderTab"><i class="fa fa-list"></i> Orders</button>
+      <button class="tab-btn" data-tab="stockTab"><i class="fa fa-boxes"></i> Stock Movements</button>
+      <button class="tab-btn" data-tab="profitTab"><i class="fa fa-coins"></i> Profit</button>
+    </div>
 
-    <!-- Stock Movement Report -->
-    <section>
-      <h2>Stock Movement Report</h2>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <input id="stockSearch" type="text" placeholder="Search Stock Movements..." style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;min-width:180px;">
+    <!-- Tab Content -->
+    <div id="salesTab" class="tab-content animate__animated animate__fadeIn active">
+
+      <!-- Sales Report -->
+      <section>
+        <h2 style="margin-top: 1em;">Sales Report</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <input id="salesSearch" type="text" placeholder="Search Sales..."
+            style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;min-width:180px;">
+          <div>
+            <button id="exportSalesExcel"
+              style="background:#2563eb;color:#fff;padding:6px 12px;border:none;border-radius:4px;margin-right:6px;">
+              <i class="fa fa-file-excel"></i> Export Excel
+            </button>
+            <button id="exportSalesPDF"
+              style="background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
+              <i class="fa fa-file-pdf"></i> Export PDF
+            </button>
+          </div>
+          <div id="salesPagination" style="display:flex;gap:4px;"></div>
+        </div>
+        <table id="salesReportTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Order Code</th>
+              <th>Customer</th>
+              <th>Channel</th>
+              <th>Status</th>
+              <th>Total</th>
+              <th>Payment Method</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filled dynamically -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" style="text-align:right;font-weight:bold;">Total Sales:</td>
+              <td id="salesTotal" style="font-weight:bold;color:#2563eb;"></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </section>
+    </div>
+    <div id="orderTab" class="tab-content animate__animated animate__fadeIn">
+      <!-- Order Report Section -->
+      <section>
+        <h2>Order Report</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <input id="orderSearch" type="text" placeholder="Search Orders..."
+            style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;min-width:180px;">
+          <div>
+            <button id="exportOrderExcel"
+              style="background:#2563eb;color:#fff;padding:6px 12px;border:none;border-radius:4px;margin-right:6px;">
+              <i class="fa fa-file-excel"></i> Export Excel
+            </button>
+            <button id="exportOrderPDF"
+              style="background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
+              <i class="fa fa-file-pdf"></i> Export PDF
+            </button>
+          </div>
+          <div id="orderPagination" style="display:flex;gap:4px;"></div>
+        </div>
+        <table id="orderReportTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Order Code</th>
+              <th>Items</th>
+              <th>Qty</th>
+              <th>Subtotal</th>
+              <th>Discount</th>
+              <th>Tax</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filled dynamically -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="7" style="text-align:right;font-weight:bold;">Total Orders:</td>
+              <td id="ordersTotal" style="font-weight:bold;color:#2563eb;"></td>
+            </tr>
+          </tfoot>
+        </table>
+
+    </div>
+    <div id="stockTab" class="tab-content animate__animated animate__fadeIn">
+      <!-- Stock Movement Report Section -->
+      <section>
+        <h2>Stock Movement Report</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <input id="stockSearch" type="text" placeholder="Search Stock Movements..."
+            style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;min-width:180px;">
+          <div>
+            <button id="exportStockExcel"
+              style="background:#2563eb;color:#fff;padding:6px 12px;border:none;border-radius:4px;margin-right:6px;">
+              <i class="fa fa-file-excel"></i> Export Excel
+            </button>
+            <button id="exportStockPDF"
+            style="background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
+            <i class="fa fa-file-pdf"></i> Export PDF
+          </button>
+        </div>
         <div id="stockPagination" style="display:flex;gap:4px;"></div>
       </div>
       <table id="stockMovementTable">
@@ -118,182 +471,593 @@
           <!-- Filled dynamically -->
         </tbody>
       </table>
-    </section>
-  </div>
-<script src="assets/js/script.js"></script>
- <script src="config.js"></script>
-<script>
-  async function loadReports() {
-    try {
-      const API_BASE = window.BASE_URL;
-      const token = localStorage.getItem('token');
-      const headers = { Authorization: `Bearer ${token}` };
-
-      // Fetch data
-      const [ordersRes, stockMovementsRes] = await Promise.all([
-        axios.get(`${API_BASE}/order`, { headers }),
-        axios.get(`${API_BASE}/stock-movement`, { headers })
-      ]);
-      const orders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.orders || []);
-      const stockMovements = Array.isArray(stockMovementsRes.data) ? stockMovementsRes.data : (stockMovementsRes.data.stockMovements || stockMovementsRes.data);
-
-      // Pagination and search state
-      const itemsPerPage = 10;
-      let salesPage = 1, orderPage = 1, stockPage = 1;
-      let salesSearch = '', orderSearch = '', stockSearch = '';
-
-      // --- Render Functions ---
-      function renderSalesTable() {
-        const tbody = document.querySelector('#salesReportTable tbody');
-        let filtered = orders.filter(o =>
-          (o.orderCode || '').toLowerCase().includes(salesSearch) ||
-          (o.customer?.name || '').toLowerCase().includes(salesSearch) ||
-          (o.channel || '').toLowerCase().includes(salesSearch) ||
-          (o.status || '').toLowerCase().includes(salesSearch) ||
-          (o.paymentMethod || '').toLowerCase().includes(salesSearch)
-        );
-        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-        salesPage = Math.min(salesPage, totalPages);
-        const paginated = filtered.slice((salesPage - 1) * itemsPerPage, salesPage * itemsPerPage);
-        tbody.innerHTML = paginated.map(o => `
+      </section>
+    </div>
+    <div id="profitTab" class="tab-content animate__animated animate__fadeIn">
+      <section><!-- Profit Report Section -->
+      <h2>Profit Report</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <input id="profitSearch" type="text" placeholder="Search Profit..."
+          style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;min-width:180px;">
+        <div>
+          <button id="exportProfitExcel"
+            style="background:#2563eb;color:#fff;padding:6px 12px;border:none;border-radius:4px;margin-right:6px;">
+            <i class="fa fa-file-excel"></i> Export Excel
+          </button>
+          <button id="exportProfitPDF"
+            style="background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
+            <i class="fa fa-file-pdf"></i> Export PDF
+          </button>
+        </div>
+        <div id="profitPagination" style="display:flex;gap:4px;"></div>
+      </div>
+      <table id="profitReportTable">
+        <thead>
           <tr>
-            <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
-            <td>${o.orderCode || '-'}</td>
-            <td>${o.customer?.name || '-'}</td>
-            <td>${o.channel || '-'}</td>
-            <td>${o.status || '-'}</td>
-            <td>₦${o.total ? Number(o.total).toLocaleString() : '0'}</td>
-            <td>${o.paymentMethod || '-'}</td>
+            <th>Date</th>
+            <th>Order Code</th>
+            <th>Items</th>
+            <th>Qty</th>
+            <th>Cost Price</th>
+            <th>Selling Price</th>
+            <th>Profit</th>
           </tr>
-        `).join('');
-        // Pagination controls
-        const pagDiv = document.getElementById('salesPagination');
-        pagDiv.innerHTML = '';
-        for (let i = 1; i <= totalPages; i++) {
-          const btn = document.createElement('button');
-          btn.textContent = i;
-          btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i===salesPage?'#2563eb':'#fff'};color:${i===salesPage?'#fff':'#2563eb'};cursor:pointer;`;
-          btn.onclick = () => { salesPage = i; renderSalesTable(); };
-          pagDiv.appendChild(btn);
-        }
-        // Total
-        const salesTotal = filtered.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
-        document.getElementById('salesTotal').textContent = `₦${salesTotal.toLocaleString(undefined, {minimumFractionDigits:2})}`;
-      }
+        </thead>
+        <tbody>
+          <!-- Filled dynamically -->
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6" style="text-align:right;font-weight:bold;">Total Profit:</td>
+            <td id="profitTotal" style="font-weight:bold;color:#2563eb;"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
 
-      function renderOrderTable() {
-        const tbody = document.querySelector('#orderReportTable tbody');
-        let filtered = orders.filter(o =>
-          (o.orderCode || '').toLowerCase().includes(orderSearch) ||
-          (Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '-').join(', ').toLowerCase() : '').includes(orderSearch) ||
-          (o.status || '').toLowerCase().includes(orderSearch)
-        );
-        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-        orderPage = Math.min(orderPage, totalPages);
-        const paginated = filtered.slice((orderPage - 1) * itemsPerPage, orderPage * itemsPerPage);
-        tbody.innerHTML = paginated.map(o => {
-          const qty = Array.isArray(o.items) ? o.items.reduce((sum, item) => sum + (item.qty || 0), 0) : 0;
-          const discount = Array.isArray(o.discounts)
-            ? o.discounts.reduce((sum, d) => {
+    <script>
+      // Tab switching logic
+      document.addEventListener('DOMContentLoaded', function () {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabBtns.forEach(btn => {
+          btn.addEventListener('click', function () {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.remove('active', 'animate__fadeIn'));
+            btn.classList.add('active');
+            const tabId = btn.getAttribute('data-tab');
+            const tab = document.getElementById(tabId);
+            if (tab) {
+              tab.classList.add('active', 'animate__fadeIn');
+            }
+          });
+        });
+      });
+    </script>
+
+  </div>
+  <script src="assets/js/script.js"></script>
+  <script src="config.js"></script>
+  <script>
+    async function loadReports() {
+      try {
+        const API_BASE = window.BASE_URL;
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // Fetch data
+        const [ordersRes, stockMovementsRes] = await Promise.all([
+          axios.get(`${API_BASE}/order`, { headers }),
+          axios.get(`${API_BASE}/stock-movement`, { headers })
+        ]);
+        const orders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.orders || []);
+        const stockMovements = Array.isArray(stockMovementsRes.data) ? stockMovementsRes.data : (stockMovementsRes.data.stockMovements || stockMovementsRes.data);
+
+        const itemsPerPage = 10;
+        let salesPage = 1, orderPage = 1, stockPage = 1;
+        let salesSearch = '', orderSearch = '', stockSearch = '';
+
+        // --- Export Functions ---
+        document.getElementById('exportSalesExcel').onclick = function () {
+          const data = orders.map(o => ({
+            Date: o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-',
+            'Order Code': o.orderCode || '-',
+            Customer: o.customer?.name || '-',
+            Channel: o.channel || '-',
+            Status: o.status || '-',
+            Total: o.total ? Number(o.total) : 0,
+            'Payment Method': o.paymentMethod || '-'
+          }));
+          // Add total row
+          const total = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+          data.push({
+            Date: '',
+            'Order Code': '',
+            Customer: '',
+            Channel: '',
+            Status: 'TOTAL',
+            Total: total,
+            'Payment Method': ''
+          });
+          const ws = XLSX.utils.json_to_sheet(data);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
+          XLSX.writeFile(wb, "sales_report.xlsx");
+        };
+
+        document.getElementById('exportSalesPDF').onclick = function () {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          const rows = orders.map(o => [
+            o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-',
+            o.orderCode || '-',
+            o.customer?.name || '-',
+            o.channel || '-',
+            o.status || '-',
+            o.total ? Number(o.total).toLocaleString() : '0',
+            o.paymentMethod || '-'
+          ]);
+          // Add total row
+          const total = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+          rows.push(['', '', '', '', 'TOTAL', total.toLocaleString(), '']);
+          doc.autoTable({
+            head: [["Date", "Order Code", "Customer", "Channel", "Status", "Total", "Payment Method"]],
+            body: rows
+          });
+          doc.save("sales_report.pdf");
+        };
+
+        document.getElementById('exportOrderExcel').onclick = function () {
+          const data = orders.map(o => ({
+            Date: o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-',
+            'Order Code': o.orderCode || '-',
+            Items: Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '-').join(', ') : '-',
+            Qty: Array.isArray(o.items) ? o.items.reduce((sum, item) => sum + (item.qty || 0), 0) : 0,
+            Subtotal: o.subTotal ? Number(o.subTotal) : 0,
+            Discount: Array.isArray(o.discounts)
+              ? o.discounts.reduce((sum, d) => {
                 if (d.type === 'fixed') return sum + (d.value || 0);
                 if (d.type === 'percent') return sum + ((o.subTotal || 0) * (d.value || 0)) / 100;
                 return sum;
               }, 0)
-            : 0;
-          return `
+              : 0,
+            Tax: o.tax ? Number(o.tax) : 0,
+            Total: o.total ? Number(o.total) : 0
+          }));
+          // Add total row
+          const total = orders.reduce((sum, o) => sum + (Number(o.subTotal) || 0), 0);
+          data.push({
+            Date: '',
+            'Order Code': '',
+            Items: '',
+            Qty: '',
+            Subtotal: total,
+            Discount: '',
+            Tax: '',
+            Total: ''
+          });
+          const ws = XLSX.utils.json_to_sheet(data);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Order Report");
+          XLSX.writeFile(wb, "order_report.xlsx");
+        };
+
+        document.getElementById('exportOrderPDF').onclick = function () {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          const rows = orders.map(o => [
+            o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-',
+            o.orderCode || '-',
+            Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '-').join(', ') : '-',
+            Array.isArray(o.items) ? o.items.reduce((sum, item) => sum + (item.qty || 0), 0) : 0,
+            o.subTotal ? Number(o.subTotal).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00',
+            (Array.isArray(o.discounts)
+              ? o.discounts.reduce((sum, d) => {
+                if (d.type === 'fixed') return sum + (d.value || 0);
+                if (d.type === 'percent') return sum + ((o.subTotal || 0) * (d.value || 0)) / 100;
+                return sum;
+              }, 0)
+              : 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+            o.tax ? Number(o.tax).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00',
+            o.total ? Number(o.total).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'
+          ]);
+          // Add total row
+          const total = orders.reduce((sum, o) => sum + (Number(o.subTotal) || 0), 0);
+          rows.push(['', '', '', '', total.toLocaleString(undefined, { minimumFractionDigits: 2 }), '', '', '']);
+          doc.autoTable({
+            head: [["Date", "Order Code", "Items", "Qty", "Subtotal", "Discount", "Tax", "Total"]],
+            body: rows
+          });
+          doc.save("order_report.pdf");
+        };
+
+        document.getElementById('exportStockExcel').onclick = function () {
+          const data = (Array.isArray(stockMovements) ? stockMovements : []).map(m => ({
+            Date: m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '-',
+            'Product Variant': m.productVariant?.name || '-',
+            Type: m.type || '-',
+            Quantity: m.quantity || 0,
+            Warehouse: m.warehouse?.name || '-',
+            Batch: m.batchNumber || '-',
+            Reason: m.reason || '-',
+            Reference: m.reference || '-'
+          }));
+          // Add total row (sum Quantity)
+          const total = (Array.isArray(stockMovements) ? stockMovements : []).reduce((sum, m) => sum + (Number(m.quantity) || 0), 0);
+          data.push({
+            Date: '',
+            'Product Variant': '',
+            Type: '',
+            Quantity: total,
+            Warehouse: '',
+            Batch: '',
+            Reason: 'TOTAL',
+            Reference: ''
+          });
+          const ws = XLSX.utils.json_to_sheet(data);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Stock Movement Report");
+          XLSX.writeFile(wb, "stock_movement_report.xlsx");
+        };
+
+        document.getElementById('exportStockPDF').onclick = function () {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          const rows = (Array.isArray(stockMovements) ? stockMovements : []).map(m => [
+            m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '-',
+            m.productVariant?.name || '-',
+            m.type || '-',
+            m.quantity || 0,
+            m.warehouse?.name || '-',
+            m.batchNumber || '-',
+            m.reason || '-',
+            m.reference || '-'
+          ]);
+          // Add total row (sum Quantity)
+          const total = (Array.isArray(stockMovements) ? stockMovements : []).reduce((sum, m) => sum + (Number(m.quantity) || 0), 0);
+          rows.push(['', '', '', total, '', '', 'TOTAL', '']);
+          doc.autoTable({
+            head: [["Date", "Product Variant", "Type", "Quantity", "Warehouse", "Batch", "Reason", "Reference"]],
+            body: rows
+          });
+          doc.save("stock_movement_report.pdf");
+        };
+
+        // --- Render Functions ---
+        function renderSalesTable() {
+          const table = document.getElementById('salesReportTable');
+          if (!table) return;
+          const tbody = table.querySelector('tbody');
+          if (!tbody) return;
+          let filtered = orders.filter(o =>
+            (o.orderCode || '').toLowerCase().includes(salesSearch) ||
+            (o.customer?.name || '').toLowerCase().includes(salesSearch) ||
+            (o.channel || '').toLowerCase().includes(salesSearch) ||
+            (o.status || '').toLowerCase().includes(salesSearch) ||
+            (o.paymentMethod || '').toLowerCase().includes(salesSearch)
+          );
+          const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+          salesPage = Math.min(salesPage, totalPages);
+          const paginated = filtered.slice((salesPage - 1) * itemsPerPage, salesPage * itemsPerPage);
+          tbody.innerHTML = paginated.map(o => `
             <tr>
               <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
               <td>${o.orderCode || '-'}</td>
-              <td>${Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '-').join(', ') : '-'}</td>
-              <td>${qty}</td>
-              <td>₦${o.subTotal ? Number(o.subTotal).toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
-              <td>₦${discount ? discount.toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
-              <td>₦${o.tax ? Number(o.tax).toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
-              <td>₦${o.total ? Number(o.total).toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
+              <td>${o.customer?.name || '-'}</td>
+              <td>${o.channel || '-'}</td>
+              <td>${o.status || '-'}</td>
+              <td>₦${o.total ? Number(o.total).toLocaleString() : '0'}</td>
+              <td>${o.paymentMethod || '-'}</td>
             </tr>
-          `;
-        }).join('');
-        // Pagination controls
-        const pagDiv = document.getElementById('orderPagination');
-        pagDiv.innerHTML = '';
-        for (let i = 1; i <= totalPages; i++) {
-          const btn = document.createElement('button');
-          btn.textContent = i;
-          btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i===orderPage?'#2563eb':'#fff'};color:${i===orderPage?'#fff':'#2563eb'};cursor:pointer;`;
-          btn.onclick = () => { orderPage = i; renderOrderTable(); };
-          pagDiv.appendChild(btn);
+          `).join('');
+          // Pagination controls
+          const pagDiv = document.getElementById('salesPagination');
+          if (pagDiv) {
+            pagDiv.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+              const btn = document.createElement('button');
+              btn.textContent = i;
+              btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i === salesPage ? '#2563eb' : '#fff'};color:${i === salesPage ? '#fff' : '#2563eb'};cursor:pointer;`;
+              btn.onclick = () => { salesPage = i; renderSalesTable(); };
+              pagDiv.appendChild(btn);
+            }
+          }
+          // Totals for each column
+          const totalSales = filtered.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+          document.getElementById('salesTotal').textContent = `₦${totalSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
         }
-        // Total
-        const ordersTotal = filtered.reduce((sum, o) => sum + (Number(o.subTotal) || 0), 0);
-        document.getElementById('ordersTotal').textContent = `₦${ordersTotal.toLocaleString(undefined, {minimumFractionDigits:2})}`;
-      }
 
-      function renderStockTable() {
-        const tbody = document.querySelector('#stockMovementTable tbody');
-        let filtered = Array.isArray(stockMovements) ? stockMovements.filter(m =>
-          (m.productVariant?.name || '').toLowerCase().includes(stockSearch) ||
-          (m.type || '').toLowerCase().includes(stockSearch) ||
-          (m.warehouse?.name || '').toLowerCase().includes(stockSearch) ||
-          (m.batchNumber || '').toLowerCase().includes(stockSearch) ||
-          (m.reason || '').toLowerCase().includes(stockSearch) ||
-          (m.reference || '').toLowerCase().includes(stockSearch)
-        ) : [];
-        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-        stockPage = Math.min(stockPage, totalPages);
-        const paginated = filtered.slice((stockPage - 1) * itemsPerPage, stockPage * itemsPerPage);
-        tbody.innerHTML = paginated.length ? paginated.map(m => `
-          <tr>
-            <td>${m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '-'}</td>
-            <td>${m.productVariant?.name || '-'}</td>
-            <td>${m.type || '-'}</td>
-            <td>${m.quantity || 0}</td>
-            <td>${m.warehouse?.name || '-'}</td>
-            <td>${m.batchNumber || '-'}</td>
-            <td>${m.reason || '-'}</td>
-            <td>${m.reference || '-'}</td>
-          </tr>
-        `).join('') : `<tr><td colspan="8" style="text-align:center;">No stock movement data</td></tr>`;
-        // Pagination controls
-        const pagDiv = document.getElementById('stockPagination');
-        pagDiv.innerHTML = '';
-        for (let i = 1; i <= totalPages; i++) {
-          const btn = document.createElement('button');
-          btn.textContent = i;
-          btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i===stockPage?'#2563eb':'#fff'};color:${i===stockPage?'#fff':'#2563eb'};cursor:pointer;`;
-          btn.onclick = () => { stockPage = i; renderStockTable(); };
-          pagDiv.appendChild(btn);
+        function renderOrderTable() {
+          const table = document.getElementById('orderReportTable');
+          if (!table) return;
+          const tbody = table.querySelector('tbody');
+          if (!tbody) return;
+          let filtered = orders.filter(o =>
+            (o.orderCode || '').toLowerCase().includes(orderSearch) ||
+            (Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '-').join(', ').toLowerCase() : '').includes(orderSearch) ||
+            (o.status || '').toLowerCase().includes(orderSearch)
+          );
+          const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+          orderPage = Math.min(orderPage, totalPages);
+          const paginated = filtered.slice((orderPage - 1) * itemsPerPage, orderPage * itemsPerPage);
+          tbody.innerHTML = paginated.map(o => {
+            const qty = Array.isArray(o.items) ? o.items.reduce((sum, item) => sum + (item.qty || 0), 0) : 0;
+            const discount = Array.isArray(o.discounts)
+              ? o.discounts.reduce((sum, d) => {
+                if (d.type === 'fixed') return sum + (d.value || 0);
+                if (d.type === 'percent') return sum + ((o.subTotal || 0) * (d.value || 0)) / 100;
+                return sum;
+              }, 0)
+              : 0;
+            return `
+              <tr>
+                <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
+                <td>${o.orderCode || '-'}</td>
+                <td>${Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '-').join(', ') : '-'}</td>
+                <td>${qty}</td>
+                <td>₦${o.subTotal ? Number(o.subTotal).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}</td>
+                <td>₦${discount ? discount.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}</td>
+                <td>₦${o.tax ? Number(o.tax).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}</td>
+                <td>₦${o.total ? Number(o.total).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}</td>
+              </tr>
+            `;
+          }).join('');
+          // Totals for each column
+          const totalQty = filtered.reduce((sum, o) => sum + (Array.isArray(o.items) ? o.items.reduce((s, i) => s + (i.qty || 0), 0) : 0), 0);
+          const totalSubtotal = filtered.reduce((sum, o) => sum + (Number(o.subTotal) || 0), 0);
+          const totalDiscount = filtered.reduce((sum, o) => {
+            if (!Array.isArray(o.discounts)) return sum;
+            return sum + o.discounts.reduce((s, d) => {
+              if (d.type === 'fixed') return s + (d.value || 0);
+              if (d.type === 'percent') return s + ((o.subTotal || 0) * (d.value || 0)) / 100;
+              return s;
+            }, 0);
+          }, 0);
+          const totalTax = filtered.reduce((sum, o) => sum + (Number(o.tax) || 0), 0);
+          const totalTotal = filtered.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+          const totalCell = document.getElementById('ordersTotal');
+          if (totalCell) totalCell.textContent = `₦${totalSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+          // Add a full footer row for all columns (optional, for more clarity)
+          const tfoot = table.querySelector('tfoot tr');
+          if (tfoot) {
+            tfoot.innerHTML = `
+              <td style="font-weight:bold;text-align:right;">Totals:</td>
+              <td></td>
+              <td></td>
+              <td style="font-weight:bold;">${totalQty}</td>
+              <td style="font-weight:bold;">₦${totalSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight:bold;">₦${totalDiscount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight:bold;">₦${totalTax.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight:bold;">₦${totalTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+            `;
+          }
         }
-      }
 
-      // --- Event Listeners for Search ---
-      document.getElementById('salesSearch').addEventListener('input', e => {
-        salesSearch = e.target.value.trim().toLowerCase();
-        salesPage = 1;
+        function renderStockTable() {
+          const table = document.getElementById('stockMovementTable');
+          if (!table) return;
+          const tbody = table.querySelector('tbody');
+          if (!tbody) return;
+          let filtered = Array.isArray(stockMovements) ? stockMovements.filter(m =>
+            (m.productVariant?.name || '').toLowerCase().includes(stockSearch) ||
+            (m.type || '').toLowerCase().includes(stockSearch) ||
+            (m.warehouse?.name || '').toLowerCase().includes(stockSearch) ||
+            (m.batchNumber || '').toLowerCase().includes(stockSearch) ||
+            (m.reason || '').toLowerCase().includes(stockSearch) ||
+            (m.reference || '').toLowerCase().includes(stockSearch)
+          ) : [];
+          const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+          stockPage = Math.min(stockPage, totalPages);
+          const paginated = filtered.slice((stockPage - 1) * itemsPerPage, stockPage * itemsPerPage);
+          tbody.innerHTML = paginated.length ? paginated.map(m => `
+            <tr>
+              <td>${m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '-'}</td>
+              <td>${m.productVariant?.name || '-'}</td>
+              <td>${m.type || '-'}</td>
+              <td>${m.quantity || 0}</td>
+              <td>${m.warehouse?.name || '-'}</td>
+              <td>${m.batchNumber || '-'}</td>
+              <td>${m.reason || '-'}</td>
+              <td>${m.reference || '-'}</td>
+            </tr>
+          `).join('') : `<tr><td colspan="8" style="text-align:center;">No stock movement data</td></tr>`;
+          // Totals for each column
+          const totalQty = filtered.reduce((sum, m) => sum + (Number(m.quantity) || 0), 0);
+          // Add a full footer row for all columns (optional, for more clarity)
+          const tfoot = table.querySelector('tfoot');
+          if (tfoot) {
+            tfoot.innerHTML = `
+              <tr>
+                <td style="font-weight:bold;text-align:right;">Totals:</td>
+                <td></td>
+                <td></td>
+                <td style="font-weight:bold;">${totalQty}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            `;
+          } else {
+            // If no <tfoot>, you can add one dynamically if needed
+          }
+        }
+
+        // --- Profit Report Functions ---
+        let profitPage = 1;
+        let profitSearch = '';
+        const profitItemsPerPage = 10;
+
+        function renderProfitTable() {
+          const table = document.getElementById('profitReportTable');
+          if (!table) return;
+          const tbody = table.querySelector('tbody');
+          if (!tbody) return;
+
+          // Flatten orders to profit rows
+          let profitRows = [];
+          orders.forEach(o => {
+            if (Array.isArray(o.items)) {
+              o.items.forEach(item => {
+                profitRows.push({
+                  date: o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-',
+                  orderCode: o.orderCode || '-',
+                  item: item.productVariantName || '-',
+                  qty: item.qty || 0,
+                  cost: (item.costPrice || 0) * (item.qty || 0),
+                  selling: (item.sellingPrice || 0) * (item.qty || 0),
+                  profit: ((item.sellingPrice || 0) - (item.costPrice || 0)) * (item.qty || 0)
+                });
+              });
+            }
+          });
+
+          // Filter by search
+          let filtered = profitRows.filter(row =>
+            row.orderCode.toLowerCase().includes(profitSearch) ||
+            row.item.toLowerCase().includes(profitSearch)
+          );
+
+          const totalPages = Math.ceil(filtered.length / profitItemsPerPage) || 1;
+          profitPage = Math.min(profitPage, totalPages);
+          const paginated = filtered.slice((profitPage - 1) * profitItemsPerPage, profitPage * profitItemsPerPage);
+
+          tbody.innerHTML = paginated.map(row => `
+            <tr>
+              <td>${row.date}</td>
+              <td>${row.orderCode}</td>
+              <td>${row.item}</td>
+              <td>${row.qty}</td>
+              <td>₦${row.cost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td>₦${row.selling.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td>₦${row.profit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+            </tr>
+          `).join('');
+
+          // Totals for each column
+          const totalQty = filtered.reduce((sum, row) => sum + (row.qty || 0), 0);
+          const totalCost = filtered.reduce((sum, row) => sum + (row.cost || 0), 0);
+          const totalSelling = filtered.reduce((sum, row) => sum + (row.selling || 0), 0);
+          const totalProfit = filtered.reduce((sum, row) => sum + (row.profit || 0), 0);
+
+          const tfoot = table.querySelector('tfoot tr');
+          if (tfoot) {
+            tfoot.innerHTML = `
+              <td style="font-weight:bold;text-align:right;">Totals:</td>
+              <td></td>
+              <td></td>
+              <td style="font-weight:bold;">${totalQty}</td>
+              <td style="font-weight:bold;">₦${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight:bold;">₦${totalSelling.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight:bold;">₦${totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+            `;
+          }
+        }
+
+        // Profit search event
+        const profitSearchInput = document.getElementById('profitSearch');
+        if (profitSearchInput) {
+          profitSearchInput.addEventListener('input', e => {
+            profitSearch = e.target.value.trim().toLowerCase();
+            profitPage = 1;
+            renderProfitTable();
+          });
+        }
+
+        // Export all profit data (not just paginated)
+        document.getElementById('exportProfitExcel').onclick = function () {
+          let profitRows = [];
+          orders.forEach(o => {
+            if (Array.isArray(o.items)) {
+              o.items.forEach(item => {
+                profitRows.push({
+                  Date: o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-',
+                  'Order Code': o.orderCode || '-',
+                  Item: item.productVariantName || '-',
+                  Qty: item.qty || 0,
+                  'Cost Price': (item.costPrice || 0) * (item.qty || 0),
+                  'Selling Price': (item.sellingPrice || 0) * (item.qty || 0),
+                  Profit: ((item.sellingPrice || 0) - (item.costPrice || 0)) * (item.qty || 0)
+                });
+              });
+            }
+          });
+          // Add total row
+          const totalProfit = profitRows.reduce((sum, row) => sum + row.Profit, 0);
+          profitRows.push({
+            Date: '',
+            'Order Code': '',
+            Item: '',
+            Qty: '',
+            'Cost Price': '',
+            'Selling Price': 'TOTAL',
+            Profit: totalProfit
+          });
+          const ws = XLSX.utils.json_to_sheet(profitRows);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Profit Report");
+          XLSX.writeFile(wb, "profit_report.xlsx");
+        };
+
+        document.getElementById('exportProfitPDF').onclick = function () {
+          let profitRows = [];
+          orders.forEach(o => {
+            if (Array.isArray(o.items)) {
+              o.items.forEach(item => {
+                profitRows.push([
+                  o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-',
+                  o.orderCode || '-',
+                  item.productVariantName || '-',
+                  item.qty || 0,
+                  (item.costPrice || 0) * (item.qty || 0),
+                  (item.sellingPrice || 0) * (item.qty || 0),
+                  ((item.sellingPrice || 0) - (item.costPrice || 0)) * (item.qty || 0)
+                ]);
+              });
+            }
+          });
+          // Add total row
+          const totalProfit = profitRows.reduce((sum, row) => sum + (row[6] || 0), 0);
+          profitRows.push(['', '', '', '', '', 'TOTAL', totalProfit]);
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          doc.autoTable({
+            head: [["Date", "Order Code", "Items", "Qty", "Cost Price", "Selling Price", "Profit"]],
+            body: profitRows
+          });
+          doc.save("profit_report.pdf");
+        };
+
+        // --- Initial Render ---
         renderSalesTable();
-      });
-      document.getElementById('orderSearch').addEventListener('input', e => {
-        orderSearch = e.target.value.trim().toLowerCase();
-        orderPage = 1;
         renderOrderTable();
-      });
-      document.getElementById('stockSearch').addEventListener('input', e => {
-        stockSearch = e.target.value.trim().toLowerCase();
-        stockPage = 1;
         renderStockTable();
-      });
+        renderProfitTable();
 
-      // --- Initial Render ---
-      renderSalesTable();
-      renderOrderTable();
-      renderStockTable();
-
-    } catch (err) {
-      alert('Error loading reports: ' + (err.response?.data?.message || err.message));
-      console.error(err);
+      } catch (err) {
+        alert('Error loading reports: ' + (err.response?.data?.message || err.message));
+        console.error(err);
+      }
     }
-  }
 
-  document.addEventListener('DOMContentLoaded', loadReports);
-</script>
+    document.addEventListener('DOMContentLoaded', loadReports);
+
+    // Set header info
+    document.addEventListener('DOMContentLoaded', function () {
+      // Set current date
+      document.getElementById('reportDate').textContent = new Date().toLocaleDateString();
+
+      // Example: Get user info from localStorage or API
+      // Replace with your actual logic as needed
+      let user = {};
+      try {
+        user = JSON.parse(localStorage.getItem('user')) || {};
+      } catch { }
+      document.getElementById('reportUsername').textContent = user.username || user.name || '-';
+      document.getElementById('reportRole').textContent = user.role || '-';
+      document.getElementById('reportWarehouse').textContent = user.warehouse?.name || user.warehouse || '-';
+    });
+  </script>
 </body>
+
 </html>

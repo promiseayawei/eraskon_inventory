@@ -14,33 +14,33 @@ document.write(`
     <div class="menu_content">
       <ul class="menu_items">
         <div class="menu_title menu_dashboard"></div>
-        <li class="item">
-          <div href="#" class="nav_link submenu_item">
+        <li class="item user_info-animated">
+          <div class="nav_link submenu_item">
             <span class="navlink"><div><strong>Name:</strong> <span id="sidebarUserName">-</span></div></span>
           </div>
-           <div href="#" class="nav_link submenu_item">
+          <div class="nav_link submenu_item">
             <span class="navlink"><div><strong>Role:</strong> <span id="sidebarUserRole">-</span></div></span>
           </div>
-           <div href="#" class="nav_link submenu_item">
+          <div class="nav_link submenu_item">
             <span class="navlink"><div><strong>Warehouse:</strong> <span id="sidebarUserWarehouse">-</span></div></span>
           </div>
         </li>
         <li class="item">
-          <div href="#" class="nav_link submenu_item">
+          <div class="nav_link submenu_item">
             <span class="navlink_icon"><i class="bx bx-home-alt"></i></span>
             <span class="navlink">Dashboard</span>
             <i class="bx bx-chevron-right arrow-left"></i>
           </div>
           <ul class="menu_items submenu">
-            <a href="store.html" class="nav_link sublink">store</a>
-            <a href="product.html" class="nav_link sublink">products</a>
-            <a href="customer.html" class="nav_link sublink">customers</a>
-            <a href="report.html" class="nav_link sublink">reports</a>
-            <a href="setting.html" class="nav_link sublink">settings</a>
-            </ul>
+            <a href="store.html" class="nav_link sublink">Store</a>
+            <a href="product.html" class="nav_link sublink">Products</a>
+            <a href="customer.html" class="nav_link sublink">Customers</a>
+            <a href="report.html" class="nav_link sublink">Reports</a>
+            <a href="setting.html" class="nav_link sublink">Settings</a>
+          </ul>
         </li>
         <li class="item">
-          <div href="#" class="nav_link submenu_item">
+          <div class="nav_link submenu_item">
             <span class="navlink_icon"><i class="bx bx-grid-alt"></i></span>
             <span class="navlink">Admin</span>
             <i class="bx bx-chevron-right arrow-left"></i>
@@ -116,11 +116,11 @@ document.write(`
 const style = document.createElement('style');
 style.innerHTML = `
 .user_info-animated {
-  animation: fadeInUserInfo 1s cubic-bezier(.4,0,.2,1);
+  animation: fadeInUserInfo 0.7s cubic-bezier(.4,0,.2,1);
   transition: background 0.3s;
 }
 @keyframes fadeInUserInfo {
-  from { opacity: 0; transform: translateY(-20px);}
+  from { opacity: 0; transform: translateY(-10px);}
   to { opacity: 1; transform: translateY(0);}
 }
 .sidebar-actions {
@@ -137,15 +137,21 @@ document.head.appendChild(style);
 // Helper function to capitalize first letter of each word
 function capitalizeWords(str) {
   if (!str) return '-';
-  return str.replace(/\b\w/g, c => c.toUpperCase());
+  return String(str).replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // Populate user info from localStorage
 document.addEventListener('DOMContentLoaded', () => {
   const name = localStorage.getItem('name');
   const role = localStorage.getItem('role');
-  const warehouse = localStorage.getItem('warehouse');
-
+  // Try to get warehouse name from user object if available, else fallback
+  let warehouse = localStorage.getItem('warehouse');
+  try {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.warehouse && user.warehouse.name) {
+      warehouse = user.warehouse.name;
+    }
+  } catch {}
   document.getElementById('sidebarUserName').textContent = capitalizeWords(name);
   document.getElementById('sidebarUserRole').textContent = capitalizeWords(role);
   document.getElementById('sidebarUserWarehouse').textContent = capitalizeWords(warehouse);
