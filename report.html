@@ -18,68 +18,69 @@
 </head>
 <style>
   #report-tabs {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-left: 0;
-      }
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
 
-      .tab-btn {
-        background: #fff;
-        border: 1px solid #2563eb;
-        color: #2563eb;
-        padding: 10px 18px;
-        border-radius: 6px 6px 0 0;
-        cursor: pointer;
-        font-weight: 600;
-        outline: none;
-        transition: background 0.2s, color 0.2s;
-      }
+  .tab-btn {
+    background: #fff;
+    border: 1px solid #2563eb;
+    color: #2563eb;
+    padding: 10px 18px;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-weight: 600;
+    outline: none;
+    transition: background 0.2s, color 0.2s;
+  }
 
-      .tab-btn.active,
-      .tab-btn:focus {
-        background: #2563eb;
-        color: #fff;
-        border-bottom: 2px solid #fff;
-        z-index: 2;
-      }
+  .tab-btn.active,
+  .tab-btn:focus {
+    background: #2563eb;
+    color: #fff;
+    border-bottom: 2px solid #fff;
+    z-index: 2;
+  }
 
-      .tab-content {
-        display: none;
-        animation-duration: 0.5s;
-        background: #fff;
-        border-radius: 0 0 8px 8px;
-        box-shadow: 0 2px 8px #0001;
-        padding: 0;
-        margin-bottom: 32px;
-      }
+  .tab-content {
+    display: none;
+    animation-duration: 0.5s;
+    background: #fff;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 8px #0001;
+    padding: 0;
+    margin-bottom: 32px;
+  }
 
-      .tab-content.active {
-        display: block;
-        animation-name: fadeIn;
-      }
+  .tab-content.active {
+    display: block;
+    animation-name: fadeIn;
+  }
 
-      @media (max-width: 900px) {
-        #report-tabs {
-          flex-direction: column;
-          gap: 0;
-        }
+  @media (max-width: 900px) {
+    #report-tabs {
+      flex-direction: column;
+      gap: 0;
+    }
 
-        .tab-btn {
-          border-radius: 0;
-          border-left: 0;
-          border-right: 0;
-          width: 100%;
-          text-align: left;
-          padding: 12px 10px;
-          font-size: 1em;
-        }
+    .tab-btn {
+      border-radius: 0;
+      border-left: 0;
+      border-right: 0;
+      width: 100%;
+      text-align: left;
+      padding: 12px 10px;
+      font-size: 1em;
+    }
 
-        .tab-content {
-          border-radius: 0 0 8px 8px;
-          padding: 0;
-        }
-      }
+    .tab-content {
+      border-radius: 0 0 8px 8px;
+      padding: 0;
+    }
+  }
+
   /* Make main-content not overlap sidebar and fit page */
   #main-content {
     margin-left: 240px;
@@ -196,135 +197,144 @@
 
   /* Update your mobile styles for export and pagination buttons to fit in one row and scroll horizontally if needed */
 
-@media (max-width: 600px) {
-  /* Export and pagination controls: fit in one row, scroll if overflow */
-  .user-header > div,
-  .tab-content > section > div > div {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    gap: 6px !important;
-    overflow-x: auto;
-    width: 100%;
-    margin-bottom: 0;
+  @media (max-width: 600px) {
+
+    /* Export and pagination controls: fit in one row, scroll if overflow */
+    .user-header>div,
+    .tab-content>section>div>div {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      gap: 6px !important;
+      overflow-x: auto;
+      width: 100%;
+      margin-bottom: 0;
+    }
+
+    .user-header button,
+    .tab-content button {
+      width: auto !important;
+      min-width: 110px;
+      margin-bottom: 0;
+      flex: 0 0 auto;
+    }
+
+    /* Pagination buttons: fit in one row, scroll if overflow */
+    #salesPagination,
+    #orderPagination,
+    #stockPagination,
+    #profitPagination {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      width: 100%;
+      gap: 6px !important;
+      margin-top: 6px;
+      scrollbar-width: thin;
+    }
+
+    #salesPagination button,
+    #orderPagination button,
+    #stockPagination button,
+    #profitPagination button {
+      min-width: 38px;
+      margin-bottom: 0;
+      flex: 0 0 auto;
+    }
   }
 
-  .user-header button,
-  .tab-content button {
-    width: auto !important;
-    min-width: 110px;
-    margin-bottom: 0;
-    flex: 0 0 auto;
+  /* Add or update this in your <style> section for mobile card alignment */
+
+  @media (max-width: 600px) {
+    #main-content section {
+      padding: 10px 2px;
+      border-radius: 0;
+      margin-bottom: 12px;
+      box-shadow: none;
+      background: transparent !important;
+      width: 100% !important;
+    }
+
+    .card,
+    .report-card {
+      width: 100% !important;
+      min-width: 0 !important;
+      margin: 0 0 12px 0 !important;
+      box-sizing: border-box;
+      display: block;
+      background: transparent !important;
+    }
+
+    /* Stack flex containers vertically */
+    .user-header,
+    .tab-content>section>div[style*="display:flex"] {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 10px !important;
+    }
   }
 
-  /* Pagination buttons: fit in one row, scroll if overflow */
-  #salesPagination,
-  #orderPagination,
-  #stockPagination,
-  #profitPagination {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    width: 100%;
-    gap: 6px !important;
-    margin-top: 6px;
-    scrollbar-width: thin;
-  }
-  #salesPagination button,
-  #orderPagination button,
-  #stockPagination button,
-  #profitPagination button {
-    min-width: 38px;
-    margin-bottom: 0;
-    flex: 0 0 auto;
-  }
-}
+  /* Make tables scrollable and fit 100% width on mobile view */
 
-/* Add or update this in your <style> section for mobile card alignment */
+  @media (max-width: 600px) {
+    #main-content table {
+      width: 100% !important;
+      min-width: 500px;
+      font-size: 0.95em;
+      display: block;
+      overflow-x: auto;
+      background: transparent !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+    }
+  }
 
-@media (max-width: 600px) {
-  #main-content section {
-    padding: 10px 2px;
-    border-radius: 0;
-    margin-bottom: 12px;
-    box-shadow: none;
-    background: transparent !important;
-    width: 100% !important;
+  /* Add margin-top for tabs on mobile view */
+  @media (max-width: 600px) {
+    #report-tabs {
+      margin-top: 3em !important;
+    }
   }
-  .card, .report-card {
-    width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 0 12px 0 !important;
-    box-sizing: border-box;
-    display: block;
-    background: transparent !important;
-  }
-  /* Stack flex containers vertically */
-  .user-header,
-  .tab-content > section > div[style*="display:flex"] {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 10px !important;
-  }
-}
 
-/* Make tables scrollable and fit 100% width on mobile view */
+  /* Make all data-carrying tables 100% width and scrollable on mobile */
 
-@media (max-width: 600px) {
-  #main-content table {
-    width: 100% !important;
-    min-width: 500px;
-    font-size: 0.95em;
-    display: block;
-    overflow-x: auto;
-    background: transparent !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-  }
-}
+  @media (max-width: 600px) {
 
-/* Add margin-top for tabs on mobile view */
-@media (max-width: 600px) {
-  #report-tabs {
-    margin-top: 3em !important;
-  }
-}
+    #main-content table,
+    #main-content table thead,
+    #main-content table tbody,
+    #main-content table tfoot,
+    #main-content table tr,
+    #main-content table th,
+    #main-content table td {
+      display: block;
+      width: 100% !important;
+      box-sizing: border-box;
+    }
 
-/* Make all data-carrying tables 100% width and scrollable on mobile */
+    #main-content table {
+      overflow-x: auto;
+      background: transparent !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      min-width: 0 !important;
+    }
 
-@media (max-width: 600px) {
-  #main-content table,
-  #main-content table thead,
-  #main-content table tbody,
-  #main-content table tfoot,
-  #main-content table tr,
-  #main-content table th,
-  #main-content table td {
-    display: block;
-    width: 100% !important;
-    box-sizing: border-box;
+    #main-content table tr {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    #main-content table th,
+    #main-content table td {
+      flex: 1 0 120px;
+      min-width: 120px;
+      max-width: 100vw;
+      word-break: break-word;
+      white-space: normal;
+      padding: 8px 6px;
+    }
   }
-  #main-content table {
-    overflow-x: auto;
-    background: transparent !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    min-width: 0 !important;
-  }
-  #main-content table tr {
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-  }
-  #main-content table th,
-  #main-content table td {
-    flex: 1 0 120px;
-    min-width: 120px;
-    max-width: 100vw;
-    word-break: break-word;
-    white-space: normal;
-    padding: 8px 6px;
-  }
-}
 </style>
 
 <body>
@@ -337,6 +347,14 @@
   </div>
 
   <div id="main-content">
+    <!-- User Info -->
+    <div id="report-userinfo" style="margin-bottom: 1em;">
+      <span>Date: <span id="reportDate"></span></span> |
+      <span>User: <span id="reportUsername"></span></span> |
+      <span>Role: <span id="reportRole"></span></span> |
+      <span>Warehouse: <span id="reportWarehouse"></span></span>
+    </div>
+
     <!-- Tab Navigation -->
     <div id="report-tabs" style="margin-bottom:24px; margin-top: 1em;">
       <button class="tab-btn active" data-tab="salesTab"><i class="fa fa-chart-line"></i> Sales</button>
@@ -362,6 +380,10 @@
             <button id="exportSalesPDF"
               style="background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
               <i class="fa fa-file-pdf"></i> Export PDF
+            </button>
+            <button id="printSalesTable"
+              style="background:#10b981;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
+              <i class="fa fa-print"></i> Print
             </button>
           </div>
           <div id="salesPagination" style="display:flex;gap:4px;"></div>
@@ -407,6 +429,10 @@
               style="background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
               <i class="fa fa-file-pdf"></i> Export PDF
             </button>
+            <button id="printOrderTable"
+              style="background:#10b981;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
+              <i class="fa fa-print"></i> Print
+            </button>
           </div>
           <div id="orderPagination" style="display:flex;gap:4px;"></div>
         </div>
@@ -433,7 +459,7 @@
             </tr>
           </tfoot>
         </table>
-
+      </section>
     </div>
     <div id="stockTab" class="tab-content animate__animated animate__fadeIn">
       <!-- Stock Movement Report Section -->
@@ -448,71 +474,84 @@
               <i class="fa fa-file-excel"></i> Export Excel
             </button>
             <button id="exportStockPDF"
-            style="background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
-            <i class="fa fa-file-pdf"></i> Export PDF
-          </button>
+              style="background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
+              <i class="fa fa-file-pdf"></i> Export PDF
+            </button>
+            <button id="printStockTable"
+              style="background:#10b981;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
+              <i class="fa fa-print"></i> Print
+            </button>
+          </div>
+          <div id="stockPagination" style="display:flex;gap:4px;"></div>
         </div>
-        <div id="stockPagination" style="display:flex;gap:4px;"></div>
-      </div>
-      <table id="stockMovementTable">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Product Variant</th>
-            <th>Type</th>
-            <th>Quantity</th>
-            <th>Warehouse</th>
-            <th>Batch</th>
-            <th>Reason</th>
-            <th>Reference</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Filled dynamically -->
-        </tbody>
-      </table>
+        <table id="stockMovementTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Product Variant</th>
+              <th>Type</th>
+              <th>Quantity</th>
+              <th>Warehouse</th>
+              <th>Batch</th>
+              <th>Reason</th>
+              <th>Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filled dynamically -->
+          </tbody>
+        </table>
       </section>
     </div>
     <div id="profitTab" class="tab-content animate__animated animate__fadeIn">
       <section><!-- Profit Report Section -->
-      <h2>Profit Report</h2>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <input id="profitSearch" type="text" placeholder="Search Profit..."
-          style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;min-width:180px;">
-        <div>
-          <button id="exportProfitExcel"
-            style="background:#2563eb;color:#fff;padding:6px 12px;border:none;border-radius:4px;margin-right:6px;">
-            <i class="fa fa-file-excel"></i> Export Excel
-          </button>
-          <button id="exportProfitPDF"
-            style="background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
-            <i class="fa fa-file-pdf"></i> Export PDF
-          </button>
+        <h2>Profit Report</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <input id="profitSearch" type="text" placeholder="Search Profit..."
+            style="padding:6px 12px;border-radius:6px;border:1px solid #ccc;min-width:180px;">
+          <div>
+            <button id="exportProfitExcel"
+              style="background:#2563eb;color:#fff;padding:6px 12px;border:none;border-radius:4px;margin-right:6px;">
+              <i class="fa fa-file-excel"></i> Export Excel
+            </button>
+            <button id="exportProfitPDF"
+              style="background:#ef4444;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
+              <i class="fa fa-file-pdf"></i> Export PDF
+            </button>
+            <button id="printProfitTable"
+              style="background:#10b981;color:#fff;padding:6px 12px;border:none;border-radius:4px;">
+              <i class="fa fa-print"></i> Print
+            </button>
+          </div>
+          <div id="profitPagination" style="display:flex;gap:4px;"></div>
         </div>
-        <div id="profitPagination" style="display:flex;gap:4px;"></div>
-      </div>
-      <table id="profitReportTable">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Order Code</th>
-            <th>Items</th>
-            <th>Qty</th>
-            <th>Cost Price</th>
-            <th>Selling Price</th>
-            <th>Profit</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Filled dynamically -->
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="6" style="text-align:right;font-weight:bold;">Total Profit:</td>
-            <td id="profitTotal" style="font-weight:bold;color:#2563eb;"></td>
-          </tr>
-        </tfoot>
-      </table>
+        <table id="profitReportTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Order Code</th>
+              <th>Items</th>
+              <th>Qty</th>
+              <th>Cost Price</th>
+              <th>Selling Price</th>
+              <th>Gross Profit</th>
+              <th>Tax</th>
+              <th>Discount</th>
+              <th>Deduction</th>
+              <th>Net Profit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filled dynamically -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6" style="text-align:right;font-weight:bold;">Total Profit:</td>
+              <td id="profitTotal" style="font-weight:bold;color:#2563eb;"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </section>
     </div>
 
     <script>
@@ -552,7 +591,8 @@
         ]);
         const orders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.orders || []);
         const stockMovements = Array.isArray(stockMovementsRes.data) ? stockMovementsRes.data : (stockMovementsRes.data.stockMovements || stockMovementsRes.data);
-
+        console.log('Orders:', orders);
+        console.log('Stock Movements:', stockMovements);
         const itemsPerPage = 10;
         let salesPage = 1, orderPage = 1, stockPage = 1;
         let salesSearch = '', orderSearch = '', stockSearch = '';
@@ -616,7 +656,7 @@
             Subtotal: o.subTotal ? Number(o.subTotal) : 0,
             Discount: Array.isArray(o.discounts)
               ? o.discounts.reduce((sum, d) => {
-                if (d.type === 'fixed') return sum + (d.value || 0);
+                if (d.type === 'fixed' || d.type === 'flat') return sum + (d.value || 0);
                 if (d.type === 'percent') return sum + ((o.subTotal || 0) * (d.value || 0)) / 100;
                 return sum;
               }, 0)
@@ -784,7 +824,7 @@
             const qty = Array.isArray(o.items) ? o.items.reduce((sum, item) => sum + (item.qty || 0), 0) : 0;
             const discount = Array.isArray(o.discounts)
               ? o.discounts.reduce((sum, d) => {
-                if (d.type === 'fixed') return sum + (d.value || 0);
+                if (d.type === 'fixed' || d.type === 'flat') return sum + (d.value || 0);
                 if (d.type === 'percent') return sum + ((o.subTotal || 0) * (d.value || 0)) / 100;
                 return sum;
               }, 0)
@@ -808,16 +848,14 @@
           const totalDiscount = filtered.reduce((sum, o) => {
             if (!Array.isArray(o.discounts)) return sum;
             return sum + o.discounts.reduce((s, d) => {
-              if (d.type === 'fixed') return s + (d.value || 0);
+              if (d.type === 'fixed' || d.type === 'flat') return s + (d.value || 0);
               if (d.type === 'percent') return s + ((o.subTotal || 0) * (d.value || 0)) / 100;
               return s;
             }, 0);
           }, 0);
           const totalTax = filtered.reduce((sum, o) => sum + (Number(o.tax) || 0), 0);
           const totalTotal = filtered.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
-          const totalCell = document.getElementById('ordersTotal');
-          if (totalCell) totalCell.textContent = `₦${totalSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-          // Add a full footer row for all columns (optional, for more clarity)
+
           const tfoot = table.querySelector('tfoot tr');
           if (tfoot) {
             tfoot.innerHTML = `
@@ -896,28 +934,59 @@
 
           // Flatten orders to profit rows
           let profitRows = [];
+          // ...inside renderProfitTable()...
           orders.forEach(o => {
             if (Array.isArray(o.items)) {
+              // Calculate total discount for the order
+              let totalDiscount = 0;
+              if (Array.isArray(o.discounts)) {
+                totalDiscount = o.discounts.reduce((sum, d) => {
+                  if (d.type === 'fixed' || d.type === 'flat') return sum + (d.value || 0);
+                  if (d.type === 'percent') return sum + ((o.subTotal || 0) * (d.value || 0)) / 100;
+                  return sum;
+                }, 0);
+              }
+              const orderTax = Number(o.tax) || 0;
+              const orderDiscount = totalDiscount;
+
+              // Distribute tax and discount per item by quantity
+              const totalQty = o.items.reduce((sum, item) => sum + (item.qty || 0), 0) || 1;
+
               o.items.forEach(item => {
+                const costPrice = item.productVariant?.costPrice ?? item.costPrice ?? 0;
+                const unitPrice = item.productVariant?.unitPrice ?? item.unitPrice ?? 0;
+                const qty = item.qty || 0;
+
+                // Use already calculated orderTax and orderDiscount
+                // If you want to distribute them per item, do so here
+                const grossProfit = unitPrice * qty;
+                const deduction = orderTax + orderDiscount;
+                const netProfit = grossProfit - deduction;
+
                 profitRows.push({
                   date: o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-',
                   orderCode: o.orderCode || '-',
                   item: item.productVariantName || '-',
-                  qty: item.qty || 0,
-                  cost: (item.costPrice || 0) * (item.qty || 0),
-                  selling: (item.sellingPrice || 0) * (item.qty || 0),
-                  profit: ((item.sellingPrice || 0) - (item.costPrice || 0)) * (item.qty || 0)
+                  qty: qty,
+                  cost: costPrice,
+                  selling: unitPrice,
+                  grossProfit: grossProfit, // This is the value shown in the table
+                  tax: orderTax, // This is the value shown in the table
+                  discount: orderDiscount, // This is the value shown in the table
+                  deduction: deduction, // This is the value shown in the table 
+                  profit: netProfit // This is the value shown in the table
                 });
               });
             }
           });
-
+          console.log('Profit Rows:', profitRows);
           // Filter by search
           let filtered = profitRows.filter(row =>
             row.orderCode.toLowerCase().includes(profitSearch) ||
             row.item.toLowerCase().includes(profitSearch)
           );
 
+          // Pagination
           const totalPages = Math.ceil(filtered.length / profitItemsPerPage) || 1;
           profitPage = Math.min(profitPage, totalPages);
           const paginated = filtered.slice((profitPage - 1) * profitItemsPerPage, profitPage * profitItemsPerPage);
@@ -930,6 +999,10 @@
               <td>${row.qty}</td>
               <td>₦${row.cost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
               <td>₦${row.selling.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td>₦${row.grossProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td>₦${row.tax.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td>₦${row.discount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td>₦${row.deduction.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
               <td>₦${row.profit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
             </tr>
           `).join('');
@@ -938,8 +1011,11 @@
           const totalQty = filtered.reduce((sum, row) => sum + (row.qty || 0), 0);
           const totalCost = filtered.reduce((sum, row) => sum + (row.cost || 0), 0);
           const totalSelling = filtered.reduce((sum, row) => sum + (row.selling || 0), 0);
-          const totalProfit = filtered.reduce((sum, row) => sum + (row.profit || 0), 0);
-
+          const totalGrossProfit = filtered.reduce((sum, row) => sum + (row.grossProfit || 0), 0);
+          const totalTax = filtered.reduce((sum, row) => sum + (row.tax || 0), 0);
+          const totalDiscount = filtered.reduce((sum, row) => sum + (row.discount || 0), 0);
+          const totalDeduction = filtered.reduce((sum, row) => sum + (row.deduction || 0), 0);
+          const totalNetProfit = filtered.reduce((sum, row) => sum + (row.profit || 0), 0);
           const tfoot = table.querySelector('tfoot tr');
           if (tfoot) {
             tfoot.innerHTML = `
@@ -949,8 +1025,25 @@
               <td style="font-weight:bold;">${totalQty}</td>
               <td style="font-weight:bold;">₦${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
               <td style="font-weight:bold;">₦${totalSelling.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-              <td style="font-weight:bold;">₦${totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight:bold;">₦${totalGrossProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight:bold;">₦${totalTax.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight:bold;">₦${totalDiscount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight:bold;">₦${totalDeduction.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight:bold;">₦${totalNetProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td> 
             `;
+          }
+
+          // Pagination controls
+          const pagDiv = document.getElementById('profitPagination');
+          if (pagDiv) {
+            pagDiv.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+              const btn = document.createElement('button');
+              btn.textContent = i;
+              btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i === profitPage ? '#2563eb' : '#fff'};color:${i === profitPage ? '#fff' : '#2563eb'};cursor:pointer;`;
+              btn.onclick = () => { profitPage = i; renderProfitTable(); };
+              pagDiv.appendChild(btn);
+            }
           }
         }
 
@@ -964,35 +1057,73 @@
           });
         }
 
-        // Export all profit data (not just paginated)
+        // --- Export all profit data (not just paginated) ---
+
         document.getElementById('exportProfitExcel').onclick = function () {
           let profitRows = [];
           orders.forEach(o => {
+            // Calculate total discount for the order
+            let totalDiscount = 0;
+            if (Array.isArray(o.discounts)) {
+              totalDiscount = o.discounts.reduce((sum, d) => {
+                if (d.type === 'fixed' || d.type === 'flat') return sum + (d.value || 0);
+                if (d.type === 'percent') return sum + ((o.subTotal || 0) * (d.value || 0)) / 100;
+                return sum;
+              }, 0);
+            }
+            const orderTax = Number(o.tax) || 0;
+            const orderDiscount = totalDiscount;
+            const totalQty = Array.isArray(o.items) ? o.items.reduce((sum, item) => sum + (item.qty || 0), 0) || 1 : 1;
+
             if (Array.isArray(o.items)) {
               o.items.forEach(item => {
+                const costPrice = item.productVariant?.costPrice ?? item.costPrice ?? 0;
+                const unitPrice = item.productVariant?.unitPrice ?? item.unitPrice ?? 0;
+                const qty = item.qty || 0;
+                const grossProfit = (unitPrice - costPrice) * qty;
+                const deduction = orderTax + orderDiscount;
+                const netProfit = grossProfit - deduction;
+
                 profitRows.push({
                   Date: o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-',
                   'Order Code': o.orderCode || '-',
                   Item: item.productVariantName || '-',
-                  Qty: item.qty || 0,
-                  'Cost Price': (item.costPrice || 0) * (item.qty || 0),
-                  'Selling Price': (item.sellingPrice || 0) * (item.qty || 0),
-                  Profit: ((item.sellingPrice || 0) - (item.costPrice || 0)) * (item.qty || 0)
+                  Qty: qty,
+                  'Cost Price': costPrice,
+                  'Selling Price': unitPrice,
+                  'Gross Profit': grossProfit,
+                  Tax: orderTax,
+                  Discount: orderDiscount,
+                  Deduction: deduction,
+                  'Net Profit': netProfit
                 });
               });
             }
           });
           // Add total row
-          const totalProfit = profitRows.reduce((sum, row) => sum + row.Profit, 0);
+          const totalQty = profitRows.reduce((sum, row) => sum + (row.Qty || 0), 0);
+          const totalCost = profitRows.reduce((sum, row) => sum + (row['Cost Price'] || 0), 0);
+          const totalSelling = profitRows.reduce((sum, row) => sum + (row['Selling Price'] || 0), 0);
+          const totalGrossProfit = profitRows.reduce((sum, row) => sum + (row['Gross Profit'] || 0), 0);
+          const totalTax = profitRows.reduce((sum, row) => sum + (row.Tax || 0), 0);
+          const totalDiscount = profitRows.reduce((sum, row) => sum + (row.Discount || 0), 0);
+          const totalDeduction = profitRows.reduce((sum, row) => sum + (row.Deduction || 0), 0);
+          const totalNetProfit = profitRows.reduce((sum, row) => sum + (row['Net Profit'] || 0), 0);
+
           profitRows.push({
             Date: '',
             'Order Code': '',
             Item: '',
-            Qty: '',
-            'Cost Price': '',
-            'Selling Price': 'TOTAL',
-            Profit: totalProfit
+            Qty: totalQty,
+            'Cost Price': totalCost,
+            'Selling Price': totalSelling,
+            'Gross Profit': totalGrossProfit,
+            Tax: totalTax,
+            Discount: totalDiscount,
+            Deduction: totalDeduction,
+            'Net Profit': totalNetProfit
           });
+
           const ws = XLSX.utils.json_to_sheet(profitRows);
           const wb = XLSX.utils.book_new();
           XLSX.utils.book_append_sheet(wb, ws, "Profit Report");
@@ -1002,27 +1133,60 @@
         document.getElementById('exportProfitPDF').onclick = function () {
           let profitRows = [];
           orders.forEach(o => {
+            // Calculate total discount for the order
+            let totalDiscount = 0;
+            if (Array.isArray(o.discounts)) {
+              totalDiscount = o.discounts.reduce((sum, d) => {
+                if (d.type === 'fixed' || d.type === 'flat') return sum + (d.value || 0);
+                if (d.type === 'percent') return sum + ((o.subTotal || 0) * (d.value || 0)) / 100;
+                return sum;
+              }, 0);
+            }
+            const orderTax = Number(o.tax) || 0;
+            const orderDiscount = totalDiscount;
+            const totalQty = Array.isArray(o.items) ? o.items.reduce((sum, item) => sum + (item.qty || 0), 0) || 1 : 1;
+
             if (Array.isArray(o.items)) {
               o.items.forEach(item => {
+                const costPrice = item.productVariant?.costPrice ?? item.costPrice ?? 0;
+                const unitPrice = item.productVariant?.unitPrice ?? item.unitPrice ?? 0;
+                const qty = item.qty || 0;
+                const grossProfit = (unitPrice - costPrice) * qty;
+                const deduction = orderTax + orderDiscount;
+                const netProfit = grossProfit - deduction;
+
                 profitRows.push([
                   o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-',
                   o.orderCode || '-',
                   item.productVariantName || '-',
-                  item.qty || 0,
-                  (item.costPrice || 0) * (item.qty || 0),
-                  (item.sellingPrice || 0) * (item.qty || 0),
-                  ((item.sellingPrice || 0) - (item.costPrice || 0)) * (item.qty || 0)
+                  qty,
+                  costPrice,
+                  unitPrice,
+                  grossProfit,
+                  orderTax,
+                  orderDiscount,
+                  deduction,
+                  netProfit
                 ]);
               });
             }
           });
           // Add total row
-          const totalProfit = profitRows.reduce((sum, row) => sum + (row[6] || 0), 0);
-          profitRows.push(['', '', '', '', '', 'TOTAL', totalProfit]);
+          const totalQty = profitRows.reduce((sum, row) => sum + (row[3] || 0), 0);
+          const totalCost = profitRows.reduce((sum, row) => sum + (row[4] || 0), 0);
+          const totalSelling = profitRows.reduce((sum, row) => sum + (row[5] || 0), 0);
+          const totalGrossProfit = profitRows.reduce((sum, row) => sum + (row[6] || 0), 0);
+          const totalTax = profitRows.reduce((sum, row) => sum + (row[7] || 0), 0);
+          const totalDiscount = profitRows.reduce((sum, row) => sum + (row[8] || 0), 0);
+          const totalDeduction = profitRows.reduce((sum, row) => sum + (row[9] || 0), 0);
+          const totalNetProfit = profitRows.reduce((sum, row) => sum + (row[10] || 0), 0);
+
+          profitRows.push(['', '', '', totalQty, totalCost, totalSelling, totalGrossProfit, totalTax, totalDiscount, totalDeduction, totalNetProfit]);
+
           const { jsPDF } = window.jspdf;
           const doc = new jsPDF();
           doc.autoTable({
-            head: [["Date", "Order Code", "Items", "Qty", "Cost Price", "Selling Price", "Profit"]],
+            head: [["Date", "Order Code", "Items", "Qty", "Cost Price", "Selling Price", "Gross Profit", "Tax", "Discount", "Deduction", "Net Profit"]],
             body: profitRows
           });
           doc.save("profit_report.pdf");
@@ -1057,7 +1221,76 @@
       document.getElementById('reportRole').textContent = user.role || '-';
       document.getElementById('reportWarehouse').textContent = user.warehouse?.name || user.warehouse || '-';
     });
+
+  
   </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Set current date and user info
+    const dateEl = document.getElementById('reportDate');
+    if (dateEl) dateEl.textContent = new Date().toLocaleDateString();
+
+    let user = {};
+    try {
+      user = JSON.parse(localStorage.getItem('user')) || {};
+    } catch { }
+    const usernameEl = document.getElementById('reportUsername');
+    if (usernameEl) usernameEl.textContent = user.username || user.name || '-';
+    const roleEl = document.getElementById('reportRole');
+    if (roleEl) roleEl.textContent = user.role || '-';
+    const warehouseEl = document.getElementById('reportWarehouse');
+    if (warehouseEl) warehouseEl.textContent = user.warehouse?.name || user.warehouse || '-';
+
+    // Print helper function
+    function printTable(tableId, title = '') {
+      const table = document.getElementById(tableId);
+      if (!table) return;
+      const win = window.open('', '', 'width=900,height=700');
+      win.document.write(`
+        <html>
+          <head>
+            <title>${title}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 24px; }
+              table { border-collapse: collapse; width: 100%; margin-bottom: 24px; }
+              th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+              th { background: #f3f4f6; }
+              h2 { margin-bottom: 16px; }
+            </style>
+          </head>
+          <body>
+            <h2>${title}</h2>
+            ${table.outerHTML}
+          </body>
+        </html>
+      `);
+      win.document.close();
+      win.focus();
+      setTimeout(() => win.print(), 500);
+    }
+
+    // Print button event listeners
+    const salesBtn = document.getElementById('printSalesTable');
+    if (salesBtn) salesBtn.onclick = function () {
+      printTable('salesReportTable', 'Sales Report');
+    };
+
+    const orderBtn = document.getElementById('printOrderTable');
+    if (orderBtn) orderBtn.onclick = function () {
+      printTable('orderReportTable', 'Order Report');
+    };
+
+    const stockBtn = document.getElementById('printStockTable');
+    if (stockBtn) stockBtn.onclick = function () {
+      printTable('stockMovementTable', 'Stock Movement Report');
+    };
+
+    const profitBtn = document.getElementById('printProfitTable');
+    if (profitBtn) profitBtn.onclick = function () {
+      printTable('profitReportTable', 'Profit Report');
+    };
+  });
+</script>
 </body>
 
 </html>
