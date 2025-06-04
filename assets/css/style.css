@@ -672,7 +672,7 @@ body.dark-mode .footer .socials a:hover {
 .order-btn:hover {
   background: #3366cc;
 }
-.cart-summary {
+.cart{
   margin-top: 30px;
   background: var(--container-bg);
   padding: 16px;

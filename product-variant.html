@@ -216,7 +216,8 @@ input, select {
                         <th>Product</th>
                         <th>SKU</th>
                         <th>Barcode</th>
-                        <th>Price</th>
+                        <th>Unit Price</th>
+                        <th>Cost Price</th>
                         <th>Total Stock</th>
                         <th>Batch Tracking</th>
                         <th>Low Stock Threshold</th>
@@ -235,6 +236,7 @@ input, select {
                         <td>{{ variant.sku }}</td>
                         <td>{{ variant.barcode }}</td>
                         <td>₦{{ variant.price?.toFixed(2) }}</td>
+                        <td>₦{{ variant.costPrice?.toFixed(2) }}</td>
                         <td>{{ variant.totalStock }}</td>
                         <td>{{ variant.batchTracking ? 'Yes' : 'No' }}</td>
                         <td>{{ variant.lowStockThreshold || 0 }}</td>
@@ -249,15 +251,15 @@ input, select {
 
         <template v-else>
             <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                <div v-for="variant in productVariants" :key="variant._id"
-                    style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; width: 300px; background: white;">
+                <div v-for="variant in productVariants" :key="variant._id" style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; width: 300px; background: white;">
                     <img v-if="variant.image" :src="variant.image" alt="product image"
                         style="max-width: 100%; max-height: 150px; object-fit: contain; margin-bottom: 10px;" />
                     <h3>{{ variant.name }}</h3>
                     <p><strong>Product:</strong> {{ variant.product?.name || 'N/A' }}</p>
                     <p><strong>SKU:</strong> {{ variant.sku }}</p>
                     <p><strong>Barcode:</strong> {{ variant.barcode }}</p>
-                    <p><strong>Price:</strong> ₦{{ variant.price?.toFixed(2) }}</p>
+                    <p><strong>Unit Price:</strong> ₦{{ variant.price?.toFixed(2) }}</p>
+                    <p><strong>Cost Price:</strong> ₦{{ variant.costPrice?.toFixed(2) }}</p>
                     <p><strong>Total Stock:</strong> {{ variant.totalStock }}</p>
                     <p><strong>Batch Tracking:</strong> {{ variant.batchTracking ? 'Yes' : 'No' }}</p>
                     <p><strong>Low Stock Threshold:</strong> {{ variant.lowStockThreshold || 0 }}</p>
@@ -268,132 +270,144 @@ input, select {
         </template>
 
         <!-- Modal for Add/Edit -->
-        <div v-if="modalVisible" class="modal-overlay" @click.self="closeModal()">
-            <div class="modal" @click.stop>
-                <h2>{{ editingVariant ? 'Edit' : 'Add' }} Product Variant</h2>
+      <!-- Modal for Add/Edit -->
+<div v-if="modalVisible" class="modal-overlay" @click.self="closeModal()">
+  <div class="modal" @click.stop>
+    <h2>{{ editingVariant ? 'Edit' : 'Add' }} Product Variant</h2>
+    <form @submit.prevent="onSubmit">
+      <!-- Product select -->
+<label for="product">Product</label>
+<select id="product" name="product" v-model="form.product" required>
+  <option disabled value="">-- Select Product --</option>
+  <option v-for="p in products" :value="p._id" :key="p._id">{{ p.name }}</option>
+</select>
+<span class="error" v-if="errors.product">{{ errors.product }}</span>
 
-                <form @submit.prevent="onSubmit">
-                    <label>Product</label>
-                    <select v-model="form.product" required>
-                        <option disabled value="">-- Select Product --</option>
-                        <option v-for="p in products" :value="p._id" :key="p._id">{{ p.name }}</option>
-                    </select>
-                    <span class="error" v-if="errors.product">{{ errors.product }}</span>
+<!-- Name input -->
+<label for="variantName">Name</label>
+<input id="variantName" name="name" type="text" v-model="form.name" required />
+<span class="error" v-if="errors.name">{{ errors.name }}</span>
 
-                    <label>Name</label>
-                    <input type="text" v-model="form.name" required />
-                    <span class="error" v-if="errors.name">{{ errors.name }}</span>
+<!-- SKU input -->
+<label for="sku">SKU</label>
+<input id="sku" name="sku" type="text" v-model="form.sku" required />
+<span class="error" v-if="errors.sku">{{ errors.sku }}</span>
 
-                    <label>SKU</label>
-                    <input type="text" v-model="form.sku" required />
-                    <span class="error" v-if="errors.sku">{{ errors.sku }}</span>
+<!-- Barcode input -->
+<label for="barcode">Barcode</label>
+<input id="barcode" name="barcode" type="text" v-model="form.barcode" required />
+<span class="error" v-if="errors.barcode">{{ errors.barcode }}</span>
 
-                    <label>Barcode</label>
-                    <input type="text" v-model="form.barcode" required />
-                    <span class="error" v-if="errors.barcode">{{ errors.barcode }}</span>
+<!-- Unit Price input -->
+<label for="price">Unit Price</label>
+<input id="price" name="price" type="number" v-model.number="form.price" min="0" step="0.01" required />
+<span class="error" v-if="errors.price">{{ errors.price }}</span>
 
-                    <label>Price</label>
-                    <input type="number" v-model.number="form.price" min="0" step="0.01" required />
-                    <span class="error" v-if="errors.price">{{ errors.price }}</span>
+<!-- Cost Price input -->
+<label for="costPrice">Cost Price</label>
+<input id="costPrice" name="costPrice" type="number" v-model.number="form.costPrice" min="0" step="0.01" required />
+<span class="error" v-if="errors.costPrice">{{ errors.costPrice }}</span>
 
-                    <label>Cost Price</label>
-                    <input type="number" v-model.number="form.costPrice" min="0" step="0.01" required />
-                    <span class="error" v-if="errors.costPrice">{{ errors.costPrice }}</span>
+<label>Batch Tracking</label>
+<select v-model="form.batchTracking">
+  <option :value="true">Yes</option>
+  <option :value="false">No</option>
+</select>
 
-                    <label>Batch Tracking</label>
-                    <select v-model="form.batchTracking">
-                        <option :value="true">Yes</option>
-                        <option :value="false">No</option>
-                    </select>
+<label>Low Stock Threshold</label>
+<input type="number" v-model.number="form.lowStockThreshold" min="0" />
 
-                    <label>Low Stock Threshold</label>
-                    <input type="number" v-model.number="form.lowStockThreshold" min="0" />
+<label>Active</label>
+<select v-model="form.active">
+  <option :value="true">Yes</option>
+  <option :value="false">No</option>
+</select>
 
-                    <label>Active</label>
-                    <select v-model="form.active">
-                        <option :value="true">Yes</option>
-                        <option :value="false">No</option>
-                    </select>
+<label>Image</label>
+<input type="file" @change="onFileChange" accept="image/*" />
+<div v-if="previewImage">
+  <img :src="previewImage" alt="Preview" class="preview" />
+</div>
 
-                    <label>Image</label>
-                    <input type="file" @change="onFileChange" accept="image/*" />
-                    <div v-if="previewImage">
-                        <img :src="previewImage" alt="Preview" class="preview" />
-                    </div>
+<!-- Only show batches if batchTracking is true -->
+<div class="form-section" v-if="form.batchTracking">
+  <h3>Batches</h3>
+  <button type="button" @click="addBatch()">Add Batch</button>
+  <div v-for="(batch, index) in form.batches" :key="index" class="form-section" style="margin-top: 10px;">
+    <div class="inline-row">
+      <div>
+        <label :for="`batchNumber_${index}`">Batch Number</label>
+        <input :id="`batchNumber_${index}`" :name="`batchNumber_${index}`" type="text" v-model="batch.batchNumber" />
+        <span class="error" v-if="errors[`batchNumber_${index}`]">{{ errors[`batchNumber_${index}`] }}</span>
+      </div>
+      <div>
+        <label :for="`expiryDate_${index}`">Expiry Date</label>
+        <input :id="`expiryDate_${index}`" :name="`expiryDate_${index}`" type="date" v-model="batch.expiryDate" />
+      </div>
+      <div>
+        <label :for="`batchQuantity_${index}`">Quantity</label>
+        <input :id="`batchQuantity_${index}`" :name="`batchQuantity_${index}`" type="number" v-model.number="batch.quantity" min="0" />
+        <span class="error" v-if="errors[`batchQuantity_${index}`]">{{ errors[`batchQuantity_${index}`] }}</span>
+      </div>
+      <div>
+        <label :for="`batchWarehouse_${index}`">Warehouse</label>
+        <select :id="`batchWarehouse_${index}`" :name="`batchWarehouse_${index}`" v-model="batch.warehouse">
+          <option disabled value="">-- Select Warehouse --</option>
+          <option v-for="w in warehouses" :value="w._id" :key="w._id">{{ w.name }}</option>
+        </select>
+        <span class="error" v-if="errors[`batchWarehouse_${index}`]">{{ errors[`batchWarehouse_${index}`] }}</span>
+      </div>
+      <button type="button" @click="removeBatch(index)">Remove</button>
+    </div>
+  </div>
+</div>
 
-                    <!-- Only show batches if batchTracking is true -->
-                    <div class="form-section" v-if="form.batchTracking">
-                        <h3>Batches</h3>
-                        <button type="button" @click="addBatch()">Add Batch</button>
-                        <div v-for="(batch, index) in form.batches" :key="index" class="form-section" style="margin-top: 10px;">
-                            <div class="inline-row">
-                                <div>
-                                    <label>Batch Number</label>
-                                    <input type="text" v-model="batch.batchNumber" required />
-                                </div>
-                                <div>
-                                    <label>Expiry Date</label>
-                                    <input type="date" v-model="batch.expiryDate" />
-                                </div>
-                                <div>
-                                    <label>Quantity</label>
-                                    <input type="number" v-model.number="batch.quantity" min="0" required />
-                                </div>
-                                <div>
-                                    <label>Warehouse</label>
-                                    <select v-model="batch.warehouse" required>
-                                        <option disabled value="">-- Select Warehouse --</option>
-                                        <option v-for="w in warehouses" :value="w._id" :key="w._id">{{ w.name }}</option>
-                                    </select>
-                                </div>
-                                <button type="button" @click="removeBatch(index)">Remove</button>
-                            </div>
-                        </div>
-                    </div>
+<!-- Warehouses Section -->
+<div class="form-section">
+  <h3>Warehouses</h3>
+  <button type="button" @click="addWarehouse()">Add Warehouse</button>
+  <div v-for="(w, index) in form.warehouses" :key="index" class="form-section" style="margin-top: 10px;">
+    <div class="inline-row">
+      <div>
+        <label :for="`warehouse_${index}`">Warehouse</label>
+        <select :id="`warehouse_${index}`" :name="`warehouse_${index}`" v-model="w.warehouse">
+          <option disabled value="">-- Select Warehouse --</option>
+          <option v-for="wh in warehouses" :value="wh._id" :key="wh._id">{{ wh.name }}</option>
+        </select>
+        <span class="error" v-if="errors[`warehouseWarehouse_${index}`]">{{ errors[`warehouseWarehouse_${index}`] }}</span>
+      </div>
+      <div>
+        <label :for="`warehouseName_${index}`">Name</label>
+        <input :id="`warehouseName_${index}`" :name="`warehouseName_${index}`" type="text" v-model="w.name" />
+        <span class="error" v-if="errors[`warehouseName_${index}`]">{{ errors[`warehouseName_${index}`] }}</span>
+      </div>
+      <div>
+        <label :for="`warehouseLocation_${index}`">Location</label>
+        <input :id="`warehouseLocation_${index}`" :name="`warehouseLocation_${index}`" type="text" v-model="w.location" />
+      </div>
+      <div>
+        <label :for="`warehouseStock_${index}`">Stock</label>
+        <input :id="`warehouseStock_${index}`" :name="`warehouseStock_${index}`" type="number" v-model.number="w.stock" min="0" />
+        <span class="error" v-if="errors[`warehouseStock_${index}`]">{{ errors[`warehouseStock_${index}`] }}</span>
+      </div>
+      <div>
+        <label :for="`warehouseLowStockThreshold_${index}`">Low Stock Threshold</label>
+        <input :id="`warehouseLowStockThreshold_${index}`" :name="`warehouseLowStockThreshold_${index}`" type="number" v-model.number="w.lowStockThreshold" min="0" />
+        <span class="error" v-if="errors[`warehouseLowStockThreshold_${index}`]">{{ errors[`warehouseLowStockThreshold_${index}`] }}</span>
+      </div>
+      <button type="button" @click="removeWarehouse(index)">Remove</button>
+    </div>
+  </div>
+</div>
 
-                    <!-- Only show warehouses if batchTracking is false -->
-                    <div class="form-section" v-if="!form.batchTracking">
-                        <h3>Warehouses Stock</h3>
-                        <button type="button" @click="addWarehouse()">Add Warehouse Stock</button>
-                        <div v-for="(wstock, idx) in form.warehouses" :key="idx" class="form-section" style="margin-top: 10px;">
-                            <div class="inline-row">
-                                <div>
-                                    <label>Warehouse</label>
-                                    <select v-model="wstock.warehouse" required>
-                                        <option disabled value="">-- Select Warehouse --</option>
-                                        <option v-for="w in warehouses" :value="w._id" :key="w._id">{{ w.name }}</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label>Name</label>
-                                    <input type="text" v-model="wstock.name" required />
-                                </div>
-                                <div>
-                                    <label>Location</label>
-                                    <input type="text" v-model="wstock.location" />
-                                </div>
-                                <div>
-                                    <label>Stock</label>
-                                    <input type="number" v-model.number="wstock.stock" min="0" required />
-                                </div>
-                                <div>
-                                    <label>Low Stock Threshold</label>
-                                    <input type="number" v-model.number="wstock.lowStockThreshold" min="0" />
-                                </div>
-                                <button type="button" @click="removeWarehouse(idx)">Remove</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 20px;">
-                        <button type="submit">{{ editingVariant ? 'Save Changes' : 'Add Variant' }}</button>
-                        <button type="button" @click="closeModal()">Cancel</button>
-                    </div>
-
-                    <div v-if="formError" class="error" style="margin-top:10px;">{{ formError }}</div>
-                </form>
-            </div>
-        </div>
+<span class="error" v-if="formError">{{ formError }}</span>
+<div style="margin-top: 20px;">
+  <button type="submit" class="btn">Save</button>
+  <button type="button" @click="closeModal()" class="btn-secondary">Cancel</button>
+</div>
+    </form>
+  </div>
+</div>
 
 
     </main>
@@ -460,6 +474,7 @@ input, select {
                     try {
                         const res = await axios.get(`${this.API_BASE}/product-variant`);
                         this.productVariants = res.data;
+                        console.log('Fetched product variants:', this.productVariants); 
                     } catch (err) {
                         console.error('Error fetching product variants:', err);
                     }
@@ -468,6 +483,7 @@ input, select {
                     try {
                         const res = await axios.get(`${this.API_BASE}/products`);
                         this.products = res.data;
+                        console.log('Fetched products:', this.products);
                     } catch (err) {
                         console.error('Error fetching products:', err);
                     }
@@ -515,7 +531,8 @@ input, select {
                     this.form.barcode = variant.barcode;
                     this.form.price = variant.price || 0;
                     this.form.costPrice = variant.costPrice || 0;
-                    this.form.batchTracking = variant.batchTracking || false;
+                    // Always cast to Boolean
+                    this.form.batchTracking = !!variant.batchTracking;
                     this.form.lowStockThreshold = variant.lowStockThreshold || 0;
                     this.form.active = variant.active !== undefined ? variant.active : true;
                     this.form.image = variant.image || null;
@@ -604,7 +621,7 @@ input, select {
                         valid = false;
                     }
                     if (this.form.price === null || this.form.price < 0) {
-                        this.errors.price = 'Price must be zero or positive';
+                        this.errors.price = 'Unit Price must be zero or positive';
                         valid = false;
                     }
                     if (this.form.costPrice === null || this.form.costPrice < 0) {

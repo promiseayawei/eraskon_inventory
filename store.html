@@ -13,7 +13,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
   <style>
     :root {
@@ -50,18 +50,70 @@
       justify-content: flex-start;
     }
 
-    .invoice-panel {
-      position: sticky;
-      top: 100px;
-      align-self: flex-start;
-      background: var(--container-bg);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 300px;
-      max-height: calc(100vh - 120px);
+    /* --- Drawer styles for Invoice, Customer Info, Discount/Tax panels --- */
+
+    .drawer-panel {
+      position: fixed;
+      top: 80px;
+      right: 0;
+      width: 370px;
+      max-width: 100vw;
+      min-width: 260px;
+      height: calc(100vh - 100px);
+      background: var(--container-bg, #fff);
+      box-shadow: -4px 0 24px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+      border-radius: 16px 0 0 16px;
+      z-index: 1200;
+      padding: 24px 20px 20px 28px;
       overflow-y: auto;
-      margin-left: auto;
+      display: flex;
+      flex-direction: column;
+      animation: slideInDrawer 0.5s cubic-bezier(.4, 2, .6, 1) both;
+      transition: box-shadow 0.3s, background 0.3s;
+      margin-bottom: 1.5rem;
+      gap: 18px;
+    }
+
+    @keyframes slideInDrawer {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .drawer-panel {
+        width: 100vw;
+        min-width: 0;
+        right: 0;
+        left: 0;
+        top: auto;
+        bottom: 0;
+        border-radius: 16px 16px 0 0;
+        height: 60vh;
+        max-height: 80vh;
+        padding: 18px 8px 12px 12px;
+        box-shadow: 0 -4px 24px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+        animation: slideUpDrawer 0.5s cubic-bezier(.4, 2, .6, 1) both;
+        gap: 12px;
+      }
+
+      @keyframes slideUpDrawer {
+        from {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
     }
 
     .product-card {
@@ -229,17 +281,440 @@
       background: #2563eb;
       color: #fff;
     }
+
+    /* Replace your invoice-panel markup with this for animated, responsive, and modern look */
+
+    .invoice-panel {
+      position: fixed;
+      top: 80px;
+      right: 0;
+      width: 370px;
+      max-width: 100vw;
+      min-width: 260px;
+      height: calc(100vh - 100px);
+      background: var(--container-bg, #fff);
+      box-shadow: -4px 0 24px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+      border-radius: 16px 0 0 16px;
+      z-index: 1200;
+      padding: 24px 20px 20px 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      animation: slideInDrawer 0.5s cubic-bezier(.4, 2, .6, 1) both;
+      transition: box-shadow 0.3s, background 0.3s;
+    }
+
+    @keyframes slideInDrawer {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .invoice-panel {
+        width: 100vw;
+        min-width: 0;
+        right: 0;
+        left: 0;
+        top: auto;
+        bottom: 0;
+        border-radius: 16px 16px 0 0;
+        height: 60vh;
+        max-height: 80vh;
+        padding: 18px 8px 12px 12px;
+        box-shadow: 0 -4px 24px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+        animation: slideUpDrawer 0.5s cubic-bezier(.4, 2, .6, 1) both;
+      }
+
+      @keyframes slideUpDrawer {
+        from {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+    }
+
+    .invoice-header {
+      margin-bottom: 12px;
+    }
+
+    .cart-count {
+      background: #2563eb;
+      color: #fff;
+      border-radius: 50%;
+      padding: 4px 14px;
+      font-weight: bold;
+      font-size: 1.1em;
+      display: inline-block;
+      min-width: 32px;
+      text-align: center;
+      box-shadow: 0 2px 8px #2563eb22;
+      transition: background 0.3s;
+    }
+
+    .invoice-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 16px 0;
+    }
+
+    .invoice-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 10px 0;
+      transition: background 0.2s;
+    }
+
+    .invoice-item:hover {
+      background: #f3f4f6;
+    }
+
+    .variant-size {
+      color: #2563eb;
+      margin-left: 4px;
+    }
+
+    .qty {
+      margin-left: 8px;
+      color: #555;
+    }
+
+    .item-total {
+      margin-left: 8px;
+      color: #888;
+      font-weight: 500;
+    }
+
+    .remove-btn {
+      margin-left: 10px;
+      color: #e53e3e;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1em;
+      transition: color 0.2s;
+    }
+
+    .remove-btn:hover {
+      color: #b91c1c;
+      transform: scale(1.15);
+    }
+
+    .invoice-totals {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 12px;
+      margin-bottom: 10px;
+    }
+
+    .invoice-totals>div {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 1em;
+    }
+
+    .invoice-totals .discount {
+      color: #e53e3e;
+    }
+
+    .invoice-totals .total-row {
+      font-size: 1.15em;
+      margin-top: 8px;
+      font-weight: bold;
+    }
+
+    .invoice-totals .total {
+      color: #2563eb;
+      font-weight: bold;
+    }
+
+    .invoice-actions {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .action-btn {
+      background: #f3f4f6;
+      color: #2563eb;
+      border: 1px solid #2563eb;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+
+    .action-btn.primary {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+    }
+
+    .action-btn.success {
+      background: #22c55e;
+      color: #fff;
+      border: none;
+    }
+
+    .action-btn:hover {
+      box-shadow: 0 2px 8px #2563eb22;
+      opacity: 0.92;
+    }
+
+    /* Style all <select> and <option> elements for a modern look */
+    select {
+      background: #f3f4f6;
+      color: #222;
+      border: 1px solid #2563eb;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 1em;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin: 0 0 4px 0;
+      min-width: 120px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px #2563eb22;
+    }
+
+    option {
+      background: #fff;
+      color: #222;
+      font-size: 1em;
+      padding: 8px 12px;
+    }
+
+    /* Responsive: make selects full width on mobile */
+    @media (max-width: 600px) {
+      select {
+        width: 100%;
+        min-width: 0;
+        font-size: 1em;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .invoice-panel {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: 0;
+        position: static;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .invoice-panel {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 1rem;
+      }
+
+      .invoice-header h3 {
+        font-size: 1.1em;
+      }
+
+      .invoice-totals>div,
+      .invoice-totals .total-row {
+        font-size: 1em;
+      }
+
+      .action-btn {
+        padding: 8px 10px;
+        font-size: 0.98em;
+      }
+    }
+
+    /* Make select, input, and invoice controls fit their containers and align with other elements */
+
+    .product-card select,
+    .product-card input[type="number"],
+    .product-list-table select,
+    .product-list-table input[type="number"],
+    .invoice-panel select,
+    .invoice-panel input[type="number"] {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      margin-bottom: 6px;
+      margin-top: 2px;
+      font-size: 1em;
+    }
+
+    .variant-selector,
+    .quantity-control,
+    .invoice-panel .invoice-actions,
+    .invoice-panel .invoice-totals,
+    .invoice-panel .invoice-header {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .invoice-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .invoice-list {
+      width: 100%;
+    }
+
+    .invoice-actions {
+      width: 100%;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Add these toggles/buttons somewhere in your template, e.g. top right of your main-content */
+    .toggle-buttons {
+      position: fixed;
+      top: 90px;
+      right: 20px;
+      z-index: 1300;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Common styles for all drawer panels */
+    .drawer-panel {
+      position: fixed;
+      top: 80px;
+      right: 0;
+      width: 370px;
+      max-width: 100vw;
+      min-width: 260px;
+      height: calc(100vh - 100px);
+      background: var(--container-bg, #fff);
+      box-shadow: -4px 0;
+      border-radius: 16px 0 0 16px;
+      z-index: 1200;
+      padding: 24px 20px 20px 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      animation: slideInDrawer 0.5s cubic-bezier(.4, 2, .6, 1) both;
+      transition: box-shadow 0.3s, background 0.3s;
+    }
+
+    /* Add to your <style> section for animation and positioning */
+    .drawer-fab-btn {
+      display: block;
+      margin: 10px 0 0 0;
+      box-shadow: 0 4px 16px #2563eb33;
+      background: #fff;
+      color: #2563eb;
+      border: none;
+      border-radius: 24px 8px 24px 8px;
+      padding: 12px 22px;
+      font-weight: 600;
+      min-width: 150px;
+      text-align: left;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .drawer-fab-btn:hover {
+      background: #2563eb;
+      color: #fff;
+      box-shadow: 0 6px 24px #2563eb44;
+    }
+
+    .drawer-btns-group {
+      position: relative;
+      width: 180px;
+      height: 140px;
+    }
+
+    .arc-btn {
+      position: absolute;
+      opacity: 1;
+      transform: scale(1);
+      transition:
+        right 0.3s cubic-bezier(.4, 2, .6, 1),
+        top 0.3s cubic-bezier(.4, 2, .6, 1),
+        opacity 0.3s,
+        box-shadow 0.2s;
+      border-radius: 24px 8px 24px 8px;
+      min-width: 150px;
+      box-shadow: 0 4px 16px #2563eb33;
+      background: #fff;
+      color: #2563eb;
+      border: none;
+      padding: 12px 22px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .arc-btn-1 {
+      top: 0px;
+      right: 0px;
+    }
+
+    .arc-btn-2 {
+      top: 50px;
+      right: 40px;
+    }
+
+    .arc-btn-3 {
+      top: 90px;
+      right: 90px;
+    }
+
+    @media (max-width: 600px) {
+      .arc-btn-1 {
+        top: 0;
+        right: 60px;
+      }
+
+      .arc-btn-2 {
+        top: 50px;
+        right: 30px;
+      }
+
+      .arc-btn-3 {
+        top: 90px;
+        right: 0;
+      }
+    }
   </style>
 </head>
 
 
 <body>
-<!-- Load Navbar -->
+  <!-- Load Navbar -->
   <script src="components/navbar.js"></script>
 
   <!-- Load Sidebar -->
   <script src="components/sidebar.js"></script>
-    
+
   <!-- Main Content -->
   <main id="app" class="main-content">
     <section class="product-page">
@@ -250,15 +725,11 @@
 
       <!-- Add this toggle button above your product grid -->
       <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
-        <button
-          :class="{active: productView === 'card'}"
-          @click="productView = 'card'"
+        <button :class="{active: productView === 'card'}" @click="productView = 'card'"
           style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer;">
           Card View
         </button>
-        <button
-          :class="{active: productView === 'list'}"
-          @click="productView = 'list'"
+        <button :class="{active: productView === 'list'}" @click="productView = 'list'"
           style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #f3f4f6; color: #2563eb; font-weight: 600; cursor: pointer;">
           List View
         </button>
@@ -314,7 +785,8 @@
             </thead>
             <tbody>
               <tr v-for="product in filteredProducts" :key="product.id">
-                <td><img :src="product.image" :alt="product.name" style="width:60px; height:60px; object-fit:cover; border-radius:8px;" /></td>
+                <td><img :src="product.image" :alt="product.name"
+                    style="width:60px; height:60px; object-fit:cover; border-radius:8px;" /></td>
                 <td>
                   <strong>{{ product.name }}</strong>
                   <div style="font-size:0.95em;">{{ product.description }}</div>
@@ -327,15 +799,15 @@
                   </select>
                 </td>
                 <td>
-  <div v-if="product.batchTracking && product.batches && product.batches.length">
-    <select v-model="product.selectedBatch">
-      <option v-for="batch in product.batches" :value="batch">
-        {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
-      </option>
-    </select>
-  </div>
-  <div v-else>-</div>
-</td>
+                  <div v-if="product.batchTracking && product.batches && product.batches.length">
+                    <select v-model="product.selectedBatch">
+                      <option v-for="batch in product.batches" :value="batch">
+                        {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
+                      </option>
+                    </select>
+                  </div>
+                  <div v-else>-</div>
+                </td>
                 <td>{{ product.selectedVariant.stock }}</td>
                 <td>
                   <div class="quantity-control" style="margin:0;">
@@ -353,44 +825,51 @@
         </div>
 
         <!-- Invoice Panel -->
-        <div class="invoice-panel" v-if="cart.length">
-          <h3>Invoice Summary</h3>
-          <ul>
-            <li v-for="(item, index) in cart" :key="index">
-              {{ item.name }} ({{ item.variant.size }}) - {{ item.quantity }} x ₦{{ item.variant.price }} = ₦{{ item.variant.price * item.quantity }}
+        <div class="drawer-panel animate__animated animate__fadeInRight invoice-drawer" v-if=" cart.length">
+          <div class="invoice-header"
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <h3 style="margin: 0;">Invoice Summary</h3>
+            <span class="cart-count">
+              {{ cart.length }}
+            </span>
+          </div>
+          <ul class="invoice-list">
+            <li v-for="(item, index) in cart" :key="index" class="invoice-item">
+              <div>
+                <strong>{{ item.name }}</strong>
+                <span class="variant-size">({{ item.variant.size }})</span>
+                <span class="qty">x{{ item.quantity }}</span>
+                <span class="item-total">₦{{ item.variant.price * item.quantity }}</span>
+              </div>
+              <button @click="removeFromCart(index)" class="remove-btn" aria-label="Remove item">
+                <i class="fa fa-trash"></i>
+              </button>
             </li>
           </ul>
-          <p><strong>Total:</strong> ₦{{ cartTotal }}</p>
-          <button @click="generateInvoice">Generate Invoice</button>
-          <button @click="generateInvoicePDF">Generate PDF Invoice</button>
-          <button @click="postOrder" style="margin-left: 10px;">Submit Order</button>
-        </div>
+          <div style="margin-bottom: 1em;">
+            <label for="paymentMethod"><strong>Payment Method:</strong></label>
+            <select id="paymentMethod" v-model="paymentMethod" style="width: 100%; margin-top: 4px;">
+              <option v-for="pm in paymentMethods" :value="pm.value">{{ pm.label }}</option>
+            </select>
+          </div>
+          <div class="invoice-totals">
+            <div><span>Subtotal:</span><span>₦{{ subtotal }}</span></div>
+            <div><span>Discount:</span><span class="discount">-₦{{ discountValue }}</span></div>
+            <div><span>Tax:</span><span>₦{{ taxValue }}</span></div>
+            <div class="total-row"><span>Total:</span><span class="total">₦{{ cartTotal }}</span></div>
+          </div>
+          <div class="invoice-actions">
+            <button @click="generateInvoice" class="action-btn primary">Generate Invoice</button>
+            <button @click="generateInvoicePDF" class="action-btn">Generate PDF Invoice</button>
+            <button @click="postOrder" class="action-btn success">Submit Order</button>
+            <!-- Close button in footer -->
+            <button @click="drawer.invoice = false" class="action-btn" style="margin-left:auto;">Close</button>
 
-        <!-- Empty Cart Fallback -->
-        <div class="invoice-panel" v-else>
-          <h3>Invoice Summary</h3>
-          <p>Your cart is empty. Add products to generate an invoice.</p>
-        </div>
 
-        <!-- Customer Information Panel -->
-        <div class="invoice-panel" style="margin-bottom: 1rem;">
-          <h3>Customer Information</h3>
-          <label for="customerSelect">Select Customer:</label>
-          <select id="customerSelect" v-model="selectedCustomerId" @change="onCustomerSelect">
-            <option value="">-- Select Customer --</option>
-            <option v-for="c in customers" :value="c._id">
-              {{ c.name }} ({{ c.email || c.phone || 'No contact' }})
-            </option>
-          </select>
-          <button @click="showAddCustomerModal = true" style="margin: 10px 0;">Add New Customer</button>
-          <div v-if="selectedCustomer">
-            <p><strong>Name:</strong> {{ selectedCustomer.name }}</p>
-            <p><strong>Email:</strong> {{ selectedCustomer.email }}</p>
-            <p><strong>Phone:</strong> {{ selectedCustomer.phone }}</p>
-            <p><strong>Company:</strong> {{ selectedCustomer.company }}</p>
-            <p><strong>Tax ID:</strong> {{ selectedCustomer.taxId }}</p>
           </div>
         </div>
+
+
 
         <!-- Modal for adding a new customer -->
         <div v-if="showAddCustomerModal" class="modal-overlay">
@@ -407,6 +886,118 @@
             </div>
           </div>
         </div>
+
+
+        <!-- Add these toggles/buttons somewhere in your template, e.g. top right of your main-content -->
+        <!-- Vertically arranged, curved drawer toggle buttons -->
+        <div id="drawer-toggle" @click="drawerMenuOpen = !drawerMenuOpen" :class="{ open: drawerMenuOpen }"
+          style="position: fixed; top: 100px; right: 24px; z-index: 1400; display: flex; flex-direction: column; align-items: flex-end;">
+          <div>
+            <i class="fa" :class="drawerMenuOpen ? 'fa-times' : 'fa-bars'"></i>
+          </div>
+          <transition-group name="drawer-btns" tag="div"
+            style="display: flex; flex-direction: column; align-items: flex-end; margin-top: 10px;">
+            <button v-if="drawerMenuOpen" key="invoice" @click.stop="openDrawer('invoice')" class="drawer-fab-btn">
+              <i class="fa fa-file-invoice"></i> Invoice
+            </button>
+            <button v-if="drawerMenuOpen" key="customer" @click.stop="openDrawer('customer')" class="drawer-fab-btn">
+              <i class="fa fa-user"></i> Customer Info
+            </button>
+            <button v-if="drawerMenuOpen" key="discount" @click.stop="openDrawer('discount')" class="drawer-fab-btn">
+              <i class="fa fa-percent"></i> Discount/Tax
+            </button>
+          </transition-group>
+        </div>
+
+        <!-- Invoice Drawer -->
+        <div class="drawer-panel animate__animated animate__fadeInRight invoice-drawer"
+          v-if="drawer.invoice && cart.length">
+          <div class="invoice-header"
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <h3 style="margin: 0;">Invoice Summary</h3>
+            <span class="cart-count">
+              {{ cart.length }}
+            </span>
+            <button @click="drawer.invoice = false" class="remove-btn" style="margin-left:10px;"><i
+                class="fa fa-times"></i></button>
+          </div>
+          <ul class="invoice-list">
+            <li v-for="(item, index) in cart" :key="index" class="invoice-item">
+              <div>
+                <strong>{{ item.name }}</strong>
+                <span class="variant-size">({{ item.variant.size }})</span>
+                <span class="qty">x{{ item.quantity }}</span>
+                <span class="item-total">₦{{ item.variant.price * item.quantity }}</span>
+              </div>
+              <button @click="removeFromCart(index)" class="remove-btn" aria-label="Remove item">
+                <i class="fa fa-trash"></i>
+              </button>
+            </li>
+          </ul>
+          <div class="invoice-totals">
+            <div><span>Subtotal:</span><span>₦{{ subtotal }}</span></div>
+            <div><span>Discount:</span><span class="discount">-₦{{ discountValue }}</span></div>
+            <div><span>Tax:</span><span>₦{{ taxValue }}</span></div>
+            <div class="total-row"><span>Total:</span><span class="total">₦{{ cartTotal }}</span></div>
+          </div>
+          <div class="invoice-actions">
+            <button @click="generateInvoice" class="action-btn primary">Generate Invoice</button>
+            <button @click="generateInvoicePDF" class="action-btn">Generate PDF Invoice</button>
+            <button @click="postOrder" class="action-btn success">Submit Order</button>
+
+            <!-- Close button in footer -->
+            <button @click="drawer.invoice = false" class="action-btn" style="margin-left:auto;">Close</button>
+          </div>
+        </div>
+
+        <!-- Customer Info Drawer -->
+        <div class="drawer-panel animate__animated animate__fadeInRight customer-info-drawer" v-if="drawer.customer">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3>Customer Information</h3>
+            <button @click="drawer.customer = false" class="remove-btn"><i class="fa fa-times"></i></button>
+          </div>
+          <label for="customerSelect">Select Customer:</label>
+          <select id="customerSelect" v-model="selectedCustomerId" @change="onCustomerSelect">
+            <option value="">-- Select Customer --</option>
+            <option v-for="c in customers" :value="c._id">
+              {{ c.name }} ({{ c.email || c.phone || 'No contact' }})
+            </option>
+          </select>
+          <button @click="showAddCustomerModal = true" class="action-btn" style="margin: 10px 0;">Add New Customer
+          </button>
+          <div v-if="selectedCustomer">
+            <p><strong>Name:</strong> {{ selectedCustomer.name }}</p>
+            <p><strong>Email:</strong> {{ selectedCustomer.email }}</p>
+            <p><strong>Phone:</strong> {{ selectedCustomer.phone }}</p>
+            <p><strong>Company:</strong> {{ selectedCustomer.company }}</p>
+            <p><strong>Tax ID:</strong> {{ selectedCustomer.taxId }}</p>
+
+          </div>
+
+          <button @click="drawer.customer = false" class="action-btn" style="margin-left:auto;">Close</button>
+        </div>
+
+        <!-- Discount & Tax Drawer -->
+        <div class="drawer-panel animate__animated animate__fadeInRight discount-tax-drawer" v-if="drawer.discount">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3>Discount & Tax</h3>
+            <button @click="drawer.discount = false" class="remove-btn"><i class="fa fa-times"></i></button>
+          </div>
+          <div style="margin-bottom: 1em;">
+            <label>Discount:</label>
+            <input type="number" v-model.number="discountAmount" min="0" style="width:100px;">
+            <select v-model="discountType" style="width:110px;">
+              <option value="flat">₦ Flat</option>
+              <option value="percent">% Percent</option>
+            </select>
+          </div>
+          <div>
+            <label>Tax (%):</label>
+            <input type="number" v-model.number="taxPercent" min="0" max="100" style="width:100px;">
+          </div>
+
+          <button @click="drawer.discount = false" class="action-btn" style="margin-left:auto;">Close</button>
+        </div>
       </div>
     </section>
 
@@ -420,18 +1011,27 @@
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script src="config.js"></script>
-<script>
-   const API_BASE = window.BASE_URL;
+  <script>
+    const API_BASE = window.BASE_URL;
 
-  new Vue({
-    el: '#app',
-    data: {
-      isDarkMode: localStorage.getItem("darkMode") === "true",
-      searchTerm: '',
-      cart: [],
-      products: [], // Will be populated from API
+    // Example: Generate a unique order code like "Order121nd"
+    function generateOrderCode() {
+      // You can use the current timestamp and a random number for uniqueness
+      const randomPart = Math.floor(Math.random() * 1000);
+      const timePart = Date.now().toString().slice(-4); // last 4 digits of timestamp
+      return `Order${timePart}${randomPart}`;
+    }
+
+    new Vue({
+      el: '#app',
+      data: {
+        drawerMenuOpen: false,
+        isDarkMode: localStorage.getItem("darkMode") === "true",
+        searchTerm: '',
+        cart: [],
+        products: [], // Will be populated from API
         customers: [],
         selectedCustomerId: '',
         showAddCustomerModal: false,
@@ -442,11 +1042,27 @@
           company: '',
           taxId: ''
         },
-        productView: 'card' // New data property for view mode
+        productView: 'card', // New data property for view mode
+        taxPercent: 0,         // Tax percentage (e.g. 7.5 for 7.5%)
+        discountAmount: 0,     // Discount amount (flat value)
+        discountType: 'flat',  // 'flat' or 'percent'
+        drawer: {
+          invoice: false,
+          customer: false,
+          discount: false
+        },
+        paymentMethod: 'cash',
+        paymentMethods: [
+          { value: 'cash', label: 'Cash' },
+          { value: 'transfer', label: 'Transfer' },
+          { value: 'pos', label: 'POS' },
+          { value: 'virtual_account', label: 'Virtual Account' }
+        ],
       },
       computed: {
         cartTotal() {
-          return this.cart.reduce((sum, item) => sum + (item.variant.price * item.quantity), 0);
+          // Subtotal - discount - tax
+          return Math.max(0, this.subtotal - this.discountValue - this.taxValue);
         },
         filteredProducts() {
           const term = this.searchTerm.toLowerCase();
@@ -457,7 +1073,25 @@
         },
         selectedCustomer() {
           return this.customers.find(c => c._id === this.selectedCustomerId) || null;
+        },
+        subtotal() {
+          return this.cart.reduce((sum, item) => sum + (item.variant.price * item.quantity), 0);
+        },
+        discountValue() {
+          if (this.discountType === 'percent') {
+            return (this.subtotal * this.discountAmount) / 100;
+          } else if (this.discountType === 'flat') {
+            return (this.subtotal - this.discountAmount < 0) ? this.subtotal : this.discountAmount;
+          }
+          return 0; // Always return a number!
+        },
+        taxValue() {
+          // Use a valid discount value
+          const discount = typeof this.discountValue === 'number' ? this.discountValue : 0;
+          return ((this.subtotal - discount) * this.taxPercent) / 100;
         }
+
+
       },
       methods: {
         toggleDarkMode() {
@@ -506,12 +1140,12 @@
               return;
             }
             this.cart.push({
-              id: product.id,
+              id: product.selectedVariant._id || product.id, // Use variant _id if available
               name: product.name,
               variant: product.selectedVariant,
               quantity: product.quantity,
               batchNumber: product.batchTracking ? product.selectedBatch.batchNumber : undefined,
-              warehouse: warehouseId // <-- Add this line
+              warehouse: warehouseId
             });
           }
           product.quantity = 1;
@@ -572,7 +1206,7 @@
           }
 
           // 1. Prepare company and customer info
-          const eraskonLogo = 'data:image/png;base64,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'; // Use your logo URL or base64
+          const eraskonLogo = 'data:image/png;base64,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'
           const eraskonInfo = [
             "Eraskon Nigeria Limited",
             "EL-AL Court, Plot 35, Chief Yesufu Abiodun Oniru Road,",
@@ -630,7 +1264,7 @@
 
             // Table
             doc.autoTable({
-              startY: 100, // <-- Increased from 80 to 100 for more top margin
+              startY: 100,
               head: [["#", "Product", "Size", "SKU", "Qty", "Unit Price", "Total"]],
               body: tableBody,
               theme: 'grid',
@@ -654,40 +1288,47 @@
         async fetchProducts() {
           try {
             const response = await axios.get(`${API_BASE}/product-variant`);
-            this.products = response.data.map(pv => {
-  const variants = [
-    {
-      sku: pv.sku,
-      price: pv.price,
-      stock: pv.totalStock,
-      barcode: pv.barcode,
-      warehouses: pv.warehouses
-    }
-  ];
-  return {
-    id: pv._id,
-    name: pv.name,
-    image: pv.image,
-    quantity: 1,
-    batchNumber: pv.batchNumber,
-    description: pv.description,  
-    batchTracking: pv.batchTracking,
-    batches: pv.batches,
-    warehouses: pv.warehouses,
-    variants,
-    selectedVariant: variants[0], // Reference to the actual variant object
-    selectedBatch: pv.batches && pv.batches.length ? pv.batches[0] : null // Reference to batch object
-  };
-});
+
+            if (response.data && Array.isArray(response.data)) {
+              this.products = response.data.map(pv => {
+                const variant = {
+                  sku: pv.sku,
+                  price: pv.price,
+                  costPrice: pv.costPrice || 0, // Ensure costPrice is defined
+                  stock: pv.totalStock,
+                  barcode: pv.barcode,
+                  warehouses: pv.warehouses || []
+                };
+
+                return {
+                  id: pv._id,
+                  name: pv.name,
+                  image: pv.image,
+                  quantity: 1,
+                  batchNumber: pv.batchNumber,
+                  description: pv.description,
+                  batchTracking: pv.batchTracking,
+                  batches: pv.batches || [],
+                  warehouses: pv.warehouses || [],
+                  variants: [variant],
+                  selectedVariant: variant,
+                  selectedBatch: pv.batches && pv.batches.length > 0 ? pv.batches[0] : null
+                };
+              });
+            } else {
+              console.warn("Unexpected response format:", response.data);
+              alert("Unexpected data format received.");
+            }
           } catch (err) {
             console.error("Failed to load products:", err);
-            alert("Error loading products. Check console for details.");
+            alert("Error loading products. Please check the console for details.");
           }
         },
         async fetchCustomers() {
           try {
             const res = await axios.get(`${API_BASE}/customer`);
             this.customers = Array.isArray(res.data) ? res.data : (res.data.customers || []);
+            console.log("Loaded customers:", this.customers);
           } catch (err) {
             console.error("Failed to load customers:", err);
           }
@@ -712,54 +1353,115 @@
             const token = localStorage.getItem('token');
             // Find the selected customer object
             const customerObj = this.customers.find(c => c._id === this.selectedCustomerId);
+            const taxValue = this.taxValue || 0; // Ensure taxValue is a number
+            console.log("taxValue:", taxValue);
+            console.log("Discount value:", this.discountValue);
+            discountValue = this.discountValue || 0; // Ensure discountValue is a number
+            console.log("Discount amount:", this.discountAmount);
+            console.log("Cart total:", this.cartTotal);
+            if (!customerObj) {
+              alert("Please select a valid customer.");
+              return;
+            }
 
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const userId = user._id || localStorage.getItem('userId');
+            if (!userId) {
+              alert("User not logged in. Please log in to continue.");
+              return;
+            }
             const payload = {
               items: this.cart.map(item => ({
                 ProductVariant: item.id,
                 productVariantName: item.name,
                 qty: item.quantity,
                 unitPrice: item.variant.price,
+                costPrice: item.variant.costPrice || 0, // Ensure costPrice is defined
                 image: item.variant.image || item.image || null
               })),
+              subTotal: this.subtotal, // match backend field name
+              discounts: [
+                {
+                  type: this.discountType,
+                  value: this.discountAmount,
+                  amount: discountValue
+                }
+              ],
+              taxRate: this.taxPercent, // percent value, e.g. 7.5
+              // Optionally, you can omit 'tax' and let backend calculate it
+              tax: taxValue,
+              // ...other fields
               total: this.cartTotal,
               createdAt: new Date(),
               customerId: this.selectedCustomerId,
-              customer: customerObj // Send full customer details
+              customer: customerObj, // Send full customer details
+              paymentMethod: this.paymentMethod,
+
+              // Add user info to payload
+              user: userId,
+              userFirstname: user.firstname || '',
+              userRole: user.role || '',
+              userWarehouse: user.warehouse?.name || user.warehouse || ''
             };
+
 
             // 1. Submit the order
             const orderRes = await axios.post(`${API_BASE}/order`, payload, {
               headers: { Authorization: `Bearer ${token}` }
             });
-
+            console.log("Order response:", orderRes.data);
             // 2. For each item, deduct stock by posting to stock-movement
             for (const item of this.cart) {
               if (item.variant.batchTracking && !item.batchNumber) {
                 alert(`Batch number missing for ${item.name}. Please remove and re-add with batch.`);
                 continue;
               }
-              await axios.post(`${API_BASE}/stock-movement`, {
-                productVariant: item.id, // <-- match backend field
-                type: "transfer",
+              console.log("Posting stock movement for item:", item);
+              console.log("Discount value:", this.discountValue);
+              console.log("Tax value:", this.taxValue);
+
+              const stockMovement = {
+                productVariantId: item.id, // match backend expectation
+                type: "out",
                 quantity: item.quantity,
                 warehouse: item.warehouse,
                 destinationWarehouse: this.selectedCustomer?.warehouse || undefined,
-                destinationCustomer: this.selectedCustomerId, // <-- send ObjectId, not name
+                destinationCustomer: this.selectedCustomerId?.name || undefined,
                 reference: `Order#${orderRes.data.orderCode || new Date().toISOString()}`,
                 reason: "Stock transfer",
                 batchNumber: item.batchNumber
-              }, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
+              };
+              await axios.post(`${API_BASE}/stock-movement`, stockMovement);
+              console.log("Stock movement posted for item:", stockMovement);
+              // Optionally, you can update the product variant stock in the frontend
             }
 
             alert("Order submitted and stock updated successfully!");
             this.cart = [];
           } catch (err) {
-            console.error("Order/stock post failed:", err.response?.data || err);
-            alert("Error submitting order or updating stock. Check console.");
+            let msg = "Error submitting order or updating stock.";
+            if (err.response && err.response.data) {
+              msg += `\nStatus: ${err.response.status || '-'}\n`;
+              msg += `Message: ${err.response.data.message || JSON.stringify(err.response.data)}`;
+            } else if (err.message) {
+              msg += `\n${err.message}`;
+            } else {
+              msg += `\n${JSON.stringify(err)}`;
+            }
+            console.error("Order/stock post failed:", err);
+            alert(msg);
           }
-        }
+        },
+        removeFromCart(index) {
+          this.cart.splice(index, 1);
+        },
+        openDrawer(type) {
+          this.drawer.invoice = false;
+          this.drawer.customer = false;
+          this.drawer.discount = false;
+          this.drawer[type] = true;
+          this.drawerMenuOpen = false;
+        },
       },
       watch: {
         isDarkMode(val) {
