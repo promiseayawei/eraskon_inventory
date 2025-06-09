@@ -1022,7 +1022,7 @@ renderWarehouseStockCards();
       function renderStockTable() {
         const table = document.getElementById('stockMovementTable');
         if (!table) return;
-        const tbody = table.querySelector('tbody');
+        const tbody = document.getElementById('stockMovementTableBody');
         if (!tbody) return;
         let filtered = Array.isArray(stockMovements) ? stockMovements.filter(m =>
           (m.productVariant?.name || '').toLowerCase().includes(stockSearch) ||
