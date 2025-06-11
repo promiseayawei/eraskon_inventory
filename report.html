@@ -1224,73 +1224,7 @@
 
   
   </script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Set current date and user info
-    const dateEl = document.getElementById('reportDate');
-    if (dateEl) dateEl.textContent = new Date().toLocaleDateString();
 
-    let user = {};
-    try {
-      user = JSON.parse(localStorage.getItem('user')) || {};
-    } catch { }
-    const usernameEl = document.getElementById('reportUsername');
-    if (usernameEl) usernameEl.textContent = user.username || user.name || '-';
-    const roleEl = document.getElementById('reportRole');
-    if (roleEl) roleEl.textContent = user.role || '-';
-    const warehouseEl = document.getElementById('reportWarehouse');
-    if (warehouseEl) warehouseEl.textContent = user.warehouse?.name || user.warehouse || '-';
-
-    // Print helper function
-    function printTable(tableId, title = '') {
-      const table = document.getElementById(tableId);
-      if (!table) return;
-      const win = window.open('', '', 'width=900,height=700');
-      win.document.write(`
-        <html>
-          <head>
-            <title>${title}</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 24px; }
-              table { border-collapse: collapse; width: 100%; margin-bottom: 24px; }
-              th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
-              th { background: #f3f4f6; }
-              h2 { margin-bottom: 16px; }
-            </style>
-          </head>
-          <body>
-            <h2>${title}</h2>
-            ${table.outerHTML}
-          </body>
-        </html>
-      `);
-      win.document.close();
-      win.focus();
-      setTimeout(() => win.print(), 500);
-    }
-
-    // Print button event listeners
-    const salesBtn = document.getElementById('printSalesTable');
-    if (salesBtn) salesBtn.onclick = function () {
-      printTable('salesReportTable', 'Sales Report');
-    };
-
-    const orderBtn = document.getElementById('printOrderTable');
-    if (orderBtn) orderBtn.onclick = function () {
-      printTable('orderReportTable', 'Order Report');
-    };
-
-    const stockBtn = document.getElementById('printStockTable');
-    if (stockBtn) stockBtn.onclick = function () {
-      printTable('stockMovementTable', 'Stock Movement Report');
-    };
-
-    const profitBtn = document.getElementById('printProfitTable');
-    if (profitBtn) profitBtn.onclick = function () {
-      printTable('profitReportTable', 'Profit Report');
-    };
-  });
-</script>
 </body>
 
 </html>

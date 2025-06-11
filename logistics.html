@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Logistics Partners - Eraskon Inventory</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --primary-bg: #f2f2f2;
+      --success: #10b981;
+      --danger: #ef4444;
+      --table-header: #f3f4f6;
+      --white: #fff;
+      --text: #222;
+      --shadow: 0 2px 8px #0001;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--primary-bg);
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+    }
+    .logistics-main-content {
+      margin-left: 240px;
+      margin-top: 64px;
+      padding: 32px 24px 24px 24px;
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
+    .logistics-container {
+      max-width: 1200px;
+      margin: 0;
+      background: var(--white);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 32px 24px;
+    }
+    .logistics-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .logistics-header h2 {
+      margin: 0;
+      font-size: 1.5em;
+      color: var(--primary);
+    }
+    .add-logistics-btn {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .add-logistics-btn:hover {
+      background: var(--primary-light);
+    }
+    table {
+      width: 100%;
+      min-width: 900px;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      background: var(--white);
+      border-radius: 8px;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      white-space: nowrap;
+      color: var(--text);
+    }
+    th {
+      background: var(--table-header);
+      color: var(--primary);
+    }
+    .logistics-action-btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-right: 6px;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .logistics-action-btn.view {
+      background: var(--primary-light);
+      color: var(--white);
+    }
+    .logistics-action-btn.edit {
+      background: var(--success);
+      color: var(--white);
+    }
+    .logistics-action-btn.delete {
+      background: var(--danger);
+      color: var(--white);
+    }
+    .logistics-action-btn.view:hover {
+      background: #1d4ed8;
+    }
+    .logistics-action-btn.edit:hover {
+      background: #059669;
+    }
+    .logistics-action-btn.delete:hover {
+      background: #b91c1c;
+    }
+    
+    .logistics-modal {
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logistics-modal-content {
+      background: var(--white);
+      padding: 32px 24px 24px 24px;
+      border-radius: 10px;
+      min-width: 320px;
+      max-width: 95vw;
+      box-shadow: var(--shadow);
+      position: relative;
+      animation: fadeIn 0.3s;
+    }
+    .logistics-modal-close {
+      position: absolute;
+      right: 18px;
+      top: 12px;
+      font-size: 1.8em;
+      color: #888;
+      cursor: pointer;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+    .logistics-modal-close:hover {
+      color: var(--danger);
+    }
+    .modal-field {
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-field label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--primary);
+    }
+    .modal-field input, .modal-field select {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+      background: #f9f9f9;
+    }
+    @media (max-width: 600px) {
+      .logistics-modal-content {
+        padding: 18px 6px 12px 6px;
+        min-width: 0;
+        width: 98vw;
+      }
+    }
+    @media (max-width: 900px) {
+      .logistics-main-content {
+        margin-left: 60px;
+        margin-top: 56px;
+        padding: 16px 4px 4px 4px;
+      }
+      .logistics-container {
+        padding: 12px 4px;
+      }
+      table {
+        min-width: 600px;
+      }
+    }
+    @media (max-width: 600px) {
+      .logistics-main-content {
+        margin-left: 0;
+        margin-top: 56px;
+        padding: 8px 2px 2px 2px;
+      }
+      .logistics-container {
+        padding: 10px 2px;
+        border-radius: 0;
+        margin: 0;
+        box-shadow: none;
+        background: transparent !important;
+        width: 100% !important;
+      }
+      table {
+        min-width: 400px;
+        font-size: 0.95em;
+        display: block;
+        overflow-x: auto;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        min-width: 0 !important;
+      }
+      th, td {
+        min-width: 120px;
+        white-space: normal;
+        padding: 8px 6px;
+        flex: 1 0 120px;
+        max-width: 100vw;
+        word-break: break-word;
+      }
+      table, thead, tbody, tfoot, tr, th, td {
+        display: block;
+        width: 100% !important;
+        box-sizing: border-box;
+      }
+      tr {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+      .logistics-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+
+  <div class="logistics-main-content">
+    <div class="logistics-container">
+      <div class="logistics-header">
+        <h2>Logistics Partners</h2>
+        <button class="add-logistics-btn"><i class="bx bx-plus"></i> Add Partner</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Service ID</th>
+            <th>Provider</th>
+            <th>Contact</th>
+            <th>Service Area</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>LOG-001</td>
+            <td>ABC Logistics</td>
+            <td>0801-234-5678</td>
+            <td>Lagos, Abuja</td>
+            <td>Active</td>
+            <td>
+              <button class="logistics-action-btn view"><i class="bx bx-show"></i>View</button>
+              <button class="logistics-action-btn edit"><i class="bx bx-edit"></i>Edit</button>
+              <button class="logistics-action-btn delete"><i class="bx bx-trash"></i>Delete</button>
+            </td>
+          </tr>
+          <tr>
+            <td>LOG-002</td>
+            <td>FastMove</td>
+            <td>0802-345-6789</td>
+            <td>Port Harcourt, Kano</td>
+            <td>Active</td>
+            <td>
+              <button class="logistics-action-btn view"><i class="bx bx-show"></i>View</button>
+              <button class="logistics-action-btn edit"><i class="bx bx-edit"></i>Edit</button>
+              <button class="logistics-action-btn delete"><i class="bx bx-trash"></i>Delete</button>
+            </td>
+          </tr>
+          <tr>
+            <td>LOG-003</td>
+            <td>QuickShip</td>
+            <td>0803-456-7890</td>
+            <td>Nationwide</td>
+            <td>Inactive</td>
+            <td>
+              <button class="logistics-action-btn view"><i class="bx bx-show"></i>View</button>
+              <button class="logistics-action-btn edit"><i class="bx bx-edit"></i>Edit</button>
+              <button class="logistics-action-btn delete"><i class="bx bx-trash"></i>Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="logisticsModal" class="logistics-modal" style="display:none;">
+    <div class="logistics-modal-content">
+      <span class="logistics-modal-close" id="logisticsModalClose">&times;</span>
+      <h3 id="logisticsModalTitle">Add Logistics Partner</h3>
+      <form id="logisticsForm">
+        <input type="hidden" id="logisticsEditId" />
+        <div class="modal-field">
+          <label for="provider">Provider</label>
+          <input type="text" id="provider" name="provider" required />
+        </div>
+        <div class="modal-field">
+          <label for="contact">Contact</label>
+          <input type="text" id="contact" name="contact" required />
+        </div>
+        <div class="modal-field">
+          <label for="serviceArea">Service Area</label>
+          <input type="text" id="serviceArea" name="serviceArea" required />
+        </div>
+        <div class="modal-field">
+          <label for="status">Status</label>
+          <select id="status" name="status" required>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+        <button type="submit" class="add-logistics-btn" id="logisticsModalSave">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <style>
+    .logistics-modal {
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logistics-modal-content {
+      background: var(--white);
+      padding: 32px 24px 24px 24px;
+      border-radius: 10px;
+      min-width: 320px;
+      max-width: 95vw;
+      box-shadow: var(--shadow);
+      position: relative;
+      animation: fadeIn 0.3s;
+    }
+    .logistics-modal-close {
+      position: absolute;
+      right: 18px;
+      top: 12px;
+      font-size: 1.8em;
+      color: #888;
+      cursor: pointer;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+    .logistics-modal-close:hover {
+      color: var(--danger);
+    }
+    .modal-field {
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-field label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--primary);
+    }
+    .modal-field input, .modal-field select {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+      background: #f9f9f9;
+    }
+    @media (max-width: 600px) {
+      .logistics-modal-content {
+        padding: 18px 6px 12px 6px;
+        min-width: 0;
+        width: 98vw;
+      }
+    }
+  </style>
+
+  <script src="assets/js/script.js"></script>
+  <script src="config.js"></script>
+  <script>
+const API_BASE = window.BASE_URL + '/logistics';
+
+let logisticsList = [];
+
+// Fetch all logistics partners from API
+async function fetchLogistics() {
+  try {
+    const res = await fetch(API_BASE);
+    logisticsList = await res.json();
+    renderLogisticsTable();
+  } catch (e) {
+    alert('Failed to load logistics partners.');
+  }
+}
+
+// Render logistics table
+function renderLogisticsTable() {
+  const tbody = document.querySelector('.logistics-container table tbody');
+  tbody.innerHTML = '';
+  logisticsList.forEach((item, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.serviceId || ''}</td>
+      <td>${item.provider || ''}</td>
+      <td>${item.contact || ''}</td>
+      <td>${item.serviceArea || ''}</td>
+      <td>${item.status || ''}</td>
+      <td>
+        <button class="logistics-action-btn view" data-idx="${idx}"><i class="bx bx-show"></i>View</button>
+        <button class="logistics-action-btn edit" data-idx="${idx}"><i class="bx bx-edit"></i>Edit</button>
+        <button class="logistics-action-btn delete" data-idx="${idx}"><i class="bx bx-trash"></i>Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  attachLogisticsHandlers();
+}
+
+// Attach handlers for view, edit, delete
+function attachLogisticsHandlers() {
+  document.querySelectorAll('.logistics-action-btn.view').forEach(btn => {
+    btn.onclick = function() {
+      const idx = +btn.getAttribute('data-idx');
+      const item = logisticsList[idx];
+      alert(
+        `Service ID: ${item.serviceId}\nProvider: ${item.provider}\nContact: ${item.contact}\nService Area: ${item.serviceArea}\nStatus: ${item.status}`
+      );
+    };
+  });
+  document.querySelectorAll('.logistics-action-btn.edit').forEach(btn => {
+    btn.onclick = function() {
+      const idx = +btn.getAttribute('data-idx');
+      const item = logisticsList[idx];
+      modalTitle.textContent = 'Edit Logistics Partner';
+      logisticsEditId.value = item._id;
+      providerInput.value = item.provider;
+      contactInput.value = item.contact;
+      serviceAreaInput.value = item.serviceArea;
+      statusInput.value = item.status;
+      // Show serviceId in modal title for clarity (optional)
+      modalTitle.textContent = `Edit Logistics Partner (${item.serviceId})`;
+      modal.style.display = 'flex';
+    };
+  });
+  document.querySelectorAll('.logistics-action-btn.delete').forEach(btn => {
+    btn.onclick = async function() {
+      const idx = +btn.getAttribute('data-idx');
+      const item = logisticsList[idx];
+      if (confirm(`Are you sure you want to delete logistics partner "${item.provider}" (${item.serviceId})?`)) {
+        try {
+          await fetch(`${API_BASE}/${item._id}`, { method: 'DELETE' });
+          fetchLogistics();
+        } catch {
+          alert('Delete failed.');
+        }
+      }
+    };
+  });
+}
+
+// Modal logic
+const modal = document.getElementById('logisticsModal');
+const modalClose = document.getElementById('logisticsModalClose');
+const modalTitle = document.getElementById('logisticsModalTitle');
+const logisticsForm = document.getElementById('logisticsForm');
+const logisticsEditId = document.getElementById('logisticsEditId');
+const providerInput = document.getElementById('provider');
+const contactInput = document.getElementById('contact');
+const serviceAreaInput = document.getElementById('serviceArea');
+const statusInput = document.getElementById('status');
+
+// Open modal for add
+document.querySelector('.add-logistics-btn').onclick = () => {
+  modalTitle.textContent = 'Add Logistics Partner';
+  logisticsForm.reset();
+  logisticsEditId.value = '';
+  modal.style.display = 'flex';
+};
+
+// Close modal
+modalClose.onclick = () => { modal.style.display = 'none'; };
+window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+
+
+  // Generate next service ID like LOG-004
+  function generateServiceId() {
+    const rows = document.querySelectorAll('table tbody tr');
+    let maxId = 0;
+
+    rows.forEach(row => {
+      const idText = row.cells[0].textContent;
+      const num = parseInt(idText.replace('LOG-', ''));
+      if (!isNaN(num) && num > maxId) {
+        maxId = num;
+      }
+    });
+
+    const nextId = maxId + 1;
+    return `LOG-${String(nextId).padStart(3, '0')}`;
+  }
+
+// Form submit (add/edit)
+logisticsForm.onsubmit = async function(e) {
+  e.preventDefault();
+  const data = {
+    provider: providerInput.value,
+    contact: contactInput.value,
+    serviceArea: serviceAreaInput.value,
+    status: statusInput.value,
+    serviceId: generateServiceId() // Generate serviceId dynamically
+    
+    // Do NOT send serviceId from frontend; backend will auto-generate it
+  };
+  try {
+    if (logisticsEditId.value) {
+      // Edit (serviceId should not be changed)
+      await fetch(`${API_BASE}/${logisticsEditId.value}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } else {
+      // Add (backend will auto-generate serviceId)
+      await fetch(API_BASE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    }
+    modal.style.display = 'none';
+    fetchLogistics();
+  } catch {
+    alert('Save failed.');
+  }
+};
+
+// Initial fetch
+fetchLogistics();
+  </script>
+</body>
+</html>

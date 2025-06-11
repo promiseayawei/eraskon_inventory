@@ -47,13 +47,15 @@ document.write(`
           </div>
           <ul class="menu_items submenu">
             <a href="user.html" class="nav_link sublink">Users</a>
-            <a href="role.html" class="nav_link sublink">Roles</a>
+            <a href="roles.html" class="nav_link sublink">Roles</a>
             <a href="warehouse.html" class="nav_link sublink">Warehouses</a>
             <a href="stock-movement.html" class="nav_link sublink">Stock Movement</a>
             <a href="stats.html" class="nav_link sublink">Analytics</a>
             <a href="category.html" class="nav_link sublink">Category</a>
             <a href="product.html" class="nav_link sublink">Products</a>
             <a href="product-variant.html" class="nav_link sublink">Product-variant</a>
+            <a href="approve.html" class="nav_link sublink">Approve</a>
+            <a href="logistics.html" class="nav_link sublink">Logistics</a>
           </ul>
         </li>
       </ul>
@@ -85,8 +87,14 @@ document.write(`
         </li>
         <li class="item">
           <a href="shipping.html" class="nav_link">
-            <span class="navlink_icon"><i class="bx bx-van"></i></span>
+            <span class="navlink_icon"><i class="bx bx-send"></i></span>
             <span class="navlink">Shipping</span>
+          </a>
+        </li>
+        <li class="item">
+          <a href="logistics.html" class="nav_link">
+            <span class="navlink_icon"><i class="bx bx-package"></i></span>
+            <span class="navlink">Logistics</span>
           </a>
         </li>
       </ul>
