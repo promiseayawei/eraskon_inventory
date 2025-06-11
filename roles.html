@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Roles & Permissions - Eraskon Inventory</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --primary-bg: #f2f2f2;
+      --success: #10b981;
+      --danger: #ef4444;
+      --table-header: #f3f4f6;
+      --white: #fff;
+      --text: #222;
+      --shadow: 0 2px 8px #0001;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--primary-bg);
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+    }
+    .roles-main-content {
+      margin-left: 240px;
+      margin-top: 64px;
+      padding: 32px 24px 24px 24px;
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
+    .roles-container {
+      max-width: 1200px;
+      margin: 0;
+      background: var(--white);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 32px 24px;
+    }
+    .roles-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .roles-header h2 {
+      margin: 0;
+      font-size: 1.5em;
+      color: var(--primary);
+    }
+    .add-role-btn {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .add-role-btn:hover {
+      background: var(--primary-light);
+    }
+    table {
+      width: 100%;
+      min-width: 900px;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      background: var(--white);
+      border-radius: 8px;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      white-space: nowrap;
+      color: var(--text);
+    }
+    th {
+      background: var(--table-header);
+      color: var(--primary);
+    }
+    .roles-action-btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-right: 6px;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .roles-action-btn.view {
+      background: var(--primary-light);
+      color: var(--white);
+    }
+    .roles-action-btn.edit {
+      background: var(--success);
+      color: var(--white);
+    }
+    .roles-action-btn.delete {
+      background: var(--danger);
+      color: (var,--white);
+    }
+    .roles-action-btn.view:hover {
+      background: #1d4ed8;
+    }
+    .roles-action-btn.edit:hover {
+      background: #059669;
+    }
+    .roles-action-btn.delete:hover {
+      background: #b91c1c;
+    }
+    .permission-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .permission-badge {
+      background: #e0e7ff;
+      color: #3730a3;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.95em;
+      margin-right: 4px;
+      margin-bottom: 2px;
+      display: inline-block;
+    }
+    .roles-modal {
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .roles-modal-content {
+      background: var(--white);
+      padding: 32px 24px 24px 24px;
+      border-radius: 10px;
+      min-width: 320px;
+      max-width: 95vw;
+      box-shadow: var(--shadow);
+      position: relative;
+      animation: fadeIn 0.3s;
+    }
+    .roles-modal-close {
+      position: absolute;
+      right: 18px;
+      top: 12px;
+      font-size: 1.8em;
+      color: #888;
+      cursor: pointer;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+    .roles-modal-close:hover {
+      color: var(--danger);
+    }
+    .modal-field {
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-field label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--primary);
+    }
+    .modal-field input, .modal-field select {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+      background: #f9f9f9;
+    }
+    .modal-field .permission-checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      margin-top: 6px;
+    }
+    .modal-field .permission-checkboxes label {
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 0;
+    }
+    @media (max-width: 900px) {
+      .roles-main-content {
+        margin-left: 60px;
+        margin-top: 56px;
+        padding: 16px 4px 4px 4px;
+      }
+      .roles-container {
+        padding: 12px 4px;
+      }
+      table {
+        min-width: 600px;
+      }
+    }
+    @media (max-width: 600px) {
+      .roles-main-content {
+        margin-left: 0;
+        margin-top: 56px;
+        padding: 8px 2px 2px 2px;
+      }
+      .roles-container {
+        padding: 10px 2px;
+        border-radius: 0;
+        margin: 0;
+        box-shadow: none;
+        background: transparent !important;
+        width: 100% !important;
+      }
+      table {
+        min-width: 400px;
+        font-size: 0.95em;
+        display: block;
+        overflow-x: auto;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        min-width: 0 !important;
+      }
+      th, td {
+        min-width: 120px;
+        white-space: normal;
+        padding: 8px 6px;
+        flex: 1 0 120px;
+        max-width: 100vw;
+        word-break: break-word;
+      }
+      table, thead, tbody, tfoot, tr, th, td {
+        display: block;
+        width: 100% !important;
+        box-sizing: border-box;
+      }
+      tr {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+      .roles-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+
+  <div class="roles-main-content">
+    <div class="roles-container">
+      <div class="roles-header">
+        <h2>Roles & Permissions</h2>
+        <button class="add-role-btn"><i class="bx bx-plus"></i> Add Role</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Description</th>
+            <th>Permissions</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Admin</td>
+            <td>Full access to all features</td>
+            <td>
+              <div class="permission-list">
+                <span class="permission-badge">View</span>
+                <span class="permission-badge">Edit</span>
+                <span class="permission-badge">Delete</span>
+                <span class="permission-badge">Approve</span>
+                <span class="permission-badge">Manage Users</span>
+              </div>
+            </td>
+            <td>
+              <button class="roles-action-btn view"><i class="bx bx-show"></i>View</button>
+              <button class="roles-action-btn edit"><i class="bx bx-edit"></i>Edit</button>
+              <button class="roles-action-btn delete"><i class="bx bx-trash"></i>Delete</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Manager</td>
+            <td>Can approve and edit records</td>
+            <td>
+              <div class="permission-list">
+                <span class="permission-badge">View</span>
+                <span class="permission-badge">Edit</span>
+                <span class="permission-badge">Approve</span>
+              </div>
+            </td>
+            <td>
+              <button class="roles-action-btn view"><i class="bx bx-show"></i>View</button>
+              <button class="roles-action-btn edit"><i class="bx bx-edit"></i>Edit</button>
+              <button class="roles-action-btn delete"><i class="bx bx-trash"></i>Delete</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Staff</td>
+            <td>Can view and edit own records</td>
+            <td>
+              <div class="permission-list">
+                <span class="permission-badge">View</span>
+                <span class="permission-badge">Edit</span>
+              </div>
+            </td>
+            <td>
+              <button class="roles-action-btn view"><i class="bx bx-show"></i>View</button>
+              <button class="roles-action-btn edit"><i class="bx bx-edit"></i>Edit</button>
+              <button class="roles-action-btn delete"><i class="bx bx-trash"></i>Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="rolesModal" class="roles-modal" style="display:none;">
+    <div class="roles-modal-content">
+      <span class="roles-modal-close" id="rolesModalClose">&times;</span>
+      <h3 id="rolesModalTitle">Add Role</h3>
+      <form id="rolesForm">
+        <input type="hidden" id="rolesEditId" />
+        <div class="modal-field">
+          <label for="roleName">Role Name</label>
+          <input type="text" id="roleName" name="roleName" required />
+        </div>
+        <div class="modal-field">
+          <label for="roleDesc">Description</label>
+          <input type="text" id="roleDesc" name="roleDesc" required />
+        </div>
+        <div class="modal-field">
+          <label>Permissions</label>
+          <div class="permission-checkboxes">
+            <label><input type="checkbox" name="permissions" value="View" /> View</label>
+            <label><input type="checkbox" name="permissions" value="Edit" /> Edit</label>
+            <label><input type="checkbox" name="permissions" value="Delete" /> Delete</label>
+            <label><input type="checkbox" name="permissions" value="Approve" /> Approve</label>
+            <label><input type="checkbox" name="permissions" value="Manage Users" /> Manage Users</label>
+          </div>
+        </div>
+        <button type="submit" class="add-role-btn" id="rolesModalSave">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/js/script.js"></script>
+  <script src="config.js"></script>
+  <script>
+    // --- Roles Data Store (in-memory for demo, replace with backend or localStorage as needed) ---
+    let roles = [
+      {
+        name: "Admin",
+        desc: "Full access to all features",
+        permissions: ["View", "Edit", "Delete", "Approve", "Manage Users"]
+      },
+      {
+        name: "Manager",
+        desc: "Can approve and edit records",
+        permissions: ["View", "Edit", "Approve"]
+      },
+      {
+        name: "Staff",
+        desc: "Can view and edit own records",
+        permissions: ["View", "Edit"]
+      }
+    ];
+
+    // --- Utility: Render roles table ---
+    function renderRolesTable() {
+      const tbody = document.querySelector('.roles-container table tbody');
+      tbody.innerHTML = '';
+      roles.forEach((role, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${role.name}</td>
+          <td>${role.desc}</td>
+          <td>
+            <div class="permission-list">
+              ${role.permissions.map(p => `<span class="permission-badge">${p}</span>`).join('')}
+            </div>
+          </td>
+          <td>
+            <button class="roles-action-btn view" data-idx="${idx}"><i class="bx bx-show"></i>View</button>
+            <button class="roles-action-btn edit" data-idx="${idx}"><i class="bx bx-edit"></i>Edit</button>
+            <button class="roles-action-btn delete" data-idx="${idx}"><i class="bx bx-trash"></i>Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      attachRoleActionHandlers();
+    }
+
+    // --- Modal logic ---
+    const modal = document.getElementById('rolesModal');
+    const modalClose = document.getElementById('rolesModalClose');
+    const modalTitle = document.getElementById('rolesModalTitle');
+    const rolesForm = document.getElementById('rolesForm');
+    const rolesEditId = document.getElementById('rolesEditId');
+    const roleNameInput = document.getElementById('roleName');
+    const roleDescInput = document.getElementById('roleDesc');
+    const permissionCheckboxes = document.querySelectorAll('input[name="permissions"]');
+
+    // Open modal for add
+    document.querySelector('.add-role-btn').onclick = () => {
+      modalTitle.textContent = 'Add Role';
+      rolesForm.reset();
+      rolesEditId.value = '';
+      permissionCheckboxes.forEach(cb => cb.checked = false);
+      modal.style.display = 'flex';
+    };
+
+    // Attach handlers to action buttons (view, edit, delete)
+    function attachRoleActionHandlers() {
+      document.querySelectorAll('.roles-action-btn.view').forEach(btn => {
+        btn.onclick = function() {
+          const idx = +btn.getAttribute('data-idx');
+          const role = roles[idx];
+          alert(
+            `Role: ${role.name}\nDescription: ${role.desc}\nPermissions: ${role.permissions.join(', ')}`
+          );
+        };
+      });
+      document.querySelectorAll('.roles-action-btn.edit').forEach(btn => {
+        btn.onclick = function() {
+          const idx = +btn.getAttribute('data-idx');
+          const role = roles[idx];
+          modalTitle.textContent = 'Edit Role';
+          rolesEditId.value = idx;
+          roleNameInput.value = role.name;
+          roleDescInput.value = role.desc;
+          permissionCheckboxes.forEach(cb => cb.checked = role.permissions.includes(cb.value));
+          modal.style.display = 'flex';
+        };
+      });
+      document.querySelectorAll('.roles-action-btn.delete').forEach(btn => {
+        btn.onclick = function() {
+          const idx = +btn.getAttribute('data-idx');
+          if (confirm('Are you sure you want to delete this role?')) {
+            roles.splice(idx, 1);
+            renderRolesTable();
+          }
+        };
+      });
+    }
+
+    // Close modal
+    modalClose.onclick = () => { modal.style.display = 'none'; };
+    window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+
+    // Form submit (add/edit)
+    rolesForm.onsubmit = function(e) {
+      e.preventDefault();
+      const name = roleNameInput.value.trim();
+      const desc = roleDescInput.value.trim();
+      const perms = Array.from(permissionCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+      if (!name || !desc || perms.length === 0) {
+        alert('Please fill all fields and select at least one permission.');
+        return;
+      }
+      const idx = rolesEditId.value;
+      if (idx === '') {
+        // Add new
+        roles.push({ name, desc, permissions: perms });
+      } else {
+        // Edit existing
+        roles[idx] = { name, desc, permissions: perms };
+      }
+      modal.style.display = 'none';
+      renderRolesTable();
+    };
+
+    // Initial render
+    renderRolesTable();
+  </script>
+</body>
+</html>
