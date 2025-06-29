@@ -1024,6 +1024,54 @@
       return `Order${timePart}${randomPart}`;
     }
 
+    function numberToWords(n) {
+      const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+      const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+      const c = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+
+      function convert_hundreds(num) {
+        let str = '';
+        if (num > 99) {
+          str += a[Math.floor(num / 100)] + " Hundred ";
+          num = num % 100;
+        }
+        if (num > 19) {
+          str += b[Math.floor(num / 10)] + " " + a[num % 10];
+        } else if (num >= 10) {
+          str += c[num - 10];
+        } else {
+          str += a[num];
+        }
+        return str.trim();
+      }
+
+      if (n === 0) return "Zero Naira Only";
+
+      const parts = n.toString().split('.');
+      const naira = parseInt(parts[0], 10);
+      const kobo = parts[1] ? parseInt(parts[1].padEnd(2, '0'), 10) : 0;
+
+      let result = "";
+      const billions = Math.floor(naira / 1_000_000_000);
+      const millions = Math.floor((naira % 1_000_000_000) / 1_000_000);
+      const thousands = Math.floor((naira % 1_000_000) / 1_000);
+      const remainder = naira % 1_000;
+
+      if (billions) result += convert_hundreds(billions) + " Billion ";
+      if (millions) result += convert_hundreds(millions) + " Million ";
+      if (thousands) result += convert_hundreds(thousands) + " Thousand ";
+      if (remainder) result += convert_hundreds(remainder) + " ";
+
+      result += "Naira";
+
+      if (kobo > 0) {
+        result += ` and ${convert_hundreds(kobo)} Kobo`;
+      }
+
+      result += " Only";
+      return result.trim();
+    }
+
     new Vue({
       el: '#app',
       data: {
@@ -1199,92 +1247,97 @@
           window.open(whatsappUrl, '_blank');
           this.cart = [];
         },
+
+
+
         async generateInvoicePDF() {
           if (!this.selectedCustomer) {
             alert("Please select a customer before generating the invoice.");
             return;
           }
 
-          // 1. Prepare company and customer info
-          const eraskonLogo = 'data:image/png;base64,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'
-          const eraskonInfo = [
-            "Eraskon Nigeria Limited",
-            "EL-AL Court, Plot 35, Chief Yesufu Abiodun Oniru Road,",
-            "VI, Lagos State, Nigeria."
-          ].join('\n');
-          const customer = this.selectedCustomer;
-          const customerInfo = [
-            `Name: ${customer.name}`,
-            `Email: ${customer.email || '-'}`,
-            `Phone: ${customer.phone || '-'}`,
-            `Company: ${customer.company || '-'}`,
-            `Tax ID: ${customer.taxId || '-'}`
-          ].join('\n');
-
-          // 2. Prepare product table
-          const tableBody = this.cart.map((item, idx) => [
-            idx + 1,
-            item.name,
-            item.variant.size,
-            item.variant.sku,
-            item.quantity,
-            `₦${item.variant.price}`,
-            `₦${item.variant.price * item.quantity}`
-          ]);
-
-          // 3. Create PDF
+          const eraskonLogo = 'data:image/png;base64,...'; // your actual base64 logo string
           const { jsPDF } = window.jspdf;
           const doc = new jsPDF();
 
-          // Add logo
-          const imgProps = {
-            url: eraskonLogo,
-            x: 80,
-            y: 10,
-            width: 50,
-            height: 20
-          };
-          // Draw logo (async)
+          const customer = this.selectedCustomer;
+          const date = new Date().toLocaleDateString('en-GB');
+          const invoiceNo = `ENL/PRD/${new Date().getFullYear().toString().slice(2)}/${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+          const total = this.cartTotal.toFixed(2);
+          const amountInWords = numberToWords(total);
+
+          const tableBody = this.cart.map((item) => [
+            item.quantity,
+            item.name,
+            `₦${(item.variant.price * item.quantity).toLocaleString()}`
+          ]);
+
           const img = new Image();
+          img.src = eraskonLogo;
           img.crossOrigin = "anonymous";
+
           img.onload = function () {
-            doc.addImage(img, 'PNG', imgProps.x, imgProps.y, imgProps.width, imgProps.height);
+            doc.addImage(img, 'PNG', 80, 10, 50, 20);
 
-            // Company Info
+            doc.setFontSize(10);
+            doc.text("Head Office: El-Al Court, Plot 35 Chief Yesufu Abiodun Oniru Way, Victoria Island, Lagos.", 14, 35);
+            doc.text("E-mail: info@eraskoenergy.com", 14, 40);
+
             doc.setFontSize(14);
-            doc.text("INVOICE", 105, 40, { align: "center" });
-            doc.setFontSize(10);
-            doc.text(eraskonInfo, 105, 48, { align: "center" });
+            doc.text("INVOICE", 105, 50, { align: 'center' });
 
-            // Customer Info
-            doc.setFontSize(11);
-            doc.text("Bill To:", 14, 60);
             doc.setFontSize(10);
-            doc.text(customerInfo, 14, 65);
+            doc.text(`Name: ${customer.name}`, 14, 60);
+            doc.text(`Date: ${date}`, 150, 60);
+            doc.text(`Invoice No: ${invoiceNo}`, 14, 66);
 
-            // Table
             doc.autoTable({
-              startY: 100,
-              head: [["#", "Product", "Size", "SKU", "Qty", "Unit Price", "Total"]],
+              startY: 75,
+              head: [["QTY", "DESCRIPTION OF PRODUCTS", "TOTAL"]],
               body: tableBody,
               theme: 'grid',
-              styles: { fontSize: 10, cellPadding: 2 },
+              styles: { fontSize: 10 },
               headStyles: { fillColor: [37, 99, 235], textColor: 255 },
-              alternateRowStyles: { fillColor: [240, 245, 255] }
+              alternateRowStyles: { fillColor: [245, 245, 245] }
             });
 
-            // Total
-            const finalY = doc.lastAutoTable.finalY || 90;
-            doc.setFontSize(12);
-            doc.setTextColor(37, 99, 235);
-            doc.text(`TOTAL: ₦${this.cartTotal}`, 160, finalY + 10);
+            const finalY = doc.lastAutoTable.finalY;
 
-            // Save PDF
-            doc.save("invoice.pdf");
+            doc.autoTable({
+              startY: finalY + 10,
+              body: [
+                ["DISCOUNT", "₦0.00"],
+                ["AMOUNT PAID", "₦0.00"],
+                ["NET BALANCE", `₦${parseFloat(total).toLocaleString()}`]
+              ],
+              styles: { fontSize: 10 },
+              tableLineWidth: 0.1,
+              margin: { left: 120 }
+            });
+
+            doc.setFontSize(11);
+            doc.text(`GRAND TOTAL: ₦${parseFloat(total).toLocaleString()}`, 14, finalY + 45);
+
+            doc.setFontSize(10);
+            doc.text(`Amount in words: ${amountInWords}`, 14, finalY + 55);
+
+            doc.text("Payments to be made to:", 14, finalY + 65);
+            doc.text("Eraskon Nigeria Limited\nZenith Bank Plc: 1016862835\nFCMB Plc:", 14, finalY + 70);
+
+            doc.text("_______________________________", 14, finalY + 95);
+            doc.text("Client’s Sign", 25, finalY + 100);
+            doc.text("_______________________________", 130, finalY + 95);
+            doc.text("Manager’s Sign", 145, finalY + 100);
+
+            // Show PDF in a new browser window
+            const pdfOutput = doc.output('datauri');
+            const iframe = document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.height = '600px';
+            iframe.src = pdfOutput;
+            document.body.appendChild(iframe); // This will append the iframe to the body
           }.bind(this);
-          img.src = eraskonLogo;
         },
-
         async fetchProducts() {
           try {
             const response = await axios.get(`${API_BASE}/product-variant`);
