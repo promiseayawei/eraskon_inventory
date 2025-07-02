@@ -98,14 +98,12 @@ document.write(`
           </a>
         </li>
       </ul>
-      <!-- Logout in its own section -->
       <div class="sidebar-actions">
         <div class="bottom" id="logoutBtn" style="cursor:pointer; border-top:1px solid #eee; padding-top:12px;">
           <span>Logout</span>
           <i class='bx bx-power-off'></i>
         </div>
       </div>
-      <!-- Expand/Collapse in a separate section -->
       <div class="bottom_content">
         <div class="bottom expand_sidebar">
           <span>Expand</span>
@@ -120,7 +118,6 @@ document.write(`
   </nav>
 `);
 
-// Animation style (keep your main styles in assets/css/style.css)
 const style = document.createElement('style');
 style.innerHTML = `
 .user_info-animated {
@@ -138,33 +135,30 @@ style.innerHTML = `
 #logoutBtn {
   color: #e53e3e;
   font-weight: 600;
-}
-`;
+}`;
 document.head.appendChild(style);
 
-// Helper function to capitalize first letter of each word
 function capitalizeWords(str) {
   if (!str) return '-';
   return String(str).replace(/\b\w/g, c => c.toUpperCase());
 }
 
-// Populate user info from localStorage
 document.addEventListener('DOMContentLoaded', () => {
   const name = localStorage.getItem('name');
   const role = localStorage.getItem('role');
-  // Try to get warehouse name from user object if available, else fallback
   let warehouse = localStorage.getItem('warehouse');
+
   try {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user && user.warehouse && user.warehouse.name) {
       warehouse = user.warehouse.name;
     }
   } catch {}
+
   document.getElementById('sidebarUserName').textContent = capitalizeWords(name);
   document.getElementById('sidebarUserRole').textContent = capitalizeWords(role);
   document.getElementById('sidebarUserWarehouse').textContent = capitalizeWords(warehouse);
 
-  // Logout functionality
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
@@ -172,4 +166,31 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = 'index.html';
     });
   }
+
+  const linkPermissions = {
+    'store.html':        ['admin', 'sales', 'inventory', 'warehouse'],
+    'product.html':      ['admin', 'inventory', 'warehouse'],
+    'customer.html':     ['admin', 'sales', 'finance'],
+    'report.html':       ['admin', 'sales', 'inventory', 'warehouse', 'finance'],
+    'setting.html':      ['admin'],
+    'user.html':         ['admin'],
+    'roles.html':        ['admin'],
+    'warehouse.html':    ['admin', 'inventory', 'warehouse'],
+    'stock-movement.html': ['admin', 'inventory', 'warehouse'],
+    'stats.html':        ['admin', 'sales', 'inventory', 'warehouse', 'finance'],
+    'category.html':     ['admin', 'sales', 'inventory'],
+    'product-variant.html': ['admin', 'inventory', 'warehouse'],
+    'approve.html':      ['admin', 'finance'],
+    'logistics.html':    ['admin', 'sales', 'warehouse'],
+    'sale.html':         ['admin', 'sales', 'finance'],
+    'shipping.html':     ['admin', 'sales', 'warehouse'],
+    '#':                 ['admin', 'sales', 'inventory', 'warehouse', 'finance']
+  };
+
+  document.querySelectorAll('a.nav_link').forEach(link => {
+    const href = link.getAttribute('href');
+    if (href && linkPermissions[href] && !linkPermissions[href].includes(role)) {
+      link.closest('li').style.display = 'none';
+    }
+  });
 });
