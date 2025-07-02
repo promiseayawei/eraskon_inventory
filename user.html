@@ -367,12 +367,15 @@
 </head>
 
 <body>
-
+    <script src="components/uiComponents.js"></script>
+    <script src="components/authGuard.js"></script>
     <script src="components/navbar.js"></script>
     <script src="components/sidebar.js"></script>
     <script src="components/spinner.js"></script>
     <div id="main-content">
+         <h2>User Management</h2>
         <div class="user-header">
+           
             <input id="searchInput" type="text" placeholder="Search users by name or email..." autocomplete="off"
                 autocorrect="off" autocapitalize="off" spellcheck="false" />
             <button id="addUserBtn" style="display:none;background:#22c55e;">
@@ -431,8 +434,10 @@
             <label for="roleSelect">Role:</label>
             <select id="roleSelect">
                 <option value="admin">Admin</option>
-                <option value="manager">Manager</option>
-                <option value="staff" selected>Staff</option>
+                <option value="finance">Finance</option>
+                <option value="sales" selected>Sales</option>
+                <option value="warehouse" selected>Warehouse</option>
+                <option value="inventory" selected>Inventory</option>
             </select>
 
             <label for="warehouseSelect">Warehouse:</label>
@@ -546,8 +551,12 @@
                 // Find warehouse name by _id
                 let warehouseName = '-';
                 if (user.warehouse) {
-                    const whObj = warehouses.find(w => w._id === user.warehouse || w.name === user.warehouse);
-                    warehouseName = whObj ? whObj.name : user.warehouse;
+                    if (typeof user.warehouse === 'object' && user.warehouse.name) {
+                        warehouseName = user.warehouse.name;
+                    } else {
+                        const whObj = warehouses.find(w => w._id === user.warehouse || w.name === user.warehouse);
+                        warehouseName = whObj ? whObj.name : user.warehouse;
+                    }
                 }
                 const tr = document.createElement('tr');
                 tr.innerHTML = `

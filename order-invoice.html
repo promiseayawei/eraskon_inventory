@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Order Invoice Page</title>
+
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #e2dcdc;
+      --text-color: #090F3B;
+      --card-bg: #ffffff;
+      --border-color: #ccc;
+    }
+
+    body.dark {
+      --bg-color: #090F3B;
+      --text-color: #f1f1f1;
+      --card-bg: #050d4a;
+      --border-color: #444;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    .tab-button {
+      padding: 8px 16px;
+      border: none;
+      background: #3b82f6;
+      color: #fff;
+      border-radius: 6px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .tab-button.active {
+      background: #2563eb;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      margin-top: 16px;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    th {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    body.dark th {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    tr:hover {
+      background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    body.dark tr:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    button {
+      padding: 6px 10px;
+      border: none;
+      background: #3b82f6;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 2px;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    .search-bar {
+      padding: 6px 10px;
+      margin-bottom: 16px;
+      width: 300px;
+    }
+  </style>
+</head>
+
+
+<body>
+    <script src="components/uiComponents.js"></script>
+    <script src="components/authGuard.js"></script>
+    <script src="components/spinner.js"></script>
+    <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+
+  <main id="app" class="main-content">
+    <h1>Order Invoice Manager</h1>
+
+    <div>
+      <input type="text" class="search-bar" v-model="searchQuery" placeholder="Search by Order Code or Customer Name..." />
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <button class="tab-button" :class="{ active: activeTab === 'approved' }" @click="activeTab = 'approved'">Approved</button>
+      <button class="tab-button" :class="{ active: activeTab === 'pending' }" @click="activeTab = 'pending'">Pending</button>
+    </div>
+
+    <div v-if="paginatedOrders.length">
+      <table>
+        <thead>
+          <tr>
+            <th>Order Code</th>
+            <th>Customer</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+            <th>Payment</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="order in paginatedOrders" :key="order._id">
+            <td>{{ order.orderCode || 'nil' }}</td>
+            <td>{{ order.customer?.name || 'nil' }}</td>
+            <td>&#8358;{{ order.total?.toFixed(2) || '0.00' }}</td>
+            <td>{{ order.status || 'nil' }}</td>
+            <td>{{ order.paymentStatus || 'nil' }} ({{ order.paymentMethod || 'nil' }})</td>
+            <td>{{ order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'nil' }}</td>
+            <td>
+              <button @click="printInvoice(order)" title="Print Invoice"><i class="fa fa-print"></i></button>
+              <button @click="sendInvoice(order)" title="Send Invoice"><i class="fa fa-paper-plane"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: 20px;">
+        <button @click="prevPage" :disabled="page === 1">Prev</button>
+        Page {{ page }} of {{ totalPages }}
+        <button @click="nextPage" :disabled="page === totalPages">Next</button>
+      </div>
+    </div>
+
+    <div v-else style="margin-top:32px;color:#888;">No orders found for this tab or search term.</div>
+  </main>
+<script src="config.js"></script>
+<script src="config.js"></script>
+<script>
+  const token = localStorage.getItem('token');
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    console.warn('No token found in localStorage');
+  }
+</script>
+
+  <script>
+    const API_BASE = window.BASE_URL || '';
+
+    new Vue({
+      el: '#app',
+      data: {
+        orders: [],
+        activeTab: 'approved',
+        statusMap: {
+          approved: 'created',
+          pending: 'pending'
+        },
+        searchQuery: '',
+        page: 1,
+        pageSize: 10
+      },
+      computed: {
+        filteredOrders() {
+          const status = this.statusMap[this.activeTab] || this.activeTab;
+          return this.orders.filter(order => {
+            const matchStatus = order.status?.toLowerCase() === status;
+            const matchSearch = order.orderCode?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+              order.customer?.name?.toLowerCase().includes(this.searchQuery.toLowerCase());
+            return matchStatus && matchSearch;
+          });
+        },
+        totalPages() {
+          return Math.ceil(this.filteredOrders.length / this.pageSize);
+        },
+        paginatedOrders() {
+          const start = (this.page - 1) * this.pageSize;
+          return this.filteredOrders.slice(start, start + this.pageSize);
+        }
+      },
+      mounted() {
+        this.fetchOrders();
+      },
+      methods: {
+        async fetchOrders() {
+          try {
+            const res = await axios.get(`${API_BASE}/order`);
+            this.orders = res.data;
+          } catch (err) {
+            console.error('Error fetching orders:', err);
+          }
+        },
+        printInvoice(order) {
+          window.open(`${API_BASE}/order/${order._id}/print`, '_blank');
+        },
+        async sendInvoice(order) {
+          try {
+            await axios.post(`${API_BASE}/order/${order._id}/send-invoice`);
+            alert('Invoice sent successfully');
+          } catch (err) {
+            console.error('Failed to send invoice:', err);
+            alert('Failed to send invoice');
+          }
+        },
+        nextPage() {
+          if (this.page < this.totalPages) this.page++;
+        },
+        prevPage() {
+          if (this.page > 1) this.page--;
+        }
+      },
+      watch: {
+        searchQuery() {
+          this.page = 1;
+        },
+        activeTab() {
+          this.page = 1;
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

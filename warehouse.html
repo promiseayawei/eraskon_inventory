@@ -178,7 +178,9 @@
 </head>
 
 <body>
-
+  <script src="components/uiComponents.js"></script>
+  <script src="components/spinner.js"></script>
+  <script src="components/authGuard.js"></script>
   <script src="components/navbar.js"></script>
   <script src="components/sidebar.js"></script>
 
@@ -409,7 +411,7 @@
           if (Array.isArray(variant.warehouses)) {
             variant.warehouses.forEach(w => {
               rows.push({
-                warehouse: (w.name || w.warehouse?.name || w.warehouse) || '-',
+                warehouse: w.name || (w.warehouse && w.warehouse.name) || w.warehouse || '-',
                 product: variant.name,
                 sku: variant.sku,
                 category: (variant.product && variant.product.category && variant.product.category.name)

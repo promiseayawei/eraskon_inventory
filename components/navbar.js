@@ -5,7 +5,7 @@ document.write(`
       align-items: center;
       justify-content: space-between;
       padding: 10px 18px;
-      background: #f2f2f2;
+      background: #e2dcdc;
       box-shadow: 0 2px 8px #0001;
       flex-wrap: wrap;
       position: relative;

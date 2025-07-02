@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <title>Login and Activation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Spinner Loader -->
+  <script src="components/spinner.js"></script>
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="assets/css/style_auth.css">
@@ -26,46 +29,26 @@
       align-items: center;
       justify-content: center;
       border-radius: 15px;
-      /* Rounded corners */
       border-style: solid;
       border-width: 15px;
-      border-color: #007bff;
-      border-color: transparent;    
-
-      /* Adds rounded corners */
-      /* White background to highlight rounded corners */
+      border-color: transparent;
       padding: 20px;
-      /* Optional padding inside */
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      /* Optional subtle shadow */
-      /* Optional max width */
       margin: 1em auto;
-      /* Center container with vertical margin */
     }
 
-
     .logo-header {
-
       display: flex;
       align-items: center;
       gap: 1em;
       margin-top: 2em;
       color: #f3f0f0;
-      position: relative;
     }
 
     .logo-header img {
       height: 4em;
       width: 4em;
     }
-
-    .logo-header p {
-      color: rgb(242, 235, 235);
-      font-weight: bold;
-      font-size: 1.2em;
-      margin: 0;
-    }
-
 
     .message-box {
       display: none;
@@ -105,38 +88,34 @@
       box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
     }
 
-    /* Add left margin to all fontawesome icons */
     .input-box i.fas,
     .input-box i.fa {
       margin-left: 10px;
     }
 
     footer {
-
       text-align: center;
       padding: 1em 0;
       font-size: 0.9em;
       color: #f1f1f1;
     }
   </style>
-   <script src="/config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="components/spinner.js"></script>
-  <script src="assets/js/utils.js"></script>
-  
 </head>
 
 <body>
+  <script src="components/uiComponents.js"></script>
+  <!-- Config & Axios -->
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="assets/js/utils.js"></script>
+
   <!-- Logo Header -->
   <div class="logo-header animated delay-1">
     <img src="assets/images/eraskon_logo.webp" alt="Eraskon Logo">
     <h1>Eraskon Inventory</h1>
   </div>
 
-
-  <div class="container  container animated delay-2">
-
-
+  <div class="container animated delay-2">
     <input type="checkbox" id="flip">
 
     <!-- Cover Images -->
@@ -159,9 +138,7 @@
 
     <!-- Forms Section -->
     <div class="forms animated delay-3">
-      <!-- Message Boxes -->
       <div id="loginMessageBox" class="message-box"></div>
-
       <div class="form-content">
 
         <!-- Login Form -->
@@ -190,10 +167,7 @@
 
         <!-- Signup Form -->
         <div class="signup-form">
-
-          <!-- Message Boxes -->
           <div id="signupMessageBox" class="message-box"></div>
-
           <div class="title">Signup Account</div>
           <form>
             <div class="input-boxes">
@@ -233,16 +207,12 @@
 
   <!-- Footer -->
   <footer class="forms animated delay-4">
-    &copy; 2025 Eraskon Inventory. All rights reserved || Developed by <a
-      href="https://github.com/ayaweisoft">Ayaweisoft</a>
+    &copy; 2025 Eraskon Inventory. All rights reserved || Developed by
+    <a href="https://github.com/ayaweisoft">Ayaweisoft</a>
   </footer>
 
-  <!-- Scripts -->
-     <script src="config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="components/spinner.js"></script>
-<script>
-    // Set the API base URL from the config file
+  <!-- Logic -->
+  <script>
     const API_BASE = window.BASE_URL;
 
     function showMessage(id, message, type = "success") {
@@ -259,11 +229,9 @@
       const email = e.target.querySelector("input[type='text']").value;
       const password = e.target.querySelector("input[type='password']").value;
 
-      window.showSpinner();
       axios.post(`${API_BASE}/auth/login`, { email, password })
         .then(response => {
           const { token, user } = response.data;
-
           localStorage.setItem('token', token);
           localStorage.setItem('email', user.email);
           localStorage.setItem('role', user.role);
@@ -271,21 +239,23 @@
           localStorage.setItem('firstName', user.firstName);
           localStorage.setItem('lastName', user.lastName);
           localStorage.setItem('userId', user._id);
-          localStorage.setItem('warehouse', user.warehouse || '');
-
+          localStorage.setItem(
+            'warehouse',
+            (user.warehouse && typeof user.warehouse === 'object' && user.warehouse.name)
+              ? user.warehouse.name
+              : (typeof user.warehouse === 'string' ? user.warehouse : '')
+          );
           showMessage("loginMessageBox", "Login successful!", "success");
-          if(user.role === "admin") {
-            setTimeout(() => window.location.href = "stats.html", 1500);
-          } else if (user.role === "manager") {
-            setTimeout(() => window.location.href = "store.html", 1500);
-          } else if (user.role === "staff") {
-            setTimeout(() => window.location.href = "store.html", 1500);
-          } else if (user.role === "branch_manager") {
-            setTimeout(() => window.location.href = "store.html", 1500);
-          } else {
-            setTimeout(() => window.location.href = "welcome.html", 1500);
-          }
-          
+
+          const redirectMap = {
+            admin: "stats.html",
+            inventory: "stock-movement.html",
+            sales: "store.html",
+            warehouse: "warehouse.html",
+            finance: "approve.html"
+          };
+          const target = redirectMap[user.role] || "welcome.html";
+          setTimeout(() => window.location.href = target, 1500);
         })
         .catch(err => {
           const msg = err.response?.data?.error || "Login failed.";
@@ -328,6 +298,11 @@
             showMessage("loginMessageBox", msg, "error");
           });
       }
+    });
+
+    // Auto-hide spinner on page load
+    window.addEventListener("load", () => {
+      if (window.hideSpinner) window.hideSpinner();
     });
   </script>
 </body>
