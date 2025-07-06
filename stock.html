@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stock Management</title>
+
+    <!-- Boxicons CSS -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #e2dcdc;
+            --text-color: #090F3B;
+            --card-bg: #ffffff;
+            --border-color: #ccc;
+            --input-border: #ccc;
+        }
+
+        body.dark {
+            --bg-color: #090F3B;
+            --text-color: #f1f1f1;
+            --card-bg: #050d4a;
+            --border-color: #444;
+            --input-border: #444;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark th {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        body.dark tr:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* BUTTON */
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            border: none;
+            background: #3b82f6;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* CARDS */
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: flex-start;
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 320px;
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+        }
+
+        @media (min-width: 600px) {
+            .card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .card {
+                width: calc(33.333% - 20px);
+            }
+        }
+
+        /* FORMS */
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 6px 8px;
+            margin-top: 4px;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* OTHER */
+        .preview {
+            max-width: 100px;
+            margin-top: 10px;
+        }
+
+        .inline-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+    </style>
+
+</head>
+
+<body>
+    <script src="components/uiComponents.js"></script>
+    <script src="components/authGuard.js"></script>
+    <!-- Load Navbar -->
+    <script src="components/navbar.js"></script>
+
+    <!-- Load Sidebar -->
+    <script src="components/sidebar.js"></script>
+
+    <main id="app" class="main-content">
+        <h2>Stock Movements</h2>
+
+        <!-- Filters -->
+        <div class="inline-row">
+            <select v-model="filters.product">
+                <option value="">All Products</option>
+                <option v-for="p in products" :value="p._id">{{ p.name }}</option>
+            </select>
+            <select v-model="filters.warehouse">
+                <option value="">All Warehouses</option>
+                <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+            </select>
+            <input type="date" v-model="filters.dateFrom">
+            <input type="date" v-model="filters.dateTo">
+            <button @click="exportToExcel">Export Excel</button>
+            <button @click="exportToPDF">Export PDF</button>
+        </div>
+
+        <button @click="showModal = true">New Stock Transfer</button>
+
+        <!-- Modal -->
+        <div class="modal-overlay" v-if="showModal" @click.self="closeModal">
+            <div class="modal">
+                <h3>Stock Transfer</h3>
+                <form @submit.prevent="submitTransfer">
+                    <label>Product</label>
+                    <select v-model="form.productVariantId" required>
+                        <option value="">Select Product</option>
+                        <option v-for="p in products" :value="p._id">{{ p.name }}</option>
+                    </select>
+
+                    <label>Quantity</label>
+                    <input type="number" v-model.number="form.quantity" required />
+
+                    <label>From Warehouse</label>
+                    <select v-model="form.warehouse" required>
+                        <option value="">Select From</option>
+                        <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+                    </select>
+
+                    <label>To Warehouse</label>
+                    <select v-model="form.destinationWarehouse" required>
+                        <option value="">Select To</option>
+                        <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+                    </select>
+
+                    <label>Reason</label>
+                    <input v-model="form.reason" required />
+
+                    <label>Reference</label>
+                    <input v-model="form.reference" />
+
+                    <div class="inline-row">
+                        <button type="submit" :disabled="loading">
+                            {{ loading ? 'Transferring...' : 'Transfer' }}
+                        </button>
+                        <button type="button" @click="closeModal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Stock Movements Table  -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Type</th>
+                    <th>Reason</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Created</th>
+                    <th>Approved</th>
+                    <th>Received</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="m in filteredMovements" :key="m._id">
+                    <td>{{ m.code }}</td>
+                    <td>{{ m.productVariant?.name }}</td>
+                    <td>{{ m.quantity }}</td>
+                    <td>{{ m.type }}</td>
+                    <td>{{ m.reason }}</td>
+                    <td>{{ m.warehouse?.name }}</td>
+                    <td>{{ m.destinationWarehouse?.name || '—' }}</td>
+                    <td>
+                        <div v-if="createdLog(m)">{{ formatLog(createdLog(m)) }}</div>
+                    </td>
+                    <td>
+                        <div v-if="approvedLog(m)">{{ formatLog(approvedLog(m)) }}</div>
+                    </td>
+                    <td>
+                        <div v-if="receivedLog(m)">{{ formatLog(receivedLog(m)) }}</div>
+                    </td>
+                    <td>
+                        <button v-if="m.type==='out' && !approvedLog(m)" @click="approve(m._id)">Approve</button>
+                        <button v-if="m.type==='in-transit' && !receivedLog(m)" @click="receive(m._id)">Receive</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Modal -->
+
+
+    </main>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="config.js"></script>
+    <script src="assets/js/script.js"></script>
+    <!-- This is an updated stock.html template with:
+1. Approve / Receive buttons
+2. Filters (product, warehouse, date)
+3. Export to Excel and PDF
+-->
+
+    <!-- Add required libraries in <head> -->
+
+
+
+
+
+    <!-- Just the fixed JS portion at the bottom, full file remains same -->
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const token = localStorage.getItem('token');
+            if (token) {
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            }
+
+            const API = window.BASE_URL + '/stock-movement';
+
+            new Vue({
+                el: '#app',
+                data: {
+                    products: [],
+                    warehouses: [],
+                    movements: [],
+                     showModal: false,
+                    form: {
+                        productVariantId: '',
+                        quantity: '',
+                        warehouse: '',
+                        destinationWarehouse: '',
+                        reason: '',
+                        reference: ''
+                    },
+                    filters: { product: '', warehouse: '', dateFrom: '', dateTo: '' },
+
+                },
+                computed: {
+                    filteredMovements() {
+                        return this.movements.filter(m => {
+                            const from = this.filters.dateFrom ? new Date(this.filters.dateFrom) : null;
+                            const to = this.filters.dateTo ? new Date(this.filters.dateTo) : null;
+                            const created = new Date(m.createdAt);
+                            return (!this.filters.product || m.productVariant?._id === this.filters.product) &&
+                                (!this.filters.warehouse || m.warehouse?._id === this.filters.warehouse) &&
+                                (!from || created >= from) && (!to || created <= to);
+                        });
+                    }
+                },
+                mounted() {
+                    this.fetchAll();
+                    // Optional: ESC key to close modal
+                    document.addEventListener('keydown', e => {
+                        if (e.key === 'Escape') this.showModal = false;
+                    });
+                },
+                methods: {
+                    async fetchAll() {
+                        const [prodRes, whRes, movRes] = await Promise.all([
+                            axios.get(`${window.BASE_URL}/product-variant`),
+                            axios.get(`${window.BASE_URL}/warehouse`),
+                            axios.get(`${API}`)
+                        ]);
+                        this.products = prodRes.data;
+                        this.warehouses = whRes.data;
+                        this.movements = movRes.data;
+                    },
+                    createdLog(m) {
+                        return m.stock_log?.find(l => l.action === 'created');
+                    },
+                    approvedLog(m) {
+                        return m.stock_log?.find(l => l.action === 'approved');
+                    },
+                    receivedLog(m) {
+                        return m.stock_log?.find(l => l.action === 'received');
+                    },
+                    formatLog(log) {
+                        return `${this.formatDate(log.timestamp)}\n${log.role} - ${log.userName}\n${log.warehouseName}`;
+                    },
+                    formatDate(d) {
+                        return new Date(d).toLocaleString();
+                    },
+                    async submitTransfer() {
+                        await axios.post(`${API}`, { ...this.form, type: 'transfer' });
+
+                        this.fetchAll();
+                        // Optional: Reset form
+                        this.form = {
+                            productVariantId: '',
+                            quantity: '',
+                            warehouse: '',
+                            destinationWarehouse: '',
+                            reason: '',
+                            reference: ''
+                        };
+                    },
+                    async approve(id) {
+                        await axios.put(`${API}/approve/${id}`);
+                        this.fetchAll();
+                    },
+                    async receive(id) {
+                        await axios.put(`${API}/receive/${id}`);
+                        this.fetchAll();
+                    },
+                    exportToExcel() {
+                        const ws = XLSX.utils.json_to_sheet(this.filteredMovements.map(m => ({
+                            Code: m.code,
+                            Product: m.productVariant?.name,
+                            Quantity: m.quantity,
+                            Type: m.type,
+                            Reason: m.reason,
+                            From: m.warehouse?.name,
+                            To: m.destinationWarehouse?.name,
+                            Created: this.createdLog(m)?.userName,
+                            Approved: this.approvedLog(m)?.userName,
+                            Received: this.receivedLog(m)?.userName
+                        })));
+                        const wb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(wb, ws, 'Stock');
+                        XLSX.writeFile(wb, 'stock_movements.xlsx');
+                    },
+                    exportToPDF() {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
+                        doc.text("Stock Movements", 10, 10);
+                        this.filteredMovements.forEach((m, i) => {
+                            const y = 20 + i * 10;
+                            doc.text(`${m.code} | ${m.productVariant?.name} | ${m.quantity} | ${m.type}`, 10, y);
+                        });
+                        doc.save('stock_movements.pdf');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
