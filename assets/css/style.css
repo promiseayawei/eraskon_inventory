@@ -72,6 +72,15 @@ body.dark {
   --chart-bar-color: #e2dcdc; /* bar color for dark mode */
 }
 
+/* Add this CSS to your global styles or inject via JS */
+.auth-guard-blur-overlay {
+  position: fixed;
+  z-index: 9998;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(30, 41, 59, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
 
 
 /* Card Styles */

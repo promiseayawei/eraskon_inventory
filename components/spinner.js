@@ -17,14 +17,12 @@
         opacity: 1;
         transition: opacity 0.5s ease;
       }
-
       .circle-spinner {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 18px;
       }
-
       .circle-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -42,32 +40,19 @@
         opacity: 0.7;
         animation: circle-bounce 1.2s infinite;
       }
-      .circle-grid .circle:nth-child(1) {
-        grid-column: 1; grid-row: 1;
-        animation-delay: 0s;
-      }
-      .circle-grid .circle:nth-child(2) {
-        grid-column: 2; grid-row: 1;
-        animation-delay: 0.2s;
-      }
-      .circle-grid .circle:nth-child(3) {
-        grid-column: 2; grid-row: 2;
-        animation-delay: 0.4s;
-      }
-      /* The fourth grid cell is empty for a square shape */
-
+      .circle-grid .circle:nth-child(1) { grid-column: 1; grid-row: 1; animation-delay: 0s; }
+      .circle-grid .circle:nth-child(2) { grid-column: 2; grid-row: 1; animation-delay: 0.2s; }
+      .circle-grid .circle:nth-child(3) { grid-column: 2; grid-row: 2; animation-delay: 0.4s; }
       @keyframes circle-bounce {
         0%, 100% { transform: scale(1); opacity: 0.7; }
         50% { transform: scale(1.4); opacity: 1; }
       }
-
       .loading-text {
         color: #007bff;
         font-weight: bold;
         margin-top: 1em;
       }
     </style>
-
     <div id="loadingSpinner">
       <div class="circle-spinner">
         <div class="circle-grid">
@@ -81,7 +66,7 @@
     </div>
   `);
 
-  let spinnerTimeout;
+  let activeRequests = 0;
 
   function showSpinner(message = "Loading...") {
     const el = document.getElementById('loadingSpinner');
@@ -90,8 +75,12 @@
       textEl.textContent = message;
       el.style.display = 'flex';
       el.style.opacity = '1';
-      clearTimeout(spinnerTimeout);
-      spinnerTimeout = setTimeout(hideSpinner, 10000); // auto-hide after 10s
+      // Failsafe: auto-hide after 15s
+      clearTimeout(el._spinnerTimeout);
+      el._spinnerTimeout = setTimeout(() => {
+        activeRequests = 0;
+        hideSpinner();
+      }, 15000);
     }
   }
 
@@ -102,8 +91,8 @@
       setTimeout(() => {
         el.style.display = 'none';
       }, 500);
+      clearTimeout(el._spinnerTimeout);
     }
-    clearTimeout(spinnerTimeout);
   }
 
   window.showSpinner = showSpinner;
@@ -112,18 +101,26 @@
   // Axios support
   if (window.axios) {
     axios.interceptors.request.use(config => {
+      activeRequests++;
+      // console.log('activeRequests:', activeRequests);
       showSpinner();
       return config;
     }, error => {
-      hideSpinner();
+      activeRequests = Math.max(0, activeRequests - 1);
+      // console.log('activeRequests:', activeRequests);
+      if (activeRequests === 0) hideSpinner();
       return Promise.reject(error);
     });
 
     axios.interceptors.response.use(response => {
-      hideSpinner();
+      activeRequests = Math.max(0, activeRequests - 1);
+      // console.log('activeRequests:', activeRequests);
+      if (activeRequests === 0) hideSpinner();
       return response;
     }, error => {
-      hideSpinner();
+      activeRequests = Math.max(0, activeRequests - 1);
+      // console.log('activeRequests:', activeRequests);
+      if (activeRequests === 0) hideSpinner();
       return Promise.reject(error);
     });
   }
@@ -131,6 +128,8 @@
   // Fetch support
   const originalFetch = window.fetch;
   window.fetch = async (...args) => {
+    activeRequests++;
+    // console.log('activeRequests:', activeRequests);
     showSpinner();
     try {
       const res = await originalFetch(...args);
@@ -138,8 +137,16 @@
     } catch (e) {
       throw e;
     } finally {
-      hideSpinner();
+      activeRequests = Math.max(0, activeRequests - 1);
+      // console.log('activeRequests:', activeRequests);
+      if (activeRequests === 0) hideSpinner();
     }
   };
+
+  // Failsafe: hide spinner on page load
+  window.addEventListener('load', () => {
+    activeRequests = 0;
+    hideSpinner();
+  });
 })();
 

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Stock Transfer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; }
+
+    button {
+      padding: 8px 16px;
+      background-color: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 1rem;
+    }
+
+    button:disabled {
+      background: #aaa;
+      cursor: wait;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 400px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .inline-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 6px;
+      margin-top: 4px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #22c55e;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      z-index: 2000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: opacity 0.3s ease;
+    }
+
+    .toast.error {
+      background: #ef4444;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <button @click="showModal = true">New Stock Transfer</button>
+
+  <!-- Modal -->
+  <div class="modal-overlay" v-if="showModal" @click.self="closeModal">
+    <div class="modal">
+      <h3>Stock Transfer</h3>
+      <form @submit.prevent="submitTransfer">
+        <label>Product</label>
+        <select v-model="form.productVariantId" required>
+          <option value="">Select Product</option>
+          <option v-for="p in products" :value="p._id">{{ p.name }}</option>
+        </select>
+
+        <label>Quantity</label>
+        <input type="number" v-model.number="form.quantity" required />
+
+        <label>From Warehouse</label>
+        <select v-model="form.warehouse" required>
+          <option value="">Select From</option>
+          <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+        </select>
+
+        <label>To Warehouse</label>
+        <select v-model="form.destinationWarehouse" required>
+          <option value="">Select To</option>
+          <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+        </select>
+
+        <label>Reason</label>
+        <input v-model="form.reason" required />
+
+        <label>Reference</label>
+        <input v-model="form.reference" />
+
+        <div class="inline-row">
+          <button type="submit" :disabled="loading">
+            {{ loading ? 'Transferring...' : 'Transfer' }}
+          </button>
+          <button type="button" @click="closeModal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" v-if="toast.visible" :class="toast.type">{{ toast.message }}</div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      showModal: false,
+      loading: false,
+      toast: {
+        visible: false,
+        message: '',
+        type: '' // 'success' or 'error'
+      },
+      form: {
+        productVariantId: '',
+        quantity: '',
+        warehouse: '',
+        destinationWarehouse: '',
+        reason: '',
+        reference: ''
+      },
+      products: [
+        { _id: 'prod1', name: 'Product A' },
+        { _id: 'prod2', name: 'Product B' }
+      ],
+      warehouses: [
+        { _id: 'w1', name: 'Warehouse 1' },
+        { _id: 'w2', name: 'Warehouse 2' }
+      ]
+    },
+    methods: {
+      async submitTransfer() {
+        if (this.form.warehouse === this.form.destinationWarehouse) {
+          return this.showToast('Source and destination warehouses must differ.', 'error');
+        }
+
+        this.loading = true;
+        try {
+          // Simulated delay (replace with real API call)
+          await new Promise(r => setTimeout(r, 1000));
+
+          // Example real call:
+          // await axios.post('/api/stock-movement', { ...this.form, type: 'transfer' });
+
+          this.showToast('Transfer successful!');
+          this.resetForm();
+          this.showModal = false;
+        } catch (err) {
+          this.showToast('Failed to submit transfer.', 'error');
+        } finally {
+          this.loading = false;
+        }
+      },
+      showToast(message, type = 'success') {
+        this.toast.message = message;
+        this.toast.type = type;
+        this.toast.visible = true;
+        setTimeout(() => this.toast.visible = false, 3000);
+      },
+      closeModal() {
+        this.showModal = false;
+        this.resetForm();
+      },
+      resetForm() {
+        this.form = {
+          productVariantId: '',
+          quantity: '',
+          warehouse: '',
+          destinationWarehouse: '',
+          reason: '',
+          reference: ''
+        };
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

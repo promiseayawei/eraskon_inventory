@@ -98,27 +98,231 @@
       margin-bottom: 16px;
       width: 300px;
     }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 24px 32px;
+      border-radius: 8px;
+      min-width: 300px;
+      box-shadow: 0 2px 16px #0002;
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+    }
+
+    /* Modal enhancements */
+    .receipt-modal {
+      max-width: 900px !important;
+      width: 100%;
+      background: #f9fafb;
+      border-radius: 14px;
+      box-shadow: 0 4px 32px #0002;
+      padding: 32px 36px 28px 36px;
+    }
+
+    .order-details-section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px 18px 10px 18px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px #0001;
+    }
+
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+      font-size: 1em;
+    }
+
+    .items-table th,
+    .items-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    .items-table th {
+      background: #f3f4f6;
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .items-table td {
+      color: #222;
+    }
+
+    .order-summary {
+      margin-top: 10px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 1em;
+    }
+
+    .carousel-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-top: 10px;
+    }
+
+    .carousel-image-container {
+      flex: 1;
+      text-align: center;
+      position: relative;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #0001;
+      padding: 18px 0 12px 0;
+      min-width: 260px;
+    }
+
+    .carousel-image {
+      max-width: 320px;
+      max-height: 320px;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      box-shadow: 0 2px 8px #0001;
+    }
+
+    .delete-receipt-btn {
+      position: absolute;
+      top: 12px;
+      right: 18px;
+      background: rgba(239, 68, 68, 0.95);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      font-size: 1.1em;
+      box-shadow: 0 2px 8px #0002;
+      transition: background 0.2s;
+    }
+
+    .delete-receipt-btn:hover {
+      background: #b91c1c;
+    }
+
+    .receipt-meta {
+      margin-top: 16px;
+      font-size: 0.98em;
+      color: #333;
+      background: #f3f4f6;
+      border-radius: 6px;
+      padding: 10px 8px 8px 8px;
+      display: inline-block;
+      min-width: 220px;
+    }
+
+    .carousel-nav {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 1.3em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .carousel-nav:disabled {
+      background: #b3c6f7;
+      color: #fff;
+      cursor: not-allowed;
+    }
+
+    .carousel-indicators {
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .carousel-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin: 0 3px;
+      background: #ccc;
+      transition: background 0.2s;
+    }
+
+    .carousel-dot.active {
+      background: #2563eb;
+    }
+
+    @media (max-width: 700px) {
+      .receipt-modal {
+        padding: 12px 4vw;
+        max-width: 98vw !important;
+      }
+
+      .carousel-image {
+        max-width: 90vw;
+        max-height: 40vw;
+      }
+    }
   </style>
 </head>
 
 
 <body>
-    <script src="components/uiComponents.js"></script>
-    <script src="components/authGuard.js"></script>
-    <script src="components/spinner.js"></script>
-    <script src="components/navbar.js"></script>
+  <script src="components/uiComponents.js"></script>
+  <script src="components/authGuard.js"></script>
+  <script src="components/spinner.js"></script>
+  <script src="components/navbar.js"></script>
   <script src="components/sidebar.js"></script>
 
   <main id="app" class="main-content">
-    <h1>Order Invoice Manager</h1>
+    <h1>Approved Orders</h1>
 
     <div>
-      <input type="text" class="search-bar" v-model="searchQuery" placeholder="Search by Order Code or Customer Name..." />
+      <input type="text" class="search-bar" v-model="searchQuery"
+        placeholder="Search by Order Code or Customer Name..." />
     </div>
 
     <div style="margin-bottom: 20px;">
-      <button class="tab-button" :class="{ active: activeTab === 'approved' }" @click="activeTab = 'approved'">Approved</button>
-      <button class="tab-button" :class="{ active: activeTab === 'pending' }" @click="activeTab = 'pending'">Pending</button>
+      <button class="tab-button" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">
+        All ({{ orders.length }})
+      </button>
+      <button class="tab-button" :class="{ active: activeTab === 'approved' }" @click="activeTab = 'approved'">
+        Completed ({{ orders.filter(o => o.status?.toLowerCase() === 'completed').length }})
+      </button>
+      <button class="tab-button" :class="{ active: activeTab === 'created' }" @click="activeTab = 'created'">
+        Created ({{ orders.filter(o => o.status?.toLowerCase() === 'created').length }})
+      </button>
+      <button class="tab-button" :class="{ active: activeTab === 'processing' }" @click="activeTab = 'processing'">
+        Processing ({{ orders.filter(o => o.status?.toLowerCase() === 'processing').length }})
+      </button>
+      <button class="tab-button" :class="{ active: activeTab === 'cancelled' }" @click="activeTab = 'cancelled'">
+        Cancelled ({{ orders.filter(o => o.status?.toLowerCase() === 'cancelled').length }})
+      </button>
+      <button class="tab-button" :class="{ active: activeTab === 'rejected' }" @click="activeTab = 'rejected'">
+        Rejected ({{ orders.filter(o => o.status?.toLowerCase() === 'rejected').length }})
+      </button>
     </div>
 
     <div v-if="paginatedOrders.length">
@@ -130,8 +334,11 @@
             <th>Total Amount</th>
             <th>Status</th>
             <th>Payment</th>
+            <th>Payment Receipt</th>
             <th>Date</th>
-            <th>Actions</th>
+            <th>Created By</th>
+            <th>Confirmed By</th>
+            <th v-if="activeTab === 'approved'">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -139,15 +346,53 @@
             <td>{{ order.orderCode || 'nil' }}</td>
             <td>{{ order.customer?.name || 'nil' }}</td>
             <td>&#8358;{{ order.total?.toFixed(2) || '0.00' }}</td>
-            <td>{{ order.status || 'nil' }}</td>
+            <td>
+              {{ order.status || 'nil' }}
+              <button @click="openStatusModal(order)" style="margin-left:8px;">Edit</button>
+            </td>
             <td>{{ order.paymentStatus || 'nil' }} ({{ order.paymentMethod || 'nil' }})</td>
+            <!-- Payment Receipt column -->
+            <td>
+              <div style="display:flex; gap:8px; margin-bottom:6px;">
+                <button type="button" style="background:#059669;color:#fff;" @click="openUploadModal(order._id)">Upload
+                </button>
+                <button @click="reviewReceipts(order)" type="button">Review</button>
+              </div>
+              <ul v-if="order.paymentReceipts && order.paymentReceipts.length">
+                <li v-for="(receipt, idx) in order.paymentReceipts" :key="idx">
+                  <a :href="`${API_BASE}/order/${order._id}/receipt`" target="_blank">View</a>
+                  <span style="font-size:0.9em;">
+                    - {{ receipt.uploadedBy?.name || receipt.uploadedBy || 'Unknown' }},
+                    {{ receipt.uploadedAt ? new Date(receipt.uploadedAt).toLocaleString() : 'Unknown' }}
+                  </span>
+                </li>
+              </ul>
+              <div v-else>No receipts</div>
+            </td>
             <td>{{ order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'nil' }}</td>
             <td>
+              {{
+              order.createdBy
+              ? `${order.createdBy.firstName || ''} ${order.createdBy.lastName || ''}`.trim()
+              : 'System Admin'
+              }}
+            </td>
+
+            <td>{{ order.paymentConfirmedBy?.name || 'Nil' }}</td>
+            <td v-if="activeTab === 'approved'">
               <button @click="printInvoice(order)" title="Print Invoice"><i class="fa fa-print"></i></button>
               <button @click="sendInvoice(order)" title="Send Invoice"><i class="fa fa-paper-plane"></i></button>
             </td>
           </tr>
         </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2" style="font-weight:bold;">Total</td>
+            <td style="font-weight:bold;">₦{{ totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}
+            </td>
+            <td colspan="6"></td>
+          </tr>
+        </tfoot>
       </table>
 
       <div style="margin-top: 20px;">
@@ -157,18 +402,128 @@
       </div>
     </div>
 
-    <div v-else style="margin-top:32px;color:#888;">No orders found for this tab or search term.</div>
+    <div v-else style="margin-top:32px;color:#888;">
+      No orders found for this tab or search term.
+    </div>
+
+    <!-- Status Edit Modal -->
+    <div v-if="showStatusModal" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Edit Order Status</h3>
+        <select v-model="statusToUpdate" style="width:100%;padding:8px;margin-bottom:16px;">
+          <option value="created">Created</option>
+          <option value="completed">Completed</option>
+          <option value="processing">Processing</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <div style="text-align:right;">
+          <button @click="updateStatus" style="background:#2563eb;color:#fff;">Save</button>
+          <button @click="showStatusModal=false" style="background:#ef4444;color:#fff;">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Receipt Review Modal (Carousel) -->
+    <div v-if="showReviewModal" class="modal-overlay">
+      <div class="modal-content receipt-modal">
+        <h3>Order Details</h3>
+        <div class="order-details-section">
+          <strong>Order Code:</strong> {{ selectedOrder.orderCode }}<br>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th style="text-align:right;">Qty</th>
+                <th style="text-align:right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in selectedOrder.items" :key="item._id">
+                <td>{{ item.productVariantName || item.name }}</td>
+                <td style="text-align:right;">{{ item.qty || item.quantity }}</td>
+                <td style="text-align:right;">₦{{ (item.unitPrice || item.price)?.toLocaleString() }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="order-summary">
+            <div><strong>Amount:</strong> ₦{{ selectedOrder.amount?.toLocaleString() ||
+              selectedOrder.subTotal?.toLocaleString() }}</div>
+            <div><strong>Tax:</strong> ₦{{ selectedOrder.tax?.toLocaleString() || 0 }}</div>
+            <div><strong>Discount:</strong> ₦{{ (selectedOrder.discount?.toLocaleString() ||
+              selectedOrder.discounts?.[0]?.amount?.toLocaleString() || 0) }}</div>
+            <div><strong>Total:</strong> <span style="color:#059669;font-weight:600;">₦{{
+                selectedOrder.total?.toLocaleString() }}</span></div>
+          </div>
+        </div>
+        <h4 style="margin:24px 0 12px 0;color:#2563eb;">Payment Receipts</h4>
+        <div v-if="selectedOrder.paymentReceipts && selectedOrder.paymentReceipts.length">
+          <div class="carousel-row">
+            <button class="carousel-nav" @click="prevReceipt" :disabled="reviewReceiptIndex === 0">
+              <i class="fa fa-chevron-left"></i>
+            </button>
+            <div class="carousel-image-container">
+              <img :src="selectedOrder.paymentReceipts[reviewReceiptIndex].url" alt="Receipt" class="carousel-image" />
+              <!-- Delete icon (top-right corner of image) -->
+              <button
+                @click="deleteReceiptImage(selectedOrder._id, selectedOrder.paymentReceipts[reviewReceiptIndex]._id)"
+                title="Delete Receipt" class="delete-receipt-btn">
+                <i class="fa fa-trash"></i>
+              </button>
+              <div class="receipt-meta">
+                <div>
+                  <strong>Uploaded By:</strong>
+                  {{ selectedOrder.paymentReceipts[reviewReceiptIndex].uploadedBy?.name ||
+                  selectedOrder.paymentReceipts[reviewReceiptIndex].uploadedBy || 'Unknown' }}
+                </div>
+                <div>
+                  <strong>Uploaded At:</strong>
+                  {{ selectedOrder.paymentReceipts[reviewReceiptIndex].uploadedAt ? new
+                  Date(selectedOrder.paymentReceipts[reviewReceiptIndex].uploadedAt).toLocaleString() : 'Unknown' }}
+                </div>
+              </div>
+            </div>
+            <button class="carousel-nav" @click="nextReceipt"
+              :disabled="reviewReceiptIndex === selectedOrder.paymentReceipts.length - 1">
+              <i class="fa fa-chevron-right"></i>
+            </button>
+          </div>
+          <div class="carousel-indicators">
+            <span v-for="(r, idx) in selectedOrder.paymentReceipts" :key="idx"
+              :class="['carousel-dot', { active: idx === reviewReceiptIndex }]"></span>
+          </div>
+        </div>
+        <div v-else style="margin:24px 0;">No receipts found.</div>
+        <div style="text-align:right;margin-top:24px;">
+          <button @click="showReviewModal=false" style="background:#ef4444;color:#fff;">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Receipt Modal -->
+    <div v-if="showUploadModal" class="modal-overlay">
+      <div class="modal-content" style="max-width:400px;">
+        <h3>Upload Payment Receipt</h3>
+        <form @submit.prevent="submitUploadReceipt">
+          <input type="file" ref="modalReceiptFile" required style="margin-bottom:16px;" />
+          <div style="text-align:right;">
+            <button type="submit" style="background:#059669;color:#fff;">Upload</button>
+            <button type="button" @click="showUploadModal=false" style="background:#ef4444;color:#fff;">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </main>
-<script src="config.js"></script>
-<script src="config.js"></script>
-<script>
-  const token = localStorage.getItem('token');
-  if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    console.warn('No token found in localStorage');
-  }
-</script>
+
+  <script src="config.js"></script>
+  <script>
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      console.warn('No token found in localStorage');
+    }
+  </script>
 
   <script>
     const API_BASE = window.BASE_URL || '';
@@ -177,36 +532,67 @@
       el: '#app',
       data: {
         orders: [],
-        activeTab: 'approved',
+        activeTab: 'completed',
         statusMap: {
-          approved: 'created',
-          pending: 'pending'
+          completed: 'completed',
+          created: 'created',
+          processing: 'processing'
         },
         searchQuery: '',
         page: 1,
-        pageSize: 10
+        pageSize: 10,
+        showStatusModal: false,
+        statusToUpdate: '',
+        selectedOrder: null,
+        showReviewModal: false,
+        reviewReceiptIndex: 0,
+        selectedOrderId: '',
+        showUploadModal: false,
+        uploadOrderId: null,
+
+        // ✅ Added for frontend user-based filtering
+        userRole: '',
+        userId: '',
       },
+
+      mounted() {
+        this.userRole = localStorage.getItem('role') || '';
+        this.userId = localStorage.getItem('userId') || '';
+        this.fetchOrders();
+      },
+
       computed: {
         filteredOrders() {
           const status = this.statusMap[this.activeTab] || this.activeTab;
-          return this.orders.filter(order => {
-            const matchStatus = order.status?.toLowerCase() === status;
-            const matchSearch = order.orderCode?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-              order.customer?.name?.toLowerCase().includes(this.searchQuery.toLowerCase());
-            return matchStatus && matchSearch;
-          });
+
+          return this.orders
+            .filter(order => {
+              const matchStatus = this.activeTab === 'all' || order.status?.toLowerCase() === status;
+              const matchSearch = order.orderCode?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                order.customer?.name?.toLowerCase().includes(this.searchQuery.toLowerCase());
+
+              // ✅ Only show own orders unless admin
+              const matchUser = this.userRole === 'admin' || (order.createdBy?._id === this.userId);
+
+              return matchStatus && matchSearch && matchUser;
+            })
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         },
+
         totalPages() {
           return Math.ceil(this.filteredOrders.length / this.pageSize);
         },
+
         paginatedOrders() {
           const start = (this.page - 1) * this.pageSize;
           return this.filteredOrders.slice(start, start + this.pageSize);
+        },
+
+        totalAmount() {
+          return this.filteredOrders.reduce((sum, o) => sum + (o.total || 0), 0);
         }
       },
-      mounted() {
-        this.fetchOrders();
-      },
+
       methods: {
         async fetchOrders() {
           try {
@@ -216,25 +602,175 @@
             console.error('Error fetching orders:', err);
           }
         },
+
         printInvoice(order) {
-          window.open(`${API_BASE}/order/${order._id}/print`, '_blank');
+          const token = localStorage.getItem('token');
+          const url = `${API_BASE}/order/${order._id}/print`;
+          fetch(url, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+            .then(res => res.blob())
+            .then(blob => {
+              const blobUrl = URL.createObjectURL(blob);
+              window.open(blobUrl, '_blank');
+            })
+            .catch(err => {
+              alert('Failed to print invoice');
+              console.error(err);
+            });
         },
-        async sendInvoice(order) {
+
+        
+        async sendInvoice(orderId) {
           try {
-            await axios.post(`${API_BASE}/order/${order._id}/send-invoice`);
-            alert('Invoice sent successfully');
+            const token = localStorage.getItem('token');
+            await axios.post(`${API_BASE}/order/${orderId}/send-receipt`, {}, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            alert('Receipt sent to customer successfully!');
           } catch (err) {
-            console.error('Failed to send invoice:', err);
-            alert('Failed to send invoice');
+            console.error('Failed to send receipt:', err);
+            alert('Failed to send receipt');
           }
         },
+
         nextPage() {
           if (this.page < this.totalPages) this.page++;
         },
+
         prevPage() {
           if (this.page > 1) this.page--;
+        },
+
+        openStatusModal(order) {
+          this.selectedOrder = order;
+          this.statusToUpdate = order.status;
+          this.showStatusModal = true;
+        },
+
+        async updateStatus() {
+          if (!this.selectedOrder) return;
+          try {
+            const token = localStorage.getItem('token');
+            await axios.patch(
+              `${API_BASE}/order/${this.selectedOrder._id}/status`,
+              { status: this.statusToUpdate },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            this.showStatusModal = false;
+            this.fetchOrders();
+          } catch (err) {
+            alert('Failed to update status');
+            console.error(err);
+          }
+        },
+
+        reviewReceipts(order) {
+          this.selectedOrder = order;
+          this.reviewReceiptIndex = 0;
+          this.showReviewModal = true;
+        },
+
+        nextReceipt() {
+          if (this.selectedOrder && this.reviewReceiptIndex < this.selectedOrder.paymentReceipts.length - 1) {
+            this.reviewReceiptIndex++;
+          }
+        },
+
+        prevReceipt() {
+          if (this.reviewReceiptIndex > 0) this.reviewReceiptIndex--;
+        },
+
+        openUploadModal(orderId) {
+          this.uploadOrderId = orderId;
+          this.showUploadModal = true;
+          this.$nextTick(() => {
+            if (this.$refs.modalReceiptFile) this.$refs.modalReceiptFile.value = '';
+          });
+        },
+
+        async submitUploadReceipt() {
+          const fileInput = this.$refs.modalReceiptFile;
+          if (!fileInput || !fileInput.files.length) {
+            alert('Please select a file.');
+            return;
+          }
+          const file = fileInput.files[0];
+          const formData = new FormData();
+          formData.append('paymentReceipt', file);
+          const uploadedBy = `${localStorage.getItem('firstName') || ''} ${localStorage.getItem('lastName') || ''}`.trim();
+          formData.append('uploadedBy', uploadedBy);
+
+          try {
+            const token = localStorage.getItem('token');
+            await axios.put(
+              `${API_BASE}/order/${this.uploadOrderId}/upload-receipt`,
+              formData,
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'multipart/form-data'
+                }
+              }
+            );
+            alert('Receipt uploaded successfully!');
+            this.showUploadModal = false;
+            this.uploadOrderId = null;
+            this.fetchOrders();
+          } catch (err) {
+            alert('Failed to upload receipt');
+            console.error(err);
+          }
+        },
+
+        async uploadReceiptForOrder(orderId, event) {
+          const file = event.target.files[0];
+          if (!file) return;
+          const formData = new FormData();
+          formData.append('paymentReceipt', file);
+          const uploadedBy = `${localStorage.getItem('firstName') || ''} ${localStorage.getItem('lastName') || ''}`.trim();
+          formData.append('uploadedBy', uploadedBy);
+
+          try {
+            const token = localStorage.getItem('token');
+            await axios.put(
+              `${API_BASE}/order/${orderId}/upload-receipt`,
+              formData,
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'multipart/form-data'
+                }
+              }
+            );
+            alert('Receipt uploaded successfully!');
+            this.fetchOrders();
+          } catch (err) {
+            alert('Failed to upload receipt');
+            console.error(err);
+          }
+        },
+
+        async deleteReceiptImage(orderId, receiptId) {
+          if (!confirm('Are you sure you want to delete this receipt image?')) return;
+          try {
+            const token = localStorage.getItem('token');
+            await axios.delete(
+              `${API_BASE}/order/${orderId}/payment-receipts/${receiptId}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            this.selectedOrder.paymentReceipts = this.selectedOrder.paymentReceipts.filter(r => r._id !== receiptId);
+            if (this.reviewReceiptIndex >= this.selectedOrder.paymentReceipts.length) {
+              this.reviewReceiptIndex = Math.max(0, this.selectedOrder.paymentReceipts.length - 1);
+            }
+            this.fetchOrders();
+          } catch (err) {
+            alert('Failed to delete receipt');
+            console.error(err);
+          }
         }
       },
+
       watch: {
         searchQuery() {
           this.page = 1;
@@ -245,6 +781,8 @@
       }
     });
   </script>
+
+
 </body>
 
 </html>
