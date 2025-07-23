@@ -16,7 +16,7 @@
     'sale.html':         ['admin', 'sales', 'finance'],
     'shipping.html':     ['admin', 'sales', 'warehouse'],
     'stats.html':        ['admin', 'sales', 'inventory', 'warehouse', 'finance'],
-    'stock-movement.html': ['admin', 'inventory', 'warehouse'],
+    'stock.html': ['admin', 'inventory', 'warehouse'],
     'store.html':        ['admin', 'sales', 'inventory', 'warehouse'],
     'user.html':         ['admin', 'finance'],
     'warehouse.html':    ['admin', 'inventory', 'warehouse'],

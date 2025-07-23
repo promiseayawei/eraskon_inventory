@@ -104,15 +104,29 @@
         }
 
         .modal {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 700px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideIn 0.3s ease;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
         }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .active {
+            background-color: #2563eb !important;
+            font-weight: bold;
+        }
+
 
         @keyframes slideIn {
             from {
@@ -194,6 +208,11 @@
             color: red;
             font-size: 0.9em;
         }
+
+        .text-success {
+            color: green;
+            font-weight: bold;
+        }
     </style>
 
 </head>
@@ -229,15 +248,24 @@
         <button @click="showModal = true">New Stock Transfer</button>
 
         <!-- Modal -->
-        <div class="modal-overlay" v-if="showModal" @click.self="closeModal">
-            <div class="modal">
+        <!-- Modal -->
+        <div v-if="showModal" class="modal show" @click.self="closeModal">
+            <div class="modal-content">
                 <h3>Stock Transfer</h3>
                 <form @submit.prevent="submitTransfer">
                     <label>Product</label>
                     <select v-model="form.productVariantId" required>
+
+
                         <option value="">Select Product</option>
                         <option v-for="p in products" :value="p._id">{{ p.name }}</option>
                     </select>
+                    <!-- Product Stock Details -->
+                    <div v-if="selectedProductVariant">
+                        <p><strong>Current Stock:</strong> {{ selectedProductVariant.stock }}</p>
+                        <p><strong>Warehouse:</strong> {{ selectedProductVariant.warehouse?.name || '—' }}</p>
+                        <p><strong>SKU:</strong> {{ selectedProductVariant.sku || 'N/A' }}</p>
+                    </div>
 
                     <label>Quantity</label>
                     <input type="number" v-model.number="form.quantity" required />
@@ -269,6 +297,8 @@
                 </form>
             </div>
         </div>
+
+
         <!-- Stock Movements Table  -->
         <table>
             <thead>
@@ -280,10 +310,10 @@
                     <th>Reason</th>
                     <th>From</th>
                     <th>To</th>
-                    <th>Created</th>
+                    <th>Created by</th>
+                    <th>Approved by</th>
                     <th>Approved</th>
                     <th>Received</th>
-                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -301,16 +331,50 @@
                     <td>
                         <div v-if="approvedLog(m)">{{ formatLog(approvedLog(m)) }}</div>
                     </td>
+
+
+
+                    <!-- Approve Column -->
                     <td>
-                        <div v-if="receivedLog(m)">{{ formatLog(receivedLog(m)) }}</div>
+                        <div v-if="m.type === 'in-transit' && !approvedLog(m)">
+                            <button v-if="userRole === 'admin'" @click="approve(m._id)">Approve</button>
+                        </div>
+                        <div v-else-if="approvedLog(m)">
+                            <span class="text-success">Approved</span>
+                        </div>
                     </td>
+
+                    <!-- Receive Column -->
                     <td>
-                        <button v-if="m.type==='out' && !approvedLog(m)" @click="approve(m._id)">Approve</button>
-                        <button v-if="m.type==='in-transit' && !receivedLog(m)" @click="receive(m._id)">Receive</button>
+                        <div v-if="m.type === 'in-transit' && approvedLog(m) && !receivedLog(m)">
+                            <button @click="receive(m._id)">Receive</button>
+                        </div>
+                        <div v-else-if="receivedLog(m)">
+                            <span class="text-success">Received</span>
+                        </div>
+                        <div v-else-if="m.type === 'in-transit' && !approvedLog(m)">
+                            <span class="text-warning">Awaiting Approval</span>
+                        </div>
                     </td>
+
+
+
+
                 </tr>
             </tbody>
         </table>
+        <div class="inline-row" style="margin-top: 1rem;">
+            <button :disabled="pagination.page === 1" @click="pagination.page--">Previous</button>
+
+            <span v-for="p in totalPages" :key="p" style="margin: 0 4px;">
+                <button :class="{ active: pagination.page === p }" @click="pagination.page = p">
+                    {{ p }}
+                </button>
+            </span>
+
+            <button :disabled="pagination.page === totalPages" @click="pagination.page++">Next</button>
+        </div>
+
 
         <!-- Modal -->
 
@@ -354,7 +418,17 @@
                     products: [],
                     warehouses: [],
                     movements: [],
-                     showModal: false,
+                    showModal: false,
+                    loading: false, // ✅ loading spinner control
+                    selectedProductVariant: null,
+                    userRole: localStorage.getItem('role') || '',
+
+                    pagination: {
+                        page: 1,
+                        perPage: 10
+                    },
+
+
                     form: {
                         productVariantId: '',
                         quantity: '',
@@ -363,29 +437,53 @@
                         reason: '',
                         reference: ''
                     },
-                    filters: { product: '', warehouse: '', dateFrom: '', dateTo: '' },
-
+                    filters: {
+                        product: '',
+                        warehouse: '',
+                        dateFrom: '',
+                        dateTo: ''
+                    }
                 },
                 computed: {
                     filteredMovements() {
-                        return this.movements.filter(m => {
+                        const sorted = [...this.movements].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                        const filtered = sorted.filter(m => {
                             const from = this.filters.dateFrom ? new Date(this.filters.dateFrom) : null;
                             const to = this.filters.dateTo ? new Date(this.filters.dateTo) : null;
                             const created = new Date(m.createdAt);
                             return (!this.filters.product || m.productVariant?._id === this.filters.product) &&
                                 (!this.filters.warehouse || m.warehouse?._id === this.filters.warehouse) &&
-                                (!from || created >= from) && (!to || created <= to);
+                                (!from || created >= from) &&
+                                (!to || created <= to);
                         });
+
+                        this.totalPages = Math.ceil(filtered.length / this.pagination.perPage);
+
+                        const start = (this.pagination.page - 1) * this.pagination.perPage;
+                        return filtered.slice(start, start + this.pagination.perPage);
+                    }
+
+                },
+                watch: {
+                    'filters.product': 'resetPage',
+                    'filters.warehouse': 'resetPage',
+                    'filters.dateFrom': 'resetPage',
+                    'filters.dateTo': 'resetPage',
+                    'form.productVariantId'(val) {
+                        this.selectedProductVariant = this.products.find(p => p._id === val) || null;
                     }
                 },
                 mounted() {
                     this.fetchAll();
-                    // Optional: ESC key to close modal
                     document.addEventListener('keydown', e => {
-                        if (e.key === 'Escape') this.showModal = false;
+                        if (e.key === 'Escape') this.closeModal();
                     });
                 },
                 methods: {
+                    closeModal() {
+                        this.showModal = false;
+                    },
                     async fetchAll() {
                         const [prodRes, whRes, movRes] = await Promise.all([
                             axios.get(`${window.BASE_URL}/product-variant`),
@@ -412,27 +510,42 @@
                         return new Date(d).toLocaleString();
                     },
                     async submitTransfer() {
-                        await axios.post(`${API}`, { ...this.form, type: 'transfer' });
-
-                        this.fetchAll();
-                        // Optional: Reset form
-                        this.form = {
-                            productVariantId: '',
-                            quantity: '',
-                            warehouse: '',
-                            destinationWarehouse: '',
-                            reason: '',
-                            reference: ''
-                        };
+                        this.loading = true;
+                        try {
+                            await axios.post(`${API}`, { ...this.form, type: 'transfer' });
+                            await this.fetchAll();
+                            this.closeModal();
+                            this.form = {
+                                productVariantId: '',
+                                quantity: '',
+                                warehouse: '',
+                                destinationWarehouse: '',
+                                reason: '',
+                                reference: ''
+                            };
+                        } catch (err) {
+                            console.error(err);
+                            alert('Transfer failed.');
+                        } finally {
+                            this.loading = false;
+                        }
                     },
                     async approve(id) {
                         await axios.put(`${API}/approve/${id}`);
                         this.fetchAll();
                     },
                     async receive(id) {
-                        await axios.put(`${API}/receive/${id}`);
-                        this.fetchAll();
+                        try {
+                            await axios.put(`${API}/receive/${id}`);
+                            this.fetchAll();
+                        } catch (error) {
+                            console.error('Receive failed:', error.response?.data || error.message);
+                            alert('Receive failed: ' + (error.response?.data?.message || error.message));
+                        }
                     },
+
+
+
                     exportToExcel() {
                         const ws = XLSX.utils.json_to_sheet(this.filteredMovements.map(m => ({
                             Code: m.code,
@@ -459,11 +572,17 @@
                             doc.text(`${m.code} | ${m.productVariant?.name} | ${m.quantity} | ${m.type}`, 10, y);
                         });
                         doc.save('stock_movements.pdf');
-                    }
+                    },
+                    resetPage() {
+                        this.pagination.page = 1;
+                    },
+
+
                 }
             });
         });
     </script>
+
 </body>
 
 </html>

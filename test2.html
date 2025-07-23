@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Stock Transfer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8"  />
+
+  <!-- Vue & Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <!-- <link rel="stylesheet" href="assets/css/style.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+        :root {
+            --bg-color: #e2dcdc;
+            --text-color: #090F3B;
+            --card-bg: #ffffff;
+            --border-color: #ccc;
+            --input-border: #ccc;
+        }
+
+        body.dark {
+            --bg-color: #090F3B;
+            --text-color: #f1f1f1;
+            --card-bg: #050d4a;
+            --border-color: #444;
+            --input-border: #444;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark th {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        body.dark tr:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* BUTTON */
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            border: none;
+            background: #3b82f6;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+            z-index: 1001; /* ✅ Add this line */
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* CARDS */
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: flex-start;
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 320px;
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+        }
+
+        @media (min-width: 600px) {
+            .card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .card {
+                width: calc(33.333% - 20px);
+            }
+        }
+
+        /* FORMS */
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 6px 8px;
+            margin-top: 4px;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* OTHER */
+        .preview {
+            max-width: 100px;
+            margin-top: 10px;
+        }
+
+        .inline-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+  <div class="dark-toggle">
+    <label><input type="checkbox" v-model="darkMode" /> Dark Mode</label>
+  </div>
+
+  <h2>Stock Transfer System</h2>
+  <button @click="showModal = true">New Stock Transfer</button>
+
+  <!-- Modal -->
+  <div class="modal-overlay" v-if="showModal" @click.self="closeModal">
+    <div class="modal">
+      <h3>Stock Transfer</h3>
+      <form @submit.prevent="submitTransfer">
+        <label>Product</label>
+        <select v-model="form.productVariantId" required>
+          <option value="">Select Product</option>
+          <option v-for="p in products" :value="p._id">{{ p.name }}</option>
+        </select>
+
+        <label>Quantity</label>
+        <input type="number" v-model.number="form.quantity" required />
+
+        <label>From Warehouse</label>
+        <select v-model="form.warehouse" required>
+          <option value="">Select From</option>
+          <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+        </select>
+
+        <label>To Warehouse</label>
+        <select v-model="form.destinationWarehouse" required>
+          <option value="">Select To</option>
+          <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+        </select>
+
+        <label>Reason</label>
+        <input v-model="form.reason" required />
+
+        <label>Reference</label>
+        <input v-model="form.reference" />
+
+        <div class="inline-row">
+          <button type="submit" :disabled="loading">
+            {{ loading ? 'Transferring...' : 'Transfer' }}
+          </button>
+          <button type="button" @click="closeModal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" v-if="toast.visible" :class="toast.type">{{ toast.message }}</div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      showModal: false,
+      loading: false,
+      darkMode: false,
+      toast: {
+        visible: false,
+        message: '',
+        type: ''
+      },
+      form: {
+        productVariantId: '',
+        quantity: '',
+        warehouse: '',
+        destinationWarehouse: '',
+        reason: '',
+        reference: ''
+      },
+      products: [
+        { _id: 'prod1', name: 'Product A' },
+        { _id: 'prod2', name: 'Product B' }
+      ],
+      warehouses: [
+        { _id: 'w1', name: 'Warehouse 1' },
+        { _id: 'w2', name: 'Warehouse 2' }
+      ]
+    },
+    methods: {
+      async submitTransfer() {
+        if (this.form.warehouse === this.form.destinationWarehouse) {
+          return this.showToast('Source and destination warehouses must differ.', 'error');
+        }
+
+        this.loading = true;
+        try {
+          // Replace with actual API call
+          await new Promise(r => setTimeout(r, 1000));
+          this.showToast('Transfer successful!');
+          this.resetForm();
+          this.showModal = false;
+        } catch (err) {
+          this.showToast('Transfer failed.', 'error');
+        } finally {
+          this.loading = false;
+        }
+      },
+      showToast(message, type = 'success') {
+        this.toast.message = message;
+        this.toast.type = type;
+        this.toast.visible = true;
+        setTimeout(() => this.toast.visible = false, 3000);
+      },
+      closeModal() {
+        this.showModal = false;
+        this.resetForm();
+      },
+      resetForm() {
+        this.form = {
+          productVariantId: '',
+          quantity: '',
+          warehouse: '',
+          destinationWarehouse: '',
+          reason: '',
+          reference: ''
+        };
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
