@@ -1,0 +1,61 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+.env
+.env.*.local
+
+# Build output
+dist/
+build/
+out/
+temp/
+.cache/
+
+# Electron specific
+.electron/
+electron-out/
+*.asar
+
+# Logs and crash reports
+logs/
+*.log
+*.tsbuildinfo
+
+# OS and editor-specific
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Testing
+coverage/
+*.lcov
+
+# Optional: VS Code extensions or settings
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Git backup
+*.orig
+
+# Misc
+*.tgz
+*.gz
+*.zip
+
+# TypeScript
+*.tsbuildinfo
+
+# Next.js (if using it)
+.next/
+
+# Vue.js (if using it)
+.vite/
+vite.config.*
