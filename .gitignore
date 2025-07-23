@@ -1,67 +1,10 @@
-# Root Node.js & environment
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
-pnpm-lock.yaml
-.env
-.env.*.local
-
-# Build and cache directories (root or nested)
-dist/
-build/
-out/
-temp/
-.cache/
-
-# Electron-specific build outputs
-*.asar
-.electron/
-electron-out/
-
-# If builds happen inside the electron-desktop folder
-electron-desktop/dist/
-electron-desktop/build/
-electron-desktop/out/
+# Electron
 electron-desktop/node_modules/
-electron-desktop/.cache/
-electron-desktop/*.asar
+electron-desktop/dist/
+*.asar
 
-# Logs and system files
-logs/
+# Common
+node_modules/
+dist/
 *.log
-*.tsbuildinfo
-
-# IDEs and OS junk
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-*.swp
-
-# Testing
-coverage/
-*.lcov
-
-# Git backup & packaging artifacts
-*.orig
-*.tgz
-*.gz
 *.zip
-
-# VS Code project files (optional)
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-
-# TypeScript
-*.tsbuildinfo
-
-# Next.js (if using it)
-.next/
-
-# Vite (if using Vue/Vite)
-.vite/
-vite.config.*
