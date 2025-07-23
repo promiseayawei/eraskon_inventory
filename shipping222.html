@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shipping - Eraskon Inventory</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    :root {
+       --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --primary-bg: #e2dcdc;
+      --success: #10b981;
+      --danger: #ef4444;
+      --table-header: #f3eded;
+      --white: #f3eded;
+      --text: #222;
+      --shadow: 0 2px 8px #0001;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--primary-bg);
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+    }
+    .shipping-main-content {
+      margin-left: 240px;
+      margin-top: 64px;
+      padding: 32px 24px 24px 24px;
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
+    .shipping-container {
+      max-width: 1200px;
+      margin: 0;
+      background: var(--white);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 32px 24px;
+    }
+    .shipping-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .shipping-tab-btn {
+      background: var(--white);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 10px 18px;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      font-weight: 600;
+      outline: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .shipping-tab-btn.active {
+      background: var(--primary);
+      color: var(--white);
+      border-bottom: 2px solid var(--white);
+      z-index: 2;
+    }
+    .shipping-tab-content {
+      display: none;
+      background: var(--white);
+      border-radius: 0 0 8px 8px;
+      box-shadow: var(--shadow);
+      padding: 0;
+      margin-bottom: 32px;
+      animation-duration: 0.5s;
+    }
+    .shipping-tab-content.active {
+      display: block;
+      animation: fadeIn 0.5s;
+    }
+    table {
+      width: 100%;
+      min-width: 900px;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      background: var(--white);
+      border-radius: 8px;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      white-space: nowrap;
+      color: var(--text);
+    }
+    th {
+      background: var(--table-header);
+      color: var(--primary);
+    }
+    .shipping-action-btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-right: 6px;
+      transition: background 0.2s;
+    }
+    .shipping-action-btn.ship {
+      background: var(--primary);
+      color: var(--white);
+    }
+    .shipping-action-btn.delivered {
+      background: var(--success);
+      color: var(--white);
+    }
+    .shipping-action-btn.cancel {
+      background: var(--danger);
+      color: var(--white);
+    }
+    .shipping-action-btn.ship:hover {
+      background: var(--primary-light);
+    }
+    .shipping-action-btn.delivered:hover {
+      background: #059669;
+    }
+    .shipping-action-btn.cancel:hover {
+      background: #b91c1c;
+    }
+    @media (max-width: 900px) {
+      .shipping-main-content {
+        margin-left: 60px;
+        margin-top: 56px;
+        padding: 16px 4px 4px 4px;
+      }
+      .shipping-container {
+        padding: 12px 4px;
+      }
+      table {
+        min-width: 600px;
+      }
+    }
+    @media (max-width: 600px) {
+      .shipping-main-content {
+        margin-left: 0;
+        margin-top: 56px;
+        padding: 8px 2px 2px 2px;
+      }
+      .shipping-container {
+        padding: 10px 2px;
+        border-radius: 0;
+        margin: 0;
+        box-shadow: none;
+        background: transparent !important;
+        width: 100% !important;
+      }
+      .shipping-tabs {
+        flex-direction: column;
+        gap: 0;
+      }
+      .shipping-tab-btn {
+        border-radius: 0;
+        width: 100%;
+        text-align: left;
+        padding: 12px 10px;
+        font-size: 1em;
+      }
+      .shipping-tab-content {
+        border-radius: 0 0 8px 8px;
+        padding: 0;
+        box-shadow: none;
+        background: transparent !important;
+      }
+      table {
+        min-width: 400px;
+        font-size: 0.95em;
+        display: block;
+        overflow-x: auto;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        min-width: 0 !important;
+      }
+      th, td {
+        min-width: 120px;
+        white-space: normal;
+        padding: 8px 6px;
+        flex: 1 0 120px;
+        max-width: 100vw;
+        word-break: break-word;
+      }
+      table, thead, tbody, tfoot, tr, th, td {
+        display: block;
+        width: 100% !important;
+        box-sizing: border-box;
+      }
+      tr {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <script src="components/uiComponents.js"></script>
+  <script src="components/spinner.js"></script>
+  <script src="components/authGuard.js"></script>
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+
+  <div class="shipping-main-content">
+    <div class="shipping-container">
+      <h2>Shipping Menu</h2>
+      <div class="shipping-tabs">
+        <button class="shipping-tab-btn active" data-tab="pendingShippingTab"><i class="bx bx-send"></i> Pending</button>
+        <button class="shipping-tab-btn" data-tab="inTransitShippingTab"><i class="bx bx-loader-circle"></i> In Transit</button>
+        <button class="shipping-tab-btn" data-tab="deliveredShippingTab"><i class="bx bx-check-circle"></i> Delivered</button>
+        <button class="shipping-tab-btn" data-tab="logisticsTab"><i class="bx bx-car"></i> Logistics Service</button>
+        <button class="shipping-tab-btn" data-tab="stockMovementTab"><i class="bx bx-transfer"></i> Stock Movement</button>
+      </div>
+      <div id="pendingShippingTab" class="shipping-tab-content active">
+        <h3>Pending Shipments</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment ID</th>
+              <th>Order</th>
+              <th>Customer</th>
+              <th>Address</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>SHP-001</td>
+              <td>Order #1001</td>
+              <td>Jane Doe</td>
+              <td>Lagos, Nigeria</td>
+              <td>2025-06-10</td>
+              <td>Pending</td>
+              <td>
+                <button class="shipping-action-btn ship">Mark as Shipped</button>
+                <button class="shipping-action-btn cancel">Cancel</button>
+              </td>
+            </tr>
+            <tr>
+              <td>SHP-002</td>
+              <td>Order #1002</td>
+              <td>John Smith</td>
+              <td>Abuja, Nigeria</td>
+              <td>2025-06-09</td>
+              <td>Pending</td>
+              <td>
+                <button class="shipping-action-btn ship">Mark as Shipped</button>
+                <button class="shipping-action-btn cancel">Cancel</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="inTransitShippingTab" class="shipping-tab-content">
+        <h3>In Transit</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment ID</th>
+              <th>Order</th>
+              <th>Customer</th>
+              <th>Address</th>
+              <th>Date Shipped</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>SHP-003</td>
+              <td>Order #1003</td>
+              <td>Mary Obi</td>
+              <td>Kano, Nigeria</td>
+              <td>2025-06-08</td>
+              <td>In Transit</td>
+              <td>
+                <button class="shipping-action-btn delivered">Mark as Delivered</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="deliveredShippingTab" class="shipping-tab-content">
+        <h3>Delivered Shipments</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment ID</th>
+              <th>Order</th>
+              <th>Customer</th>
+              <th>Address</th>
+              <th>Date Delivered</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>SHP-004</td>
+              <td>Order #1004</td>
+              <td>Peter Obi</td>
+              <td>Port Harcourt, Nigeria</td>
+              <td>2025-06-07</td>
+              <td>Delivered</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="logisticsTab" class="shipping-tab-content">
+        <h3>Logistics Service</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Service ID</th>
+              <th>Provider</th>
+              <th>Contact</th>
+              <th>Service Area</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>LOG-001</td>
+              <td>ABC Logistics</td>
+              <td>0801-234-5678</td>
+              <td>Lagos, Abuja</td>
+              <td>Active</td>
+              <td>
+                <button class="shipping-action-btn delivered">View</button>
+              </td>
+            </tr>
+            <tr>
+              <td>LOG-002</td>
+              <td>FastMove</td>
+              <td>0802-345-6789</td>
+              <td>Port Harcourt, Kano</td>
+              <td>Active</td>
+              <td>
+                <button class="shipping-action-btn delivered">View</button>
+              </td>
+            </tr>
+            <tr>
+              <td>LOG-003</td>
+              <td>QuickShip</td>
+              <td>0803-456-7890</td>
+              <td>Nationwide</td>
+              <td>Inactive</td>
+              <td>
+                <button class="shipping-action-btn cancel">Activate</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="stockMovementTab" class="shipping-tab-content">
+        <h3>Stock Movement</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Product Variant</th>
+              <th>Type</th>
+              <th>Quantity</th>
+              <th>Warehouse</th>
+              <th>Destination Warehouse</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="stockMovementTbody">
+            <!-- Rows will be rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for View More -->
+  <div id="stockMovementModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:10px; max-width:400px; width:95vw; padding:24px 18px; position:relative;">
+      <span id="stockMovementModalClose" style="position:absolute; right:18px; top:12px; font-size:1.8em; color:#888; cursor:pointer; font-weight:bold;">&times;</span>
+      <h3>Stock Movement Details</h3>
+      <div id="stockMovementModalContent" style="margin-top:18px;"></div>
+    </div>
+  </div>
+
+  <!-- Modal for Assign Logistics -->
+  <div id="assignLogisticsModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:10px; max-width:400px; width:95vw; padding:24px 18px; position:relative;">
+      <span id="assignLogisticsModalClose" style="position:absolute; right:18px; top:12px; font-size:1.8em; color:#888; cursor:pointer; font-weight:bold;">&times;</span>
+      <h3>Assign Logistics Company</h3>
+      <form id="assignLogisticsForm">
+        <div style="margin-bottom:18px;">
+          <label for="logisticsSelect"><strong>Select Logistics Partner:</strong></label>
+          <select id="logisticsSelect" required style="width:100%;padding:8px 6px;margin-top:6px;">
+            <option value="">-- Select --</option>
+          </select>
+        </div>
+        <button type="submit" class="shipping-action-btn delivered" style="width:100%;">Assign</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/js/script.js"></script>
+  <script src="config.js"></script>
+<script>
+  const token = localStorage.getItem('token');
+  const STOCK_MOVEMENT_API = window.BASE_URL + '/stock-movement';
+  const LOGISTICS_API = window.BASE_URL + '/logistics';
+
+  // Tab switching logic
+  document.querySelectorAll('.shipping-tab-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.shipping-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.shipping-tab-content').forEach(tc => tc.classList.remove('active'));
+      btn.classList.add('active');
+      const tabId = btn.getAttribute('data-tab');
+      document.getElementById(tabId).classList.add('active');
+    });
+  });
+
+  // Fetch and render stock movements
+  async function fetchStockMovements() {
+    try {
+      const res = await fetch(STOCK_MOVEMENT_API, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      renderStockMovementTable(data);
+    } catch (e) {
+      renderStockMovementTable([]);
+    }
+  }
+
+  function renderStockMovementTable(movements) {
+    const tbody = document.getElementById('stockMovementTbody');
+    tbody.innerHTML = movements.length === 0
+      ? `<tr><td colspan="6" style="text-align:center;">No stock movement records found.</td></tr>`
+      : movements.map((m, idx) => {
+          let productVariantName = '-';
+          if (m.productVariant && typeof m.productVariant === 'object') {
+            productVariantName = m.productVariant.name || m.productVariant.variantName || m.productVariant.title || '-';
+          } else if (typeof m.productVariant === 'string') {
+            productVariantName = m.productVariant;
+          }
+
+          let warehouseName = '-';
+          if (m.warehouse && typeof m.warehouse === 'object') {
+            warehouseName = m.warehouse.name || m.warehouse.title || '-';
+          } else if (typeof m.warehouse === 'string') {
+            warehouseName = m.warehouse;
+          }
+
+          let destWarehouseName = '-';
+          if (m.destinationWarehouse && typeof m.destinationWarehouse === 'object') {
+            destWarehouseName = m.destinationWarehouse.name || m.destinationWarehouse.title || '-';
+          } else if (typeof m.destinationWarehouse === 'string') {
+            destWarehouseName = m.destinationWarehouse;
+            if (/^[a-f\d]{24}$/i.test(destWarehouseName)) destWarehouseName = '-';
+          }
+
+          let assignBtn = '';
+          if (m.status === 'In Transit' && !m.logisticsCompany) {
+            assignBtn = `<button class="shipping-action-btn delivered assign-logistics-btn" data-idx="${idx}">Assign</button>`;
+          } else if (m.logisticsCompany && typeof m.logisticsCompany === 'object') {
+            assignBtn = `<span style="color:var(--primary);font-weight:600;">${m.logisticsCompany.provider}</span>`;
+          }
+
+          return `
+            <tr>
+              <td>${productVariantName}</td>
+              <td>${m.type || '-'}</td>
+              <td>${m.quantity || '-'}</td>
+              <td>${warehouseName}</td>
+              <td>${destWarehouseName}</td>
+              <td>
+                <button class="shipping-action-btn view" data-idx="${idx}">View More</button>
+                ${assignBtn}
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+    document.querySelectorAll('.shipping-action-btn.view').forEach(btn => {
+      btn.onclick = function() {
+        const idx = +btn.getAttribute('data-idx');
+        showStockMovementModal(movements[idx]);
+      };
+    });
+
+    document.querySelectorAll('.assign-logistics-btn').forEach(btn => {
+      btn.onclick = function() {
+        const idx = +btn.getAttribute('data-idx');
+        openAssignLogisticsModal(movements[idx]);
+      };
+    });
+  }
+
+  const modal = document.getElementById('stockMovementModal');
+  const modalClose = document.getElementById('stockMovementModalClose');
+  const modalContent = document.getElementById('stockMovementModalContent');
+
+  function showStockMovementModal(m) {
+    let productVariantName = m.productVariant?.name || m.productVariant?.variantName || m.productVariant?.title || '-';
+    let warehouseName = m.warehouse?.name || m.warehouse?.title || '-';
+    let destWarehouseName = m.destinationWarehouse?.name || m.destinationWarehouse?.title || '-';
+
+    if (typeof m.productVariant === 'string') productVariantName = m.productVariant;
+    if (typeof m.warehouse === 'string') warehouseName = m.warehouse;
+    if (typeof m.destinationWarehouse === 'string') {
+      destWarehouseName = /^[a-f\d]{24}$/i.test(m.destinationWarehouse) ? '-' : m.destinationWarehouse;
+    }
+
+    modalContent.innerHTML = `
+      <div><strong>Product Variant:</strong> ${productVariantName}</div>
+      <div><strong>Type:</strong> ${m.type || '-'}</div>
+      <div><strong>Quantity:</strong> ${m.quantity || '-'}</div>
+      <div><strong>Warehouse:</strong> ${warehouseName}</div>
+      <div><strong>Destination Warehouse:</strong> ${destWarehouseName}</div>
+      <div><strong>Destination Customer:</strong> ${m.destinationCustomer || '-'}</div>
+      <div><strong>Batch Number:</strong> ${m.batchNumber || '-'}</div>
+      <div><strong>Reason:</strong> ${m.reason || '-'}</div>
+      <div><strong>Reference:</strong> ${m.reference || '-'}</div>
+    `;
+    modal.style.display = 'flex';
+  }
+
+  modalClose.onclick = () => { modal.style.display = 'none'; };
+  window.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+
+  const assignModal = document.getElementById('assignLogisticsModal');
+  const assignModalClose = document.getElementById('assignLogisticsModalClose');
+  const assignForm = document.getElementById('assignLogisticsForm');
+  let assignStockMovementId = null;
+
+  function openAssignLogisticsModal(stockMovement) {
+    assignStockMovementId = stockMovement._id;
+    fetchLogisticsPartners();
+    assignModal.style.display = 'flex';
+  }
+
+  assignModalClose.onclick = () => { assignModal.style.display = 'none'; };
+  window.addEventListener('click', e => { if (e.target === assignModal) assignModal.style.display = 'none'; });
+
+  async function fetchLogisticsPartners() {
+    try {
+      const res = await fetch(LOGISTICS_API, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      logisticsPartners = await res.json();
+      const select = document.getElementById('logisticsSelect');
+      select.innerHTML = '<option value="">-- Select --</option>' +
+        logisticsPartners
+          .filter(l => l.status === 'Active')
+          .map(l => `<option value="${l._id}">${l.provider} (${l.serviceArea})</option>`)
+          .join('');
+    } catch {
+      document.getElementById('logisticsSelect').innerHTML = '<option value="">No partners found</option>';
+    }
+  }
+
+  assignForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const logisticsId = document.getElementById('logisticsSelect').value;
+    if (!logisticsId || !assignStockMovementId) return;
+    try {
+      await fetch(`${STOCK_MOVEMENT_API}/${assignStockMovementId}/assign-logistics`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ logisticsCompany: logisticsId })
+      });
+      assignModal.style.display = 'none';
+      fetchStockMovements();
+    } catch {
+      alert('Assignment failed.');
+    }
+  };
+
+  // Initial load
+  fetchStockMovements();
+</script>
+
+</body>
+</html>
