@@ -65,3 +65,5 @@ coverage/
 # Vite (if using Vue/Vite)
 .vite/
 vite.config.*
+node_modules/
+.env
