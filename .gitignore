@@ -69,3 +69,5 @@ Thumbs.db
 # Vite (Vue/Vite)
 .vite/
 vite.config.*
+eraskon_clean/
+
