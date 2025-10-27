@@ -1,16 +1,6 @@
-<<<<<<< HEAD
-# Electron
-electron-desktop/node_modules/
-electron-desktop/dist/
-*.asar
-
-# Common
-node_modules/
-dist/
-*.log
-*.zip
-=======
-# Root Node.js & environment
+# ===============================
+# 📦 Core Node.js and Environment
+# ===============================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -20,19 +10,21 @@ pnpm-lock.yaml
 .env
 .env.*.local
 
-# Build and cache directories (root or nested)
+# ===============================
+# 🏗️ Build and Cache Directories
+# ===============================
 dist/
 build/
 out/
 temp/
 .cache/
 
-# Electron-specific build outputs
+# ===============================
+# ⚡ Electron-specific Builds
+# ===============================
 *.asar
 .electron/
 electron-out/
-
-# If builds happen inside the electron-desktop folder
 electron-desktop/dist/
 electron-desktop/build/
 electron-desktop/out/
@@ -40,43 +32,40 @@ electron-desktop/node_modules/
 electron-desktop/.cache/
 electron-desktop/*.asar
 
-# Logs and system files
+# ===============================
+# 🪵 Logs and Temporary Files
+# ===============================
 logs/
 *.log
+*.zip
+*.tgz
+*.gz
 *.tsbuildinfo
+*.lcov
+*.orig
+*.swp
 
-# IDEs and OS junk
+# ===============================
+# 🧪 Testing Coverage
+# ===============================
+coverage/
+
+# ===============================
+# 🧰 IDEs and OS Junk
+# ===============================
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-*.swp
-
-# Testing
-coverage/
-*.lcov
-
-# Git backup & packaging artifacts
-*.orig
-*.tgz
-*.gz
-*.zip
-
-# VS Code project files (optional)
-.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 
-# TypeScript
-*.tsbuildinfo
-
-# Next.js (if using it)
+# ===============================
+# ⚛️ Frameworks (optional)
+# ===============================
+# Next.js
 .next/
-
-# Vite (if using Vue/Vite)
+# Vite (Vue/Vite)
 .vite/
 vite.config.*
-node_modules/
-.env
->>>>>>> origin/main
