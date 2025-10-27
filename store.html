@@ -1115,7 +1115,7 @@
       computed: {
         cartTotal() {
           // Subtotal - discount - tax
-          return Math.max(0, this.subtotal - this.discountValue - this.taxValue);
+          return Math.max(0, this.subtotal - this.discountValue + this.taxValue);
         },
         filteredProducts() {
           const term = this.searchTerm.toLowerCase();
@@ -1489,7 +1489,10 @@
                 reason: "Stock transfer",
                 batchNumber: item.batchNumber
               };
-              await axios.post(`${API_BASE}/stock-movement`, stockMovement);
+              await axios.post(`${API_BASE}/stock-movement`, stockMovement, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              
               console.log("Stock movement posted for item:", stockMovement);
               // Optionally, you can update the product variant stock in the frontend
             }

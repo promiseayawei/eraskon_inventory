@@ -220,7 +220,8 @@ input, select {
                         <th>SKU</th>
                         <th>Barcode</th>
                         <th>Unit Price</th>
-                        <th>Cost Price</th>
+                          <th>Selling Price</th>
+                          <th>Cost Price</th>
                         <th>Total Stock</th>
                         <th>Batch Tracking</th>
                         <th>Low Stock Threshold</th>
@@ -238,14 +239,15 @@ input, select {
                         <td>{{ variant.product?.name || 'N/A' }}</td>
                         <td>{{ variant.sku }}</td>
                         <td>{{ variant.barcode }}</td>
-                        <td>₦{{ variant.price?.toFixed(2) }}</td>
+                          <td>₦{{ variant.sellingPrice?.toFixed(2) }}</td>
                         <td>₦{{ variant.costPrice?.toFixed(2) }}</td>
                         <td>{{ variant.totalStock }}</td>
                         <td>{{ variant.batchTracking ? 'Yes' : 'No' }}</td>
                         <td>{{ variant.lowStockThreshold || 0 }}</td>
                         <td>{{ variant.active ? 'Yes' : 'No' }}</td>
                         <td>
-                            <button @click="showEditModal(variant)">Edit</button>
+               <button @click="showEditModal(variant)">Edit</button>
+               <button @click="deleteVariant(variant._id)" style="background: #ef4444;">Delete</button>
                         </td>
                     </tr>
                 </tbody>
@@ -268,6 +270,7 @@ input, select {
                     <p><strong>Low Stock Threshold:</strong> {{ variant.lowStockThreshold || 0 }}</p>
                     <p><strong>Active:</strong> {{ variant.active ? 'Yes' : 'No' }}</p>
                     <button @click="showEditModal(variant)">Edit</button>
+            <button @click="deleteVariant(variant._id)" style="background: #ef4444;">Delete</button>
                 </div>
             </div>
         </template>
@@ -301,10 +304,10 @@ input, select {
 <input id="barcode" name="barcode" type="text" v-model="form.barcode" required />
 <span class="error" v-if="errors.barcode">{{ errors.barcode }}</span>
 
-<!-- Unit Price input -->
-<label for="price">Unit Price</label>
-<input id="price" name="price" type="number" v-model.number="form.price" min="0" step="0.01" required />
-<span class="error" v-if="errors.price">{{ errors.price }}</span>
+<!-- Selling Price input -->
+<label for="sellingPrice">Selling Price</label>
+<input id="sellingPrice" name="sellingPrice" type="number" v-model.number="form.sellingPrice" min="0" step="0.01" required />
+<span class="error" v-if="errors.sellingPrice">{{ errors.sellingPrice }}</span>
 
 <!-- Cost Price input -->
 <label for="costPrice">Cost Price</label>
@@ -448,6 +451,7 @@ input, select {
                     sku: '',
                     barcode: '',
                     price: 0,
+                      sellingPrice: 0,
                     costPrice: 0,
                     batchTracking: false,
                     lowStockThreshold: 0,
@@ -532,7 +536,7 @@ input, select {
                     this.form.name = variant.name;
                     this.form.sku = variant.sku;
                     this.form.barcode = variant.barcode;
-                    this.form.price = variant.price || 0;
+                    this.form.sellingPrice = variant.sellingPrice || 0;
                     this.form.costPrice = variant.costPrice || 0;
                     // Always cast to Boolean
                     this.form.batchTracking = !!variant.batchTracking;
@@ -623,8 +627,8 @@ input, select {
                         this.errors.barcode = 'Barcode is required';
                         valid = false;
                     }
-                    if (this.form.price === null || this.form.price < 0) {
-                        this.errors.price = 'Unit Price must be zero or positive';
+          if (this.form.sellingPrice === null || this.form.sellingPrice < 0) {
+            this.errors.sellingPrice = 'Selling Price must be zero or positive';
                         valid = false;
                     }
                     if (this.form.costPrice === null || this.form.costPrice < 0) {
@@ -683,11 +687,11 @@ input, select {
                         payload.append('name', this.form.name.trim());
                         payload.append('sku', this.form.sku.trim());
                         payload.append('barcode', this.form.barcode.trim());
-                        payload.append('price', this.form.price);
+                        payload.append('sellingPrice', this.form.sellingPrice);
                         payload.append('costPrice', this.form.costPrice);
-                        payload.append('batchTracking', this.form.batchTracking);
+                        payload.append('batchTracking', !!this.form.batchTracking);
                         payload.append('lowStockThreshold', this.form.lowStockThreshold);
-                        payload.append('active', this.form.active);
+                        payload.append('active', !!this.form.active);
                         if (this.form.image instanceof File) {
                             payload.append('image', this.form.image);
                         }

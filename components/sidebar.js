@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'user.html':         { roles: ['admin'], icon: 'bx bx-user-circle' },
       'roles.html':        { roles: ['admin'], icon: 'bx bx-shield' },
       'warehouse.html':    { roles: ['admin', 'inventory'], icon: 'bx bx-buildings' },
-      'stock-movement.html':{ roles: ['admin', 'inventory'], icon: 'bx bx-transfer' },
+      'stock.html':        { roles: ['admin', 'inventory', 'warehouse'], icon: 'bx bx-transfer' },
       'stats.html':        { roles: ['admin', 'finance'], icon: 'bx bx-pie-chart' },
       'category.html':     { roles: ['admin', 'sales', 'inventory'], icon: 'bx bx-list-ul' },
       'product-variant.html':{ roles: ['admin', 'inventory'], icon: 'bx bx-layer' },
@@ -164,6 +164,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Clear previous dashboard links to avoid duplicates
+  const dashboardLinksContainer = document.querySelector('.dashboard-links');
+  if (dashboardLinksContainer) dashboardLinksContainer.innerHTML = '';
   renderLinks('.dashboard-links', permissions.dashboard);
   renderLinks('.admin-links', permissions.admin);
   renderLinks('.editor-section', permissions.editor);
