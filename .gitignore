@@ -1,27 +1,36 @@
-# ===============================
-# 📦 Core Node.js and Environment
-# ===============================
+# =====================================================
+# 📦 CORE NODE / ENVIRONMENT CONFIG
+# =====================================================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 package-lock.json
 pnpm-lock.yaml
+
+# Local environment variables
 .env
 .env.*.local
+.env.local
+.env.production.local
+.env.development.local
 
-# ===============================
-# 🏗️ Build and Cache Directories
-# ===============================
+# =====================================================
+# 🏗️ BUILD & CACHE DIRECTORIES
+# =====================================================
 dist/
 build/
 out/
 temp/
+tmp/
 .cache/
+.eslintcache
+*.tsbuildinfo
 
-# ===============================
-# ⚡ Electron-specific Builds
-# ===============================
+# =====================================================
+# ⚡ ELECTRON-SPECIFIC BUILDS
+# =====================================================
 *.asar
 .electron/
 electron-out/
@@ -32,42 +41,70 @@ electron-desktop/node_modules/
 electron-desktop/.cache/
 electron-desktop/*.asar
 
-# ===============================
-# 🪵 Logs and Temporary Files
-# ===============================
+# =====================================================
+# 🪵 LOGS & TEMPORARY FILES
+# =====================================================
 logs/
 *.log
 *.zip
+*.tar
 *.tgz
 *.gz
-*.tsbuildinfo
-*.lcov
 *.orig
 *.swp
+*.bak
+*.tmp
+*.pid
+*.seed
+*.lcov
 
-# ===============================
-# 🧪 Testing Coverage
-# ===============================
+# =====================================================
+# 🧪 TESTING & COVERAGE
+# =====================================================
 coverage/
+.junit/
+reports/
+__tests__/
+__mocks__/
 
-# ===============================
-# 🧰 IDEs and OS Junk
-# ===============================
+# =====================================================
+# 🧰 IDE / OS JUNK FILES
+# =====================================================
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+*.iml
+
+# Allow useful VSCode workspace configs
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+!.vscode/extensions.json
 
-# ===============================
-# ⚛️ Frameworks (optional)
-# ===============================
+# macOS / Windows junk
+ehthumbs.db
+Desktop.ini
+
+# =====================================================
+# ⚛️ FRAMEWORK-SPECIFIC (Vite / Next / Nuxt / Vue)
+# =====================================================
 # Next.js
 .next/
+# Nuxt.js
+.nuxt/
 # Vite (Vue/Vite)
 .vite/
 vite.config.*
-eraskon_clean/
+# Vue CLI
+node_modules/@vue/cli-service/
+vue.config.js
 
+# =====================================================
+# 🧹 CUSTOM PROJECT-SPECIFIC
+# =====================================================
+eraskon_clean/
+uploads/
+screenshots/
+docs/generated/
+backups/
