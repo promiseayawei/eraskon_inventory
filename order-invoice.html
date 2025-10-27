@@ -309,7 +309,7 @@
         All ({{ orders.length }})
       </button>
       <button class="tab-button" :class="{ active: activeTab === 'approved' }" @click="activeTab = 'approved'">
-        Completed ({{ orders.filter(o => ['completed','completed_payment','payment_completed'].includes((o.status || '').toLowerCase())).length }})
+        Completed ({{ orders.filter(o => o.status?.toLowerCase() === 'completed').length }})
       </button>
       <button class="tab-button" :class="{ active: activeTab === 'created' }" @click="activeTab = 'created'">
         Created ({{ orders.filter(o => o.status?.toLowerCase() === 'created').length }})
@@ -378,12 +378,7 @@
               }}
             </td>
 
-            <td>{{ order.paymentConfirmedBy
-                  ? (typeof order.paymentConfirmedBy === 'object'
-                      ? `${order.paymentConfirmedBy.firstName || ''} ${order.paymentConfirmedBy.lastName || ''}`.trim()
-                      : order.paymentConfirmedBy)
-                  : 'System Admin'
-                }}</td>
+            <td>{{ order.paymentConfirmedBy?.name || 'Nil' }}</td>
             <td v-if="activeTab === 'approved'">
               <button @click="printInvoice(order)" title="Print Invoice"><i class="fa fa-print"></i></button>
               <button @click="sendInvoice(order)" title="Send Invoice"><i class="fa fa-paper-plane"></i></button>
@@ -539,11 +534,9 @@
         orders: [],
         activeTab: 'completed',
         statusMap: {
-          completed: ['completed'],
-          created: ['created'],
-          processing: ['processing'],
-          cancelled: ['cancelled', 'order_cancelled'],
-          rejected: ['rejected', 'approval_rejected', 'order_rejected']
+          completed: 'completed',
+          created: 'created',
+          processing: 'processing'
         },
         searchQuery: '',
         page: 1,
@@ -570,19 +563,11 @@
 
       computed: {
         filteredOrders() {
-          let statusList = this.statusMap[this.activeTab];
-          if (!statusList) {
-            statusList = [this.activeTab];
-          }
-
-          // For completed tab, include all possible completed statuses
-          if (this.activeTab === 'approved') {
-            statusList = ['completed','completed_payment','payment_completed'];
-          }
+          const status = this.statusMap[this.activeTab] || this.activeTab;
 
           return this.orders
             .filter(order => {
-              const matchStatus = this.activeTab === 'all' || (order.status && statusList.includes(order.status.toLowerCase()));
+              const matchStatus = this.activeTab === 'all' || order.status?.toLowerCase() === status;
               const matchSearch = order.orderCode?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
                 order.customer?.name?.toLowerCase().includes(this.searchQuery.toLowerCase());
 

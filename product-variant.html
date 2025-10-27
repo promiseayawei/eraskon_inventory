@@ -220,8 +220,12 @@ input, select {
                         <th>SKU</th>
                         <th>Barcode</th>
                         <th>Unit Price</th>
+<<<<<<< HEAD
                           <th>Selling Price</th>
                           <th>Cost Price</th>
+=======
+                        <th>Cost Price</th>
+>>>>>>> origin/main
                         <th>Total Stock</th>
                         <th>Batch Tracking</th>
                         <th>Low Stock Threshold</th>
@@ -239,7 +243,11 @@ input, select {
                         <td>{{ variant.product?.name || 'N/A' }}</td>
                         <td>{{ variant.sku }}</td>
                         <td>{{ variant.barcode }}</td>
+<<<<<<< HEAD
                           <td>₦{{ variant.sellingPrice?.toFixed(2) }}</td>
+=======
+                        <td>₦{{ variant.price?.toFixed(2) }}</td>
+>>>>>>> origin/main
                         <td>₦{{ variant.costPrice?.toFixed(2) }}</td>
                         <td>{{ variant.totalStock }}</td>
                         <td>{{ variant.batchTracking ? 'Yes' : 'No' }}</td>
@@ -304,10 +312,17 @@ input, select {
 <input id="barcode" name="barcode" type="text" v-model="form.barcode" required />
 <span class="error" v-if="errors.barcode">{{ errors.barcode }}</span>
 
+<<<<<<< HEAD
 <!-- Selling Price input -->
 <label for="sellingPrice">Selling Price</label>
 <input id="sellingPrice" name="sellingPrice" type="number" v-model.number="form.sellingPrice" min="0" step="0.01" required />
 <span class="error" v-if="errors.sellingPrice">{{ errors.sellingPrice }}</span>
+=======
+<!-- Unit Price input -->
+<label for="price">Unit Price</label>
+<input id="price" name="price" type="number" v-model.number="form.price" min="0" step="0.01" required />
+<span class="error" v-if="errors.price">{{ errors.price }}</span>
+>>>>>>> origin/main
 
 <!-- Cost Price input -->
 <label for="costPrice">Cost Price</label>
@@ -627,8 +642,13 @@ input, select {
                         this.errors.barcode = 'Barcode is required';
                         valid = false;
                     }
+<<<<<<< HEAD
           if (this.form.sellingPrice === null || this.form.sellingPrice < 0) {
             this.errors.sellingPrice = 'Selling Price must be zero or positive';
+=======
+                    if (this.form.price === null || this.form.price < 0) {
+                        this.errors.price = 'Unit Price must be zero or positive';
+>>>>>>> origin/main
                         valid = false;
                     }
                     if (this.form.costPrice === null || this.form.costPrice < 0) {
