@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Product Variant Manager</title>
 
-    <!-- Boxicons CSS -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -196,13 +195,10 @@ input, select {
  <script src="components/spinner.js"></script>
   <script src="components/authGuard.js"></script>
 
-  <!-- Load Navbar -->
   <script src="components/navbar.js"></script>
 
-  <!-- Load Sidebar -->
   <script src="components/sidebar.js"></script>
     
-  <!-- Main Content -->
   <main id="app" class="main-content">
 
         <h1>Product Variant Manager</h1>
@@ -219,13 +215,7 @@ input, select {
                         <th>Product</th>
                         <th>SKU</th>
                         <th>Barcode</th>
-                        <th>Unit Price</th>
-<<<<<<< HEAD
-                          <th>Selling Price</th>
-                          <th>Cost Price</th>
-=======
-                        <th>Cost Price</th>
->>>>>>> origin/main
+                        <th>Selling Price</th> <th>Cost Price</th>
                         <th>Total Stock</th>
                         <th>Batch Tracking</th>
                         <th>Low Stock Threshold</th>
@@ -243,12 +233,7 @@ input, select {
                         <td>{{ variant.product?.name || 'N/A' }}</td>
                         <td>{{ variant.sku }}</td>
                         <td>{{ variant.barcode }}</td>
-<<<<<<< HEAD
-                          <td>₦{{ variant.sellingPrice?.toFixed(2) }}</td>
-=======
-                        <td>₦{{ variant.price?.toFixed(2) }}</td>
->>>>>>> origin/main
-                        <td>₦{{ variant.costPrice?.toFixed(2) }}</td>
+                        <td>₦{{ variant.sellingPrice?.toFixed(2) }}</td> <td>₦{{ variant.costPrice?.toFixed(2) }}</td>
                         <td>{{ variant.totalStock }}</td>
                         <td>{{ variant.batchTracking ? 'Yes' : 'No' }}</td>
                         <td>{{ variant.lowStockThreshold || 0 }}</td>
@@ -271,8 +256,7 @@ input, select {
                     <p><strong>Product:</strong> {{ variant.product?.name || 'N/A' }}</p>
                     <p><strong>SKU:</strong> {{ variant.sku }}</p>
                     <p><strong>Barcode:</strong> {{ variant.barcode }}</p>
-                    <p><strong>Unit Price:</strong> ₦{{ variant.price?.toFixed(2) }}</p>
-                    <p><strong>Cost Price:</strong> ₦{{ variant.costPrice?.toFixed(2) }}</p>
+                    <p><strong>Selling Price:</strong> ₦{{ variant.sellingPrice?.toFixed(2) }}</p> <p><strong>Cost Price:</strong> ₦{{ variant.costPrice?.toFixed(2) }}</p>
                     <p><strong>Total Stock:</strong> {{ variant.totalStock }}</p>
                     <p><strong>Batch Tracking:</strong> {{ variant.batchTracking ? 'Yes' : 'No' }}</p>
                     <p><strong>Low Stock Threshold:</strong> {{ variant.lowStockThreshold || 0 }}</p>
@@ -283,48 +267,34 @@ input, select {
             </div>
         </template>
 
-        <!-- Modal for Add/Edit -->
-      <!-- Modal for Add/Edit -->
-<div v-if="modalVisible" class="modal-overlay" @click.self="closeModal()">
+        <div v-if="modalVisible" class="modal-overlay" @click.self="closeModal()">
   <div class="modal" @click.stop>
     <h2>{{ editingVariant ? 'Edit' : 'Add' }} Product Variant</h2>
     <form @submit.prevent="onSubmit">
-      <!-- Product select -->
-<label for="product">Product</label>
+      <label for="product">Product</label>
 <select id="product" name="product" v-model="form.product" required>
   <option disabled value="">-- Select Product --</option>
   <option v-for="p in products" :value="p._id" :key="p._id">{{ p.name }}</option>
 </select>
 <span class="error" v-if="errors.product">{{ errors.product }}</span>
 
-<!-- Name input -->
 <label for="variantName">Name</label>
 <input id="variantName" name="name" type="text" v-model="form.name" required />
 <span class="error" v-if="errors.name">{{ errors.name }}</span>
 
-<!-- SKU input -->
 <label for="sku">SKU</label>
 <input id="sku" name="sku" type="text" v-model="form.sku" required />
 <span class="error" v-if="errors.sku">{{ errors.sku }}</span>
 
-<!-- Barcode input -->
 <label for="barcode">Barcode</label>
 <input id="barcode" name="barcode" type="text" v-model="form.barcode" required />
 <span class="error" v-if="errors.barcode">{{ errors.barcode }}</span>
 
-<<<<<<< HEAD
-<!-- Selling Price input -->
 <label for="sellingPrice">Selling Price</label>
 <input id="sellingPrice" name="sellingPrice" type="number" v-model.number="form.sellingPrice" min="0" step="0.01" required />
 <span class="error" v-if="errors.sellingPrice">{{ errors.sellingPrice }}</span>
-=======
-<!-- Unit Price input -->
-<label for="price">Unit Price</label>
-<input id="price" name="price" type="number" v-model.number="form.price" min="0" step="0.01" required />
-<span class="error" v-if="errors.price">{{ errors.price }}</span>
->>>>>>> origin/main
 
-<!-- Cost Price input -->
+
 <label for="costPrice">Cost Price</label>
 <input id="costPrice" name="costPrice" type="number" v-model.number="form.costPrice" min="0" step="0.01" required />
 <span class="error" v-if="errors.costPrice">{{ errors.costPrice }}</span>
@@ -350,7 +320,6 @@ input, select {
   <img :src="previewImage" alt="Preview" class="preview" />
 </div>
 
-<!-- Only show batches if batchTracking is true -->
 <div class="form-section" v-if="form.batchTracking">
   <h3>Batches</h3>
   <button type="button" @click="addBatch()">Add Batch</button>
@@ -383,7 +352,6 @@ input, select {
   </div>
 </div>
 
-<!-- Warehouses Section -->
 <div class="form-section">
   <h3>Warehouses</h3>
   <button type="button" @click="addWarehouse()">Add Warehouse</button>
@@ -465,8 +433,7 @@ input, select {
                     name: '',
                     sku: '',
                     barcode: '',
-                    price: 0,
-                      sellingPrice: 0,
+                    sellingPrice: 0, // Standardized on sellingPrice
                     costPrice: 0,
                     batchTracking: false,
                     lowStockThreshold: 0,
@@ -525,7 +492,7 @@ input, select {
                         name: '',
                         sku: '',
                         barcode: '',
-                        price: 0,
+                        sellingPrice: 0, // Standardized on sellingPrice
                         costPrice: 0,
                         batchTracking: false,
                         lowStockThreshold: 0,
@@ -642,13 +609,9 @@ input, select {
                         this.errors.barcode = 'Barcode is required';
                         valid = false;
                     }
-<<<<<<< HEAD
-          if (this.form.sellingPrice === null || this.form.sellingPrice < 0) {
-            this.errors.sellingPrice = 'Selling Price must be zero or positive';
-=======
-                    if (this.form.price === null || this.form.price < 0) {
-                        this.errors.price = 'Unit Price must be zero or positive';
->>>>>>> origin/main
+                    // Validation for sellingPrice
+                    if (this.form.sellingPrice === null || this.form.sellingPrice < 0) {
+                        this.errors.sellingPrice = 'Selling Price must be zero or positive';
                         valid = false;
                     }
                     if (this.form.costPrice === null || this.form.costPrice < 0) {

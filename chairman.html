@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chairman Dashboard</title>
+
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+
+ <style>
+        /* ------------------------------------------- */
+        /* 1. Chairman Navigation & Tabs               */
+        /* ------------------------------------------- */
+        .chairman-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-bottom: 2px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .chairman-nav-btn {
+            padding: 10px 15px;
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .chairman-nav-btn:hover {
+            background-color: var(--border-color);
+        }
+
+        .chairman-nav-btn.active {
+            background-color: var(--color-primary);
+            color: var(--card-bg);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Status filter specific styles */
+        .status-filter-btn.active-status-filter {
+            background-color: #3b82f6 !important; /* Blue for active filter */
+            color: white !important;
+        }
+
+        /* ------------------------------------------- */
+        /* 2. Card Styling (Dashboard/Reports Summary) */
+        /* ------------------------------------------- */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+
+        .card h3 {
+            font-size: 0.9em;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .card p {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--color-primary);
+        }
+
+        /* ------------------------------------------- */
+        /* 3. Chart Layouts                            */
+        /* ------------------------------------------- */
+        .chart-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            flex: 1;
+            min-width: 300px;
+            padding: 16px;
+            background-color: var(--container-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Ensure charts have a fixed height in the container */
+        .chart-container canvas {
+            min-height: 250px;
+        }
+        
+        /* ------------------------------------------- */
+        /* 4. Color Variables (Light/Dark Mode)        */
+        /* ------------------------------------------- */
+        :root {
+            --color-primary: #2563eb;
+            --container-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-color: #090F3B;
+            --border-color: #e5e7eb;
+            --input-bg: #f3f4f6;
+            --bg-color: #f9fafb;
+        }
+
+        body.dark {
+            --color-primary: #6366f1;
+            --container-bg: #0e1458;
+            --card-bg: #050d4a;
+            --text-color: #f1f1f1;
+            --border-color: #1a202c;
+            --input-bg: #1e293b;
+            --bg-color: #0d1117;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            padding: 20px;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--text-color);
+        }
+
+        /* ------------------------------------------- */
+        /* 5. Table & Specific Cell Styles             */
+        /* ------------------------------------------- */
+        .table-section {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            background-color: var(--card-bg);
+        }
+        
+        .data-table, .table-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th, .data-table td, .table-section th, .table-section td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 0.9em;
+        }
+
+        .data-table th, .table-section th {
+            background-color: var(--input-bg);
+            font-weight: 600;
+            color: #6b7280;
+        }
+        
+        .data-table tfoot td, .table-section tfoot td {
+            background-color: var(--input-bg);
+            border-top: 2px solid var(--border-color);
+            font-weight: bold;
+        }
+        
+        /* Sales specific highlighting */
+        .profit-cell {
+            background-color: rgba(16, 185, 129, 0.1);
+            font-weight: 500;
+        }
+
+        .deduction-cell {
+            background-color: rgba(239, 68, 68, 0.1);
+            font-weight: 500;
+        }
+
+        /* ------------------------------------------- */
+        /* 6. Modal Styles                             */
+        /* ------------------------------------------- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+  <script src="components/uiComponents.js"></script>
+  <script src="components/spinner.js"></script>
+  <script src="components/authGuard.js"></script>
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+  <script src="config.js"></script>
+
+  <script>
+    // Register spinner component globally
+    Vue.component('spinner-component', {
+      template: `
+        <div class="spinner-overlay">
+          <div class="spinner"></div>
+        </div>
+      `
+    });
+  </script>
+
+<main id="app" class="main-content">
+  <h1>Chairman's View</h1>
+
+  <div class="chairman-nav">
+    <button class="chairman-nav-btn" :class="{ active: activeTab === 'dashboard' }" @click="activeTab = 'dashboard'">
+      <i class="bx bxs-dashboard"></i> Dashboard
+    </button>
+    <button class="chairman-nav-btn" :class="{ active: activeTab === 'sales' }" @click="activeTab = 'sales'">
+      <i class="bx bx-trending-up"></i> Sales
+    </button>
+    <button class="chairman-nav-btn" :class="{ active: activeTab === 'customers' }" @click="activeTab = 'customers'">
+      <i class="bx bx-group"></i> Customers
+    </button>
+    <button class="chairman-nav-btn" :class="{ active: activeTab === 'reports' }" @click="activeTab = 'reports'">
+      <i class="bx bx-line-chart"></i> Reports
+    </button>
+    <button class="chairman-nav-btn" :class="{ active: activeTab === 'orderStatus' }" @click="activeTab = 'orderStatus'">
+      <i class="bx bx-list-check"></i> Order Status
+    </button>
+    <button class="chairman-nav-btn" :class="{ active: activeTab === 'notifications' }"
+      @click="activeTab = 'notifications'">
+      <i class="bx bx-bell"></i> Notifications ({{ notifications.length }})
+    </button>
+    <button class="chairman-nav-btn" :class="{ active: activeTab === 'settings' }" @click="activeTab = 'settings'">
+      <i class="bx bx-cog"></i> Settings
+    </button>
+  </div>
+
+  <div v-if="activeTab === 'dashboard'">
+    <h2>Overview & Quick Metrics</h2>
+
+    <div class="cards">
+      <div class="card" v-for="card in dashboardCards" :key="card.title">
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.value }}</p>
+        <p v-if="card.trend" :style="{ color: card.trendColor, fontSize: '0.8em', marginTop: '5px' }">
+          {{ card.trend }}
+        </p>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
+      <label for="date-range">Filter Date Range:</label>
+      <input type="date" v-model="quickFilter.startDate"
+        style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg);">
+      <input type="date" v-model="quickFilter.endDate"
+        style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg);">
+      <button @click="applyQuickFilter" class="chairman-nav-btn"
+        style="background-color: #059669; color: white;">Apply Filter</button>
+      <button @click="resetQuickFilter" class="chairman-nav-btn">Reset</button>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-container">
+        <h4 style="margin: 0;">Monthly Revenue & Profit</h4>
+        <canvas id="revenueProfitChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <h4 style="margin: 0;">Sales Distribution by Region</h4>
+        <canvas id="regionSalesPieChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div v-else-if="activeTab === 'sales'">
+    <h2>Sales Transactions</h2>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; flex-wrap:wrap; gap:10px;">
+      <input type="text" v-model="salesSearchQuery" placeholder="Search sales by order code, customer..."
+        style="padding: 8px; width: 300px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg);">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button @click="exportSalesCSV" class="chairman-nav-btn" style="background-color: #059669; color: white;">
+          <i class="bx bx-export"></i> Export CSV
+        </button>
+      </div>
+    </div>
+
+    <div class="table-section">
+      <table>
+        <thead>
+          <tr>
+            <th>Order Code</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Total Amount</th>
+            <th>Gross Profit</th>
+            <th>Tax</th>
+            <th>Discount</th>
+            <th>Total Deduction</th>
+            <th>Net Profit</th>
+            <th>Profit %</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="sale in paginatedSales" :key="sale.id">
+            <td>{{ sale.orderCode }}</td>
+            <td>{{ sale.customerName }}</td>
+            <td>{{ sale.date }}</td>
+            <td>₦{{ Number(sale.total).toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</td>
+            <td class="profit-cell">₦{{ Number(sale.grossProfit).toLocaleString(undefined, { minimumFractionDigits: 2
+              }) }}</td>
+            <td class="deduction-cell">₦{{ Number(sale.tax).toLocaleString(undefined, { minimumFractionDigits: 2 }) }}
+            </td>
+            <td class="deduction-cell">₦{{ Number(sale.discount).toLocaleString(undefined, { minimumFractionDigits: 2
+              }) }}</td>
+            <td class="deduction-cell">₦{{ Number(sale.totalDeductions).toLocaleString(undefined, {
+              minimumFractionDigits: 2 }) }}</td>
+            <td :style="{ color: sale.profit > 0 ? '#059669' : '#ef4444' }">
+              ₦{{ Number(sale.profit).toLocaleString(undefined, { minimumFractionDigits: 2 }) }}
+            </td>
+            <td :style="{ color: sale.profit > 0 ? '#059669' : '#ef4444' }">
+              {{ Number(sale.profitPercent).toFixed(2) }}%
+            </td>
+            <td>{{ sale.status }}</td>
+          </tr>
+          <tr v-if="!paginatedSales.length">
+            <td colspan="11">No sales found.</td>
+          </tr>
+        </tbody>
+        <tfoot v-if="paginatedSales.length">
+          <tr style="font-weight: bold; background: var(--card-bg)">
+            <td colspan="3">Page Total</td>
+            <td>₦{{ calculatePageTotal('total') }}</td>
+            <td>₦{{ calculatePageTotal('grossProfit') }}</td>
+            <td>₦{{ calculatePageTotal('tax') }}</td>
+            <td>₦{{ calculatePageTotal('discount') }}</td>
+            <td>₦{{ calculatePageTotal('totalDeductions') }}</td>
+            <td>₦{{ calculatePageTotal('profit') }}</td>
+            <td>{{ calculateAverageProfit() }}%</td>
+            <td></td>
+          </tr>
+          <tr style="font-weight: bold; background: var(--card-bg)">
+            <td colspan="3">Grand Total (All Sales)</td>
+            <td>₦{{ calculateGrandTotal('total') }}</td>
+            <td>₦{{ calculateGrandTotal('grossProfit') }}</td>
+            <td>₦{{ calculateGrandTotal('tax') }}</td>
+            <td>₦{{ calculateGrandTotal('discount') }}</td>
+            <td>₦{{ calculateGrandTotal('totalDeductions') }}</td>
+            <td>₦{{ calculateGrandTotal('profit') }}</td>
+            <td>{{ calculateTotalAverageProfit() }}%</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div v-if="paginatedSales.length" style="margin-top: 20px;">
+      <button @click="prevSalesPage" :disabled="salesPage === 1">Prev</button>
+      Page {{ salesPage }} of {{ totalSalesPages }}
+      <button @click="nextSalesPage" :disabled="salesPage === totalSalesPages">Next</button>
+    </div>
+  </div>
+
+  <div v-else-if="activeTab === 'customers'">
+    <h2>Key Customers & Metrics</h2>
+    <div class="table-section">
+      <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <input type="text" v-model="customerSearch" placeholder="Search by name, email, company..."
+          style="padding: 8px; min-width: 250px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg);">
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Company</th>
+              <th>Contact Info</th>
+              <th>Location</th>
+              <th>Total Orders</th>
+              <th>Lifetime Value (LTV)</th>
+              <th>Last Order Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="customer in filteredCustomers" :key="customer.id">
+              <td>{{ customer.name }}</td>
+              <td>{{ customer.company || '-' }}</td>
+              <td>
+                <div>{{ customer.email || '-' }}</div>
+                <div style="color: #6b7280;">{{ customer.phone || '-' }}</div>
+              </td>
+              <td>
+  <div v-if="customer.city || customer.state">{{ [customer.city, customer.state].filter(Boolean).join(', ') }}</div>
+  <div style="color: #6b7280;" v-if="customer.country">{{ customer.country }}</div>
+</td>
+              <td>{{ customer.totalOrders || 0 }}</td>
+              <td>₦{{ Number(customer.ltv || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</td>
+              <td>{{ customer.lastOrderDate || '-' }}</td>
+              <td>
+                <button @click="viewCustomerProfile(customer)" class="chairman-nav-btn" style="padding: 5px 10px;">
+                  <i class="bx bx-user"></i> View Profile
+                </button>
+              </td>
+            </tr>
+            <tr v-if="!filteredCustomers.length">
+              <td colspan="8" style="text-align:center;padding:20px;">No customers found.</td>
+            </tr>
+          </tbody>
+          <tfoot v-if="filteredCustomers.length">
+            <tr style="font-weight: bold; background: var(--card-bg)">
+              <td colspan="4">Totals</td>
+              <td>{{ calculateTotalOrders() }}</td>
+              <td>₦{{ calculateTotalLTV() }}</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div v-if="showCustomerProfileModal" class="modal-overlay" @click.self="showCustomerProfileModal = false">
+      <div class="modal-content"
+        style="max-width: 700px;background:var(--card-bg);color:var(--text-color);border-radius:12px;padding:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px;">
+          <h3 style="margin:0;">
+            <i class="bx bx-user-circle" style="font-size:1.2em;margin-right:8px;"></i>
+            Customer Profile: {{ selectedCustomer.name }}
+          </h3>
+        </div>
+
+        <div style="display:grid;grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));gap:20px;">
+          <div class="profile-section">
+            <h4 style="margin-bottom:12px;color:var(--color-primary);"><i class="bx bx-user"></i> Basic Information
+            </h4>
+            <div style="display:grid;gap:12px;">
+              <p><strong>Company:</strong> {{ selectedCustomer.company || '-' }}</p>
+              <p><strong>Tax ID:</strong> {{ selectedCustomer.taxId || '-' }}</p>
+              <p><strong>Created:</strong> {{ formatDate(selectedCustomer.createdAt) }}</p>
+              <p><strong>Last Updated:</strong> {{ formatDate(selectedCustomer.updatedAt) }}</p>
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h4 style="margin-bottom:12px;color:var(--color-primary);"><i class="bx bx-envelope"></i> Contact Details
+            </h4>
+            <div style="display:grid;gap:12px;">
+              <p><strong>Email:</strong> {{ selectedCustomer.email || '-' }}</p>
+              <p><strong>Phone:</strong> {{ selectedCustomer.phone || '-' }}</p>
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h4 style="margin-bottom:12px;color:var(--color-primary);"><i class="bx bx-map"></i> Address Details</h4>
+            <div style="display:grid;gap:12px;">
+              <p><strong>Street:</strong> {{ selectedCustomer.streetLine || '-' }}</p>
+              <p><strong>City:</strong> {{ selectedCustomer.city || '-' }}</p>
+              <p><strong>State:</strong> {{ selectedCustomer.state || '-' }}</p>
+              <p><strong>Country:</strong> {{ selectedCustomer.country || '-' }}</p>
+              <p><strong>Postal Code:</strong> {{ selectedCustomer.postalCode || '-' }}</p>
+              <p v-if="selectedCustomer.address"><strong>Full Address:</strong> {{ selectedCustomer.address }}</p>
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h4 style="margin-bottom:12px;color:var(--color-primary);"><i class="bx bx-stats"></i> Business Metrics
+            </h4>
+            <div style="display:grid;gap:12px;">
+              <p><strong>Total Orders:</strong> {{ selectedCustomer.totalOrders || 0 }}</p>
+              <p><strong>Lifetime Value:</strong> ₦{{ Number(selectedCustomer.ltv || 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2 }) }}</p>
+              <p><strong>Last Order:</strong> {{ selectedCustomer.lastOrderDate || '-' }}</p>
+              <p><strong>Top Product:</strong> {{ selectedCustomer.topProduct || '-' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: right; margin-top: 20px;">
+          <button @click="showCustomerProfileModal = false" class="chairman-nav-btn"
+            style="background-color: #ef4444; color: white;">
+            <i class="bx bx-x"></i> Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div v-else-if="activeTab === 'reports'">
+    <h2>Detailed Reporting</h2>
+    <div style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+      <div>
+        <label for="report-period">Report Period:</label>
+        <select id="report-period" v-model="reportPeriod" @change="fetchReportData"
+          style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg);">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="report-type">Report Type:</label>
+        <select id="report-type" v-model="reportType" @change="fetchReportData"
+          style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg);">
+          <option value="summary">Summary</option>
+          <option value="sales">Sales Analysis</option>
+          <option value="profit">Profit Analysis</option>
+          <option value="products">Product Performance</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="report-date-range">Date Range:</label>
+        <input type="date" v-model="reportDateRange.start" @change="fetchReportData"
+          style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg);">
+        <span style="margin: 0 5px;">to</span>
+        <input type="date" v-model="reportDateRange.end" @change="fetchReportData"
+          style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg);">
+      </div>
+
+      <button @click="exportReportCSV" class="chairman-nav-btn" style="background-color: #059669; color: white;">
+        <i class="bx bx-export"></i> Export Report
+      </button>
+    </div>
+
+    <div class="cards" style="margin-bottom: 20px;">
+      <div class="card">
+        <h3>Total Revenue</h3>
+        <p>₦{{ reportSummary.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</p>
+      </div>
+      <div class="card">
+        <h3>Total Orders</h3>
+        <p>{{ reportSummary.totalOrders.toLocaleString() }}</p>
+      </div>
+      <div class="card">
+        <h3>Average Order Value</h3>
+        <p>₦{{ reportSummary.avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</p>
+      </div>
+      <div class="card">
+        <h3>Net Profit</h3>
+        <p>₦{{ reportSummary.netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</p>
+      </div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-container">
+        <h4 style="margin: 0;">{{ reportChartTitles.primary }}</h4>
+        <canvas id="reportPrimaryChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <h4 style="margin: 0;">{{ reportChartTitles.secondary }}</h4>
+        <canvas id="reportSecondaryChart"></canvas>
+      </div>
+    </div>
+
+    <div v-if="reportData.length" style="margin-top: 30px;">
+      <h3>Detailed Data</h3>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th v-for="column in reportColumns" :key="column.key">{{ column.label }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(row, index) in reportData" :key="index">
+              <td v-for="column in reportColumns" :key="column.key">
+                {{ formatReportValue(row[column.key], column.type) }}
+              </td>
+            </tr>
+          </tbody>
+          <tfoot v-if="reportTotals">
+            <tr>
+              <td v-for="column in reportColumns" :key="column.key">
+                {{ column.total ? formatReportValue(reportTotals[column.key], column.type) : '' }}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <spinner-component v-if="loading"></spinner-component>
+  </div>
+  
+  <div v-else-if="activeTab === 'orderStatus'" class="tab-content">
+    <h2 class="tab-title">📦 All Order Statuses</h2>
+    <div style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+      <button 
+        v-for="status in ['all', 'completed', 'created', 'pending', 'cancelled']" 
+        :key="status"
+        @click="orderStatusFilter = status"
+        class="chairman-nav-btn status-filter-btn"
+        :class="{ 'active-status-filter': orderStatusFilter === status }"
+        style="padding: 8px 15px;"
+      >
+        {{ status.charAt(0).toUpperCase() + status.slice(1) }}
+      </button>
+      
+      <input type="text" v-model="orderStatusSearch" placeholder="Search by order code or customer..."
+        style="padding: 8px; width: 300px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); margin-left: auto;">
+    </div>
+
+    <div class="table-section">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Order Code</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Total Amount</th>
+            <th>Payment Status</th>
+            <th>Order Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="order in paginatedOrdersByStatus" :key="order._id">
+            <td>{{ order.orderCode || order._id }}</td>
+            <td>{{ order.customer?.name || 'N/A' }}</td>
+            <td>{{ formatDate(order.createdAt) }}</td>
+            <td>₦{{ Number(order.total).toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</td>
+            <td :style="{ color: order.paymentStatus && order.paymentStatus.toLowerCase() === 'paid' ? '#059669' : '#f59e0b' }">
+                {{ order.paymentStatus ? order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) : '-' }}
+            </td>
+            <td>
+              <span :style="{ 
+                'padding': '4px 8px', 
+                'border-radius': '4px',
+                'font-weight': '600',
+                'background-color': order.status && order.status.toLowerCase() === 'completed' ? 'rgba(5, 150, 105, 0.2)' : 
+                                    order.status && order.status.toLowerCase() === 'cancelled' ? 'rgba(239, 68, 68, 0.2)' : 
+                                    order.status && order.status.toLowerCase() === 'created' ? 'rgba(59, 130, 246, 0.2)' : 
+                                    'rgba(107, 114, 128, 0.2)',
+                'color': order.status && order.status.toLowerCase() === 'completed' ? '#059669' : 
+                         order.status && order.status.toLowerCase() === 'cancelled' ? '#ef4444' : 
+                         order.status && order.status.toLowerCase() === 'created' ? '#3b82f6' : 
+                         '#6b7280'
+              }">
+                {{ order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : '-' }}
+              </span>
+            </td>
+          </tr>
+          <tr v-if="!paginatedOrdersByStatus.length">
+            <td colspan="6" style="text-align: center;">No orders found with this status or search query.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div v-if="paginatedOrdersByStatus.length" style="margin-top: 20px;">
+      <button @click="prevOrderStatusPage" :disabled="orderStatusPage === 1" class="chairman-nav-btn">Previous</button>
+      <span style="margin: 0 10px;">Page {{ orderStatusPage }} of {{ totalOrderStatusPages }}</span>
+      <button @click="nextOrderStatusPage" :disabled="orderStatusPage === totalOrderStatusPages" class="chairman-nav-btn">Next</button>
+    </div>
+  </div>
+  <div v-else-if="activeTab === 'notifications'">
+
+    <h2>System Alerts & Notifications</h2>
+
+    <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+      <button v-for="type in ['all', 'error', 'warning', 'success', 'info']" :key="type"
+        @click="notificationFilter = type" class="chairman-nav-btn" :class="{ active: notificationFilter === type }"
+        :style="type !== 'all' ? { 
+          'background-color': type === 'error' ? '#ef4444' : 
+                             type === 'warning' ? '#f59e0b' : 
+                             type === 'success' ? '#059669' : 
+                             '#3b82f6',
+          'color': 'white'
+        } : {}">
+        {{ type.charAt(0).toUpperCase() + type.slice(1) }}
+      </button>
+      <button @click="fetchNotifications" class="chairman-nav-btn" style="margin-left: auto;">
+        <i class="bx bx-refresh"></i> Refresh
+      </button>
+    </div>
+
+    <div v-if="filteredNotifications.length">
+      <div v-for="notif in filteredNotifications" :key="notif.id" class="notification-card" :style="{ 
+          'padding': '15px', 
+          'margin-bottom': '12px', 
+          'border-radius': '8px', 
+          'border-left': '5px solid', 
+          'display': 'flex', 
+          'justify-content': 'space-between', 
+          'align-items': 'start', 
+          'background': 'var(--card-bg)',
+          'border-left-color': notif.type === 'error' ? '#ef4444' : 
+                              notif.type === 'warning' ? '#f59e0b' : 
+                              notif.type === 'success' ? '#059669' : 
+                              '#3b82f6'
+        }">
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; margin-bottom: 5px;">
+            <i :class="notif.icon"
+              :style="{ marginRight: '10px', fontSize: '1.4em', color: getNotificationColor(notif.type) }">
+            </i>
+            <strong style="font-size: 1.1em;">{{ notif.title }}</strong>
+            <span style="margin-left: auto; font-size: 0.8em; color: #6b7280;">
+              {{ notif.date }}
+            </span>
+          </div>
+          <p style="margin: 5px 0;">{{ notif.message }}</p>
+          <div v-if="notif.code" style="font-size: 0.9em; color: #6b7280; margin-top: 5px;">
+            Reference: {{ notif.code }}
+          </div>
+        </div>
+        <button @click="dismissNotification(notif.id)" class="chairman-nav-btn"
+          style="padding: 4px 8px; background: none; color: #6b7280; margin-left: 10px;">
+          <i class="bx bx-x"></i>
+        </button>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+        <button @click="clearAllNotifications" class="chairman-nav-btn"
+          style="background-color: #ef4444; color: white;">
+          <i class="bx bx-trash"></i> Clear All
+        </button>
+      </div>
+    </div>
+    <div v-else
+      style="padding: 30px; border: 1px dashed var(--border-color); text-align: center; color: #6b7280; border-radius: 8px;">
+      <i class="bx bx-bell-off" style="font-size: 2em; margin-bottom: 10px;"></i>
+      <p>No notifications to display.</p>
+    </div>
+
+    <spinner-component v-if="loading"></spinner-component>
+  </div>
+
+  <div v-else-if="activeTab === 'settings'">
+    <h2>System Settings</h2>
+    <div
+      style="max-width: 600px; padding: 20px; background: var(--card-bg); border-radius: 12px; gap: 20px; display: flex; flex-direction: column;">
+
+      <div>
+        <h3><i class="bx bx-cloud-upload"></i> Data Sync & Environment</h3>
+        <p style="color: #6b7280;">Current API Base URL: <strong>{{ API_BASE }}</strong></p>
+        <button @click="runManualSync" class="chairman-nav-btn" style="background-color: #f59e0b; color: white;">
+          <i class="bx bx-refresh"></i> Run Manual Data Sync
+        </button>
+      </div>
+
+      <hr style="border-color: var(--border-color);">
+
+      <div>
+        <h3><i class="bx bx-bell"></i> Push Notifications</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <label for="highSaleNotif">Alert for High-Value Sales ( > ₦1,000,000):</label>
+          <input type="checkbox" id="highSaleNotif" v-model="settings.highSaleAlert" @change="saveSettings">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label for="lowStockNotif">Alert for Low Stock:</label>
+          <input type="checkbox" id="lowStockNotif" v-model="settings.lowStockAlert" @change="saveSettings">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <spinner-component v-if="loading"></spinner-component>
+</main>
+
+  <script src="assets/js/script.js"></script>
+  <script>
+    // Axios global configuration
+    const API_BASE = window.BASE_URL || '';
+
+    // Set up Axios with the token globally
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+
+    // --- API ENDPOINTS ---
+     const API_ENDPOINTS = {
+      ORDER_LIST: `${API_BASE}/order`, // Central endpoint for all order-based data
+      CUSTOMER_LIST: `${API_BASE}/customer`,
+    };
+
+    new Vue({
+      el: '#app',
+      data: {
+        loading: true,
+        activeTab: 'dashboard',
+        API_BASE: API_BASE,
+        customerSearch: '',
+        notificationFilter: 'all',
+        
+        // Dashboard Data
+        dashboardCards: [
+          { title: 'Total Orders', value: '...', trend: '', trendColor: '#2563eb' },
+          { title: 'Total Customers', value: '...', trend: '', trendColor: '#059669' },
+          { title: 'Gross Revenue', value: '...', trend: '...', trendColor: '#059669' },
+          { title: 'Net Profit', value: '...', trend: '...', trendColor: '#059669' },
+        ],
+        quickFilter: { startDate: '', endDate: '' },
+        revenueProfitChart: null,
+        regionSalesPieChart: null,
+        allCompletedOrders: [], // << TRACKS ONLY COMPLETED ORDERS for metrics/dashboard/sales/reports
+        allRawOrders: [],       // << TRACKS ALL ORDERS for the new Status tab
+
+        // Sales Data
+        allSales: [], // Processed sales data for the 'Sales' tab table (all time completed)
+        salesSearchQuery: '',
+        salesPage: 1,
+        salesPageSize: 10,
+
+        // Customers Data
+        customers: [],
+        showCustomerProfileModal: false,
+        selectedCustomer: {},
+
+        // Reports Data
+        reportPeriod: 'monthly',
+        reportType: 'summary',
+        reportDateRange: { start: '', end: '' },
+        reportData: [],
+        reportColumns: [],
+        reportSummary: { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, netProfit: 0 },
+        reportChartTitles: { primary: 'Revenue Trend', secondary: 'Profit Trend' },
+        reportTotals: null,
+        reportPrimaryChart: null,
+        reportSecondaryChart: null,
+
+        // Notifications Data
+        notifications: [],
+        // Settings Data
+        settings: {
+          highSaleAlert: true,
+          lowStockAlert: true,
+        },
+        
+        // 🆕 NEW: Order Status Tab Data
+        orderStatusSearch: '',
+        orderStatusFilter: 'all',
+        orderStatusPage: 1,
+        orderStatusPageSize: 10,
+      },
+      computed: {
+        // ... (existing computed properties) ...
+        filteredNotifications() {
+          if (this.notificationFilter === 'all') {
+            return this.notifications;
+          }
+          return this.notifications.filter(n => n.type === this.notificationFilter);
+        },
+        filteredCustomers() {
+          if (!this.customerSearch) {
+            return this.customers;
+          }
+          const search = this.customerSearch.toLowerCase();
+          return this.customers.filter(customer =>
+            (customer.name && customer.name.toLowerCase().includes(search)) ||
+            (customer.email && customer.email.toLowerCase().includes(search)) ||
+            (customer.company && customer.company.toLowerCase().includes(search)) ||
+            (customer.phone && customer.phone.toLowerCase().includes(search)) ||
+            (customer.city && customer.city.toLowerCase().includes(search)) ||
+            (customer.state && customer.state.toLowerCase().includes(search))
+          );
+        },
+        filteredSales() {
+          let list = this.allSales;
+          if (this.salesSearchQuery) {
+            const query = this.salesSearchQuery.toLowerCase();
+            list = list.filter(sale =>
+              (sale.orderCode && sale.orderCode.toLowerCase().includes(query)) ||
+              (sale.customerName && sale.customerName.toLowerCase().includes(query))
+            );
+          }
+          return list.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate)); // use rawDate for accurate sorting
+        },
+        totalSalesPages() {
+          return Math.ceil(this.filteredSales.length / this.salesPageSize);
+        },
+        paginatedSales() {
+          const start = (this.salesPage - 1) * this.salesPageSize;
+          return this.filteredSales.slice(start, start + this.salesPageSize);
+        },
+        
+        // 🆕 NEW: Computed property for the Order Status tab
+        filteredOrdersByStatus() {
+            let list = this.allRawOrders;
+            if (this.orderStatusFilter !== 'all') {
+                list = list.filter(order => order.status && order.status.toLowerCase() === this.orderStatusFilter);
+            }
+            if (this.orderStatusSearch) {
+                const query = this.orderStatusSearch.toLowerCase();
+                list = list.filter(order =>
+                    (order.orderCode && order.orderCode.toLowerCase().includes(query)) ||
+                    (order.customer?.name && order.customer.name.toLowerCase().includes(query))
+                );
+            }
+            return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        },
+        totalOrderStatusPages() {
+            return Math.ceil(this.filteredOrdersByStatus.length / this.orderStatusPageSize);
+        },
+        paginatedOrdersByStatus() {
+            const start = (this.orderStatusPage - 1) * this.orderStatusPageSize;
+            return this.filteredOrdersByStatus.slice(start, start + this.orderStatusPageSize);
+        },
+      },
+      watch: {
+        activeTab(newTab) {
+          this.$nextTick(() => {
+            if (newTab === 'dashboard') {
+              this.fetchDashboardData();
+            } else if (newTab === 'sales') {
+              this.fetchSales();
+            } else if (newTab === 'customers') {
+              this.fetchCustomers();
+            } else if (newTab === 'reports') {
+              this.fetchReportData(); 
+            } else if (newTab === 'orderStatus') { // 🆕 NEW TAB WATCH
+              // Do nothing, data is in allRawOrders
+            }
+          });
+        },
+        salesSearchQuery() {
+          this.salesPage = 1;
+        },
+        // 🆕 NEW: Reset page when filter/search changes for Order Status
+        orderStatusSearch() {
+            this.orderStatusPage = 1;
+        },
+        orderStatusFilter() {
+            this.orderStatusPage = 1;
+        },
+        reportPeriod() {
+          this.fetchReportData();
+        },
+        reportType() {
+          this.fetchReportData();
+        },
+        // Watch for changes in report date range to update the report
+        'reportDateRange.start'() { this.fetchReportData(); },
+        'reportDateRange.end'() { this.fetchReportData(); },
+      },
+      created() {
+        this.fetchBaseData(); 
+        this.fetchNotifications();
+        // Initialize date range for reports to a default (e.g., last 30 days)
+        const end = new Date();
+        const start = new Date(end);
+        start.setDate(end.getDate() - 30);
+        this.reportDateRange.end = this.formatDate(end, false);
+        this.reportDateRange.start = this.formatDate(start, false);
+      },
+      methods: {
+        // --- General Methods ---
+        formatDate(dateStr, includeTime = true) {
+          if (!dateStr) return '-';
+          const options = { year: 'numeric', month: 'short', day: 'numeric' };
+          if (includeTime) {
+            options.hour = '2-digit';
+            options.minute = '2-digit';
+          }
+          try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString(undefined, options);
+          } catch (e) {
+            return dateStr;
+          }
+        },
+        getNotificationColor(type) {
+          switch (type) {
+            case 'error': return '#ef4444';
+            case 'warning': return '#f59e0b';
+            case 'success': return '#059669';
+            case 'info': return '#3b82f6';
+            default: return '#6b7280';
+          }
+        },
+
+        // --- Core Data Fetching ---
+async fetchBaseData() {
+  this.loading = true;
+  try {
+    // 🧩 Fetch Orders and Customers in Parallel
+    const [orderRes, customerRes] = await Promise.all([
+      axios.get(API_ENDPOINTS.ORDER_LIST),
+      axios.get(API_ENDPOINTS.CUSTOMER_LIST),
+    ]);
+
+    // 1️⃣ Store all raw orders (for Status or Order Tabs)
+    this.allRawOrders = orderRes.data || [];
+
+    // 2️⃣ Process & filter completed orders (business metrics source)
+    const completedOrders = this.allRawOrders.filter(
+      order => order.status && order.status.toLowerCase() === 'completed'
+    );
+
+    this.allCompletedOrders = this.processOrderData(completedOrders);
+    this.allSales = this.allCompletedOrders;
+
+    // 3️⃣ Calculate Business Metrics *from Orders*
+    const {
+      customerMetrics,
+      topOverallProduct,
+      totalRevenue,
+      totalProfit,
+      avgOrderValue,
+      totalOrders,
+    } = this.calculateBusinessMetrics(this.allCompletedOrders);
+
+    // 4️⃣ Merge metrics into customers (for display consistency)
+    this.customers = (customerRes.data || []).map(c => {
+      const metrics = customerMetrics[c._id] || {};
+      return {
+        ...c,
+        totalOrders: metrics.totalOrders || 0,
+        ltv: metrics.ltv || 0,
+        lastOrderDate: metrics.lastOrderDate ? this.formatDate(metrics.lastOrderDate) : '-',
+        topProduct: metrics.topProduct || topOverallProduct || 'N/A',
+      };
+    });
+
+    // 5️⃣ Update overall dashboard summary cards
+    this.dashboardMetrics = {
+      totalRevenue,
+      totalProfit,
+      avgOrderValue,
+      totalOrders,
+      topProduct: topOverallProduct,
+    };
+
+    // Initialize dashboard & reports once data is ready
+    this.fetchDashboardData();
+    if (this.activeTab === 'reports') this.fetchReportData();
+
+  } catch (error) {
+    console.error('❌ Error fetching base data:', error);
+    alert('Failed to load initial data. Check console for details.');
+  } finally {
+    this.loading = false;
+  }
+},
+
+// 🔍 Calculate ALL Business Metrics Based on Orders
+calculateBusinessMetrics(processedCompletedOrders) {
+  const customerMetrics = {};
+  const productSales = {};
+  let totalRevenue = 0;
+  let totalProfit = 0;
+
+  processedCompletedOrders.forEach(order => {
+    const customerId = order.customer?._id || order.customerId;
+    const orderTotal = order.total || 0;
+    const orderProfit = order.profit || 0;
+
+    // Aggregate revenue and profit globally
+    totalRevenue += orderTotal;
+    totalProfit += orderProfit;
+
+    // Customer-level metrics
+    if (customerId) {
+      if (!customerMetrics[customerId]) {
+        customerMetrics[customerId] = {
+          totalOrders: 0,
+          ltv: 0,
+          lastOrderDate: order.rawDate,
+          productSales: {},
+          topProduct: null,
+        };
+      }
+
+      const cm = customerMetrics[customerId];
+      cm.totalOrders++;
+      cm.ltv += orderTotal;
+
+      if (new Date(order.rawDate) > new Date(cm.lastOrderDate)) {
+        cm.lastOrderDate = order.rawDate;
+      }
+
+      // Track customer’s top product
+      order.items?.forEach(item => {
+        const name = item.name || 'Unknown Product';
+        const qty = item.qty || 0;
+        cm.productSales[name] = (cm.productSales[name] || 0) + qty;
+
+        // Track overall product sales
+        productSales[name] = (productSales[name] || 0) + qty;
+      });
+    }
+  });
+
+  // 🏆 Compute per-customer top products
+  Object.values(customerMetrics).forEach(cm => {
+    const entries = Object.entries(cm.productSales);
+    if (entries.length) {
+      const [topProduct] = entries.sort((a, b) => b[1] - a[1])[0];
+      cm.topProduct = topProduct;
+    } else {
+      cm.topProduct = 'N/A';
+    }
+    delete cm.productSales;
+  });
+
+  // 🥇 Determine overall top product
+  let topOverallProduct = 'N/A';
+  let maxQtyOverall = 0;
+  for (const [product, qty] of Object.entries(productSales)) {
+    if (qty > maxQtyOverall) {
+      maxQtyOverall = qty;
+      topOverallProduct = product;
+    }
+  }
+
+  const totalOrders = processedCompletedOrders.length;
+  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+  return {
+    customerMetrics,
+    topOverallProduct,
+    totalRevenue,
+    totalProfit,
+    avgOrderValue,
+    totalOrders,
+  };
+},
+
+// ⚙️ Process Each Order into Clean Metrics
+processOrderData(orders) {
+  return orders.map(order => {
+    const total = order.total || 0;
+    const tax = order.tax || 0;
+    const discountAmount = order.discounts?.reduce((sum, d) => sum + (d.amount || 0), 0) || 0;
+
+    // Compute cost of goods sold (COGS)
+    let totalCostOfGoods = 0;
+    order.items?.forEach(item => {
+      const cost = item.costPrice || 0;
+      const qty = item.qty || 0;
+      totalCostOfGoods += cost * qty;
+    });
+
+    const grossProfit = total - totalCostOfGoods;
+    const netProfit = grossProfit - tax;
+    const profitPercent = total > 0 ? (netProfit / total) * 100 : 0;
+
+    return {
+      id: order._id,
+      orderCode: order.orderCode || `ORD-${order._id.slice(-5)}`,
+      customer: order.customer || {}, // Keep full embedded customer for linking
+      date: this.formatDate(order.createdAt),
+      rawDate: order.createdAt,
+      total,
+      costOfGoods: totalCostOfGoods,
+      grossProfit,
+      profit: netProfit,
+      profitPercent,
+      tax,
+      discount: discountAmount,
+      totalDeductions: tax + discountAmount,
+      status: order.status,
+      region: order.region || ['North', 'South', 'East', 'West'][Math.floor(Math.random() * 4)],
+      items: order.items || [],
+    };
+  });
+},
+
+        // --- Dashboard Logic (Includes Filter Fix) ---
+        fetchDashboardData() {
+          // Use allCompletedOrders and apply the quickFilter
+          const now = new Date();
+          const ytdStart = new Date(now.getFullYear(), 0, 1);
+
+          // Determine the list of orders to use based on the filter
+          const filteredOrders = this.filterOrdersByDate(this.allCompletedOrders, this.quickFilter.startDate, this.quickFilter.endDate);
+
+          const totalOrders = filteredOrders.length;
+          const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.total, 0);
+          const totalProfit = filteredOrders.reduce((sum, order) => sum + order.profit, 0);
+
+          // Get YTD totals for comparison (assuming filter is for a smaller range)
+          const ytdOrders = this.filterOrdersByDate(this.allCompletedOrders, this.formatDate(ytdStart, false), this.formatDate(now, false));
+          const ytdRevenue = ytdOrders.reduce((sum, order) => sum + order.total, 0);
+          const ytdProfit = ytdOrders.reduce((sum, order) => sum + order.profit, 0);
+
+          // Get total customer count (not filtered by date)
+          const totalCustomers = this.customers.length;
+
+          // Update Dashboard Cards
+          this.dashboardCards[0].value = totalOrders.toLocaleString();
+          this.dashboardCards[1].value = totalCustomers.toLocaleString();
+          this.dashboardCards[2].value = '₦' + totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 });
+          this.dashboardCards[3].value = '₦' + totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2 });
+
+          // Mock trend data based on YTD comparison (if a filter is applied)
+          const revenueTrend = totalRevenue >= ytdRevenue ? `+${(((totalRevenue / ytdRevenue) * 100) - 100).toFixed(1)}%` : `${(((totalRevenue / ytdRevenue) * 100) - 100).toFixed(1)}%`;
+          this.dashboardCards[2].trend = this.quickFilter.startDate ? `vs YTD: ${revenueTrend}` : '';
+          this.dashboardCards[2].trendColor = totalRevenue >= ytdRevenue ? '#059669' : '#ef4444';
+
+          const profitTrend = totalProfit >= ytdProfit ? `+${(((totalProfit / ytdProfit) * 100) - 100).toFixed(1)}%` : `${(((totalProfit / ytdProfit) * 100) - 100).toFixed(1)}%`;
+          this.dashboardCards[3].trend = this.quickFilter.startDate ? `vs YTD: ${profitTrend}` : '';
+          this.dashboardCards[3].trendColor = totalProfit >= ytdProfit ? '#059669' : '#ef4444';
+
+          // Render Charts (Fix 1)
+          // Assumes you have Chart.js included and elements with IDs 'revenueProfitChart' and 'regionSalesPieChart'
+          this.$nextTick(() => {
+            this.renderRevenueProfitChart(filteredOrders);
+            this.renderRegionSalesPieChart(filteredOrders);
+          });
+        },
+
+        filterOrdersByDate(orders, start, end) {
+          if (!start && !end) return orders;
+          const startDate = start ? new Date(start) : null;
+          const endDate = end ? new Date(end) : null;
+
+          return orders.filter(order => {
+            const orderDate = new Date(order.rawDate);
+            let meetsStart = true;
+            let meetsEnd = true;
+
+            if (startDate) {
+              // Set time to midnight for start date
+              const inclusiveStartDate = new Date(startDate.setHours(0, 0, 0, 0));
+              meetsStart = orderDate >= inclusiveStartDate;
+            }
+            if (endDate) {
+              // Set time to the end of the day for end date
+              const inclusiveEndDate = new Date(endDate.setHours(23, 59, 59, 999));
+              meetsEnd = orderDate <= inclusiveEndDate;
+            }
+
+            return meetsStart && meetsEnd;
+          });
+        },
+
+        applyQuickFilter() {
+          this.fetchDashboardData();
+        },
+
+        resetQuickFilter() {
+          this.quickFilter = { startDate: '', endDate: '' };
+          this.fetchDashboardData();
+        },
+
+        // --- Chart Rendering (Dashboard) (Fix 1) ---
+        renderRevenueProfitChart(orders) {
+          if (!document.getElementById('revenueProfitChart')) return;
+          if (this.revenueProfitChart) this.revenueProfitChart.destroy();
+          
+          const groupedData = this.groupDataByPeriod(orders, 'monthly'); 
+          const labels = Object.keys(groupedData).sort();
+          const revenueData = labels.map(key => groupedData[key].reduce((sum, order) => sum + order.total, 0));
+          const profitData = labels.map(key => groupedData[key].reduce((sum, order) => sum + order.profit, 0));
+
+          this.revenueProfitChart = new Chart(document.getElementById('revenueProfitChart').getContext('2d'), {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Revenue',
+                data: revenueData,
+                borderColor: '#2563eb',
+                tension: 0.3,
+                fill: false,
+              }, {
+                label: 'Profit',
+                data: profitData,
+                borderColor: '#059669',
+                tension: 0.3,
+                fill: false,
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { position: 'top' } },
+              scales: { y: { beginAtZero: true } }
+            }
+          });
+        },
+
+        renderRegionSalesPieChart(orders) {
+          if (!document.getElementById('regionSalesPieChart')) return;
+          if (this.regionSalesPieChart) this.regionSalesPieChart.destroy();
+          
+          const salesByRegion = orders.reduce((acc, order) => {
+            const region = order.region || 'Unknown';
+            acc[region] = (acc[region] || 0) + order.total;
+            return acc;
+          }, {});
+
+          const labels = Object.keys(salesByRegion);
+          const data = Object.values(salesByRegion);
+
+          this.regionSalesPieChart = new Chart(document.getElementById('regionSalesPieChart').getContext('2d'), {
+            type: 'pie',
+            data: {
+              labels: labels,
+              datasets: [{
+                data: data,
+                backgroundColor: ['#2563eb', '#059669', '#f59e0b', '#ef4444', '#7c3aed', '#db2777'], // Example colors
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { position: 'right' } }
+            }
+          });
+        },
+
+        // --- Sales Tab Logic ---
+        fetchSales() {
+          // Data is already in this.allSales
+        },
+        calculatePageTotal(key) {
+          return this.paginatedSales.reduce((sum, sale) => sum + (sale[key] || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2 });
+        },
+        calculateGrandTotal(key) {
+          return this.filteredSales.reduce((sum, sale) => sum + (sale[key] || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2 });
+        },
+        calculateAverageProfit() {
+          const totalProfit = this.paginatedSales.reduce((sum, sale) => sum + (sale.profit || 0), 0);
+          const totalRevenue = this.paginatedSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+          return totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(2) : 0;
+        },
+        calculateTotalAverageProfit() {
+          const totalProfit = this.filteredSales.reduce((sum, sale) => sum + (sale.profit || 0), 0);
+          const totalRevenue = this.filteredSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+          return totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(2) : 0;
+        },
+        prevSalesPage() { if (this.salesPage > 1) this.salesPage--; },
+        nextSalesPage() { if (this.salesPage < this.totalSalesPages) this.salesPage++; },
+        exportSalesCSV() { /* CSV export logic */ },
+        
+        // 🆕 NEW: Order Status Tab Paging/Filtering Methods
+        prevOrderStatusPage() { if (this.orderStatusPage > 1) this.orderStatusPage--; },
+        nextOrderStatusPage() { if (this.orderStatusPage < this.totalOrderStatusPages) this.orderStatusPage++; },
+
+        // --- Customers Tab Logic ---
+        // --- Customers Tab Logic ---
+        fetchCustomers() { /* Data is already in this.customers, fetched by fetchBaseData */ },
+        
+        viewCustomerProfile(customer) {
+          // ⚡ FINAL INTEGRATION STEP: Map all data and explicitly pull the calculated metrics
+          this.selectedCustomer = {
+            // Includes all original customer fields (name, email, streetLine, city, etc.)
+            ...customer,
+            
+            // --- Address Mapping (Based on your current schema fields) ---
+            street: customer.streetLine || '-', 
+            city: customer.city || '-',
+            state: customer.state || '-',
+            country: customer.country || '-',
+            postalCode: customer.postalCode || '-',
+            
+            // 💰 BUSINESS METRICS (Pulled directly from the customer object, populated in fetchBaseData)
+            totalOrders: customer.totalOrders || 0,
+            ltv: customer.ltv || 0,
+            lastOrderDate: customer.lastOrderDate || '-',
+            topProduct: customer.topProduct || 'N/A'
+          };
+          
+          this.showCustomerProfileModal = true;
+        },
+        calculateTotalOrders() {
+          return this.customers.reduce((sum, c) => sum + (c.totalOrders || 0), 0).toLocaleString();
+        },
+        calculateTotalLTV() {
+          // Fix 2: LTV is now calculated correctly as a sum of actual revenue
+          return this.customers.reduce((sum, c) => sum + (c.ltv || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2 });
+        },
+
+        // --- Reports Tab Logic (Populates Table and Components) ---
+        async fetchReportData() {
+          this.loading = true;
+          try {
+            // Use the already filtered and processed data based on report date range
+            const filteredOrders = this.filterOrdersByDate(
+              this.allCompletedOrders,
+              this.reportDateRange.start,
+              this.reportDateRange.end
+            );
+
+            // 1. Calculate Summary Cards
+            const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.total, 0);
+            const totalOrders = filteredOrders.length;
+            const netProfit = filteredOrders.reduce((sum, order) => sum + order.profit, 0);
+
+            this.reportSummary = {
+              totalRevenue: totalRevenue,
+              totalOrders: totalOrders,
+              avgOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
+              netProfit: netProfit,
+            };
+
+            // 2. Setup Table and Data based on Report Type
+            this.setupReport(filteredOrders);
+
+            // 3. Render Charts (implementation details omitted for brevity)
+            this.$nextTick(() => {
+                this.renderReportCharts(filteredOrders);
+            });
+
+          } catch (error) {
+            console.error('Error fetching report data:', error);
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        setupReport(orders) {
+          let columns = [];
+          let data = [];
+          let totals = {};
+
+          if (this.reportType === 'summary' || this.reportType === 'sales') {
+            // Group data by report period (e.g., month or day)
+            const groupedData = this.groupDataByPeriod(orders, this.reportPeriod);
+
+            columns = [
+              { key: 'period', label: this.reportPeriod.charAt(0).toUpperCase() + this.reportPeriod.slice(1), type: 'string', total: false },
+              { key: 'orders', label: 'Total Orders', type: 'number', total: true },
+              { key: 'revenue', label: 'Total Revenue', type: 'currency', total: true },
+              { key: 'avgOrder', label: 'Avg. Order Value', type: 'currency', total: false },
+              { key: 'profit', label: 'Net Profit', type: 'currency', total: true },
+            ];
+
+            data = Object.entries(groupedData).map(([key, value]) => {
+              const totalRevenue = value.reduce((sum, order) => sum + order.total, 0);
+              const totalProfit = value.reduce((sum, order) => sum + order.profit, 0);
+              const ordersCount = value.length;
+
+              return {
+                period: key,
+                orders: ordersCount,
+                revenue: totalRevenue,
+                avgOrder: ordersCount > 0 ? totalRevenue / ordersCount : 0,
+                profit: totalProfit,
+              };
+            });
+
+            totals = {
+              orders: data.reduce((sum, r) => sum + r.orders, 0),
+              revenue: data.reduce((sum, r) => sum + r.revenue, 0),
+              profit: data.reduce((sum, r) => sum + r.profit, 0),
+              period: 'Grand Total'
+            };
+
+          } else if (this.reportType === 'profit') {
+            // Example: Detail table of highest/lowest profit orders
+            columns = [
+              { key: 'orderCode', label: 'Order Code', type: 'string', total: false },
+              { key: 'date', label: 'Date', type: 'string', total: false },
+              { key: 'customerName', label: 'Customer', type: 'string', total: false },
+              { key: 'total', label: 'Revenue', type: 'currency', total: true },
+              { key: 'costOfGoods', label: 'COG', type: 'currency', total: true },
+              { key: 'profit', label: 'Net Profit', type: 'currency', total: true },
+              { key: 'profitPercent', label: 'Profit %', type: 'percent', total: false },
+            ];
+
+            // Sort by profit and take the top/bottom 20 (for a reasonable table size)
+            data = orders.sort((a, b) => b.profit - a.profit).slice(0, 50);
+
+            totals = {
+              total: data.reduce((sum, r) => sum + r.total, 0),
+              costOfGoods: data.reduce((sum, r) => sum + r.costOfGoods, 0),
+              profit: data.reduce((sum, r) => sum + r.profit, 0),
+              orderCode: 'Displayed Total'
+            };
+
+          } else if (this.reportType === 'products') {
+            // Use actual order items to calculate product performance
+            const productSalesData = {};
+
+            orders.forEach(order => {
+                order.items?.forEach(item => {
+                    const productName = item.name || 'Unknown Product';
+                    const qty = item.qty || 0;
+                    const revenue = (item.price || 0) * qty;
+                    const costOfGoods = (item.costPrice || 0) * qty;
+                    const profit = revenue - costOfGoods; // Simplified item profit calculation
+
+                    if (!productSalesData[productName]) {
+                        productSalesData[productName] = { units: 0, revenue: 0, profit: 0 };
+                    }
+                    productSalesData[productName].units += qty;
+                    productSalesData[productName].revenue += revenue;
+                    productSalesData[productName].profit += profit;
+                });
+            });
+
+            columns = [
+              { key: 'product', label: 'Product Name', type: 'string', total: false },
+              { key: 'units', label: 'Units Sold', type: 'number', total: true },
+              { key: 'revenue', label: 'Revenue', type: 'currency', total: true },
+              { key: 'profit', label: 'Net Profit', type: 'currency', total: true },
+            ];
+            
+            data = Object.entries(productSalesData).map(([product, vals]) => ({ product, ...vals }));
+            data.sort((a, b) => b.units - a.units); // Sort by units sold
+
+            totals = {
+              units: data.reduce((sum, r) => sum + r.units, 0),
+              revenue: data.reduce((sum, r) => sum + r.revenue, 0),
+              profit: data.reduce((sum, r) => sum + r.profit, 0),
+              product: 'Grand Total'
+            };
+          }
+
+          this.reportColumns = columns;
+          this.reportData = data;
+          this.reportTotals = totals;
+        },
+
+        groupDataByPeriod(orders, period) {
+          return orders.reduce((acc, order) => {
+            const date = new Date(order.rawDate);
+            let key;
+
+            if (period === 'daily') {
+              key = date.toISOString().split('T')[0];
+            } else if (period === 'weekly') {
+              // Simple week of year calculation
+              const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+              const dayNum = d.getUTCDay() || 7;
+              d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+              const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+              const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+              key = d.getUTCFullYear() + '-W' + weekNo.toString().padStart(2, '0');
+
+            } else if (period === 'monthly') {
+              key = date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0');
+            } else if (period === 'yearly') {
+              key = date.getFullYear().toString();
+            }
+
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(order);
+            return acc;
+          }, {});
+        },
+
+        formatReportValue(value, type) {
+          if (value === undefined || value === null) return '-';
+
+          switch (type) {
+            case 'currency':
+              return '₦' + Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            case 'number':
+              return Number(value).toLocaleString(undefined, { maximumFractionDigits: 0 });
+            case 'percent':
+              return Number(value).toFixed(2) + '%';
+            case 'string':
+            default:
+              return value;
+          }
+        },
+
+        renderReportCharts(orders) {
+          if (!document.getElementById('reportPrimaryChart') || !document.getElementById('reportSecondaryChart')) return;
+          
+          this.reportChartTitles.primary = `${this.reportPeriod.charAt(0).toUpperCase() + this.reportPeriod.slice(1)} Revenue Trend`;
+          this.reportChartTitles.secondary = `${this.reportPeriod.charAt(0).toUpperCase() + this.reportPeriod.slice(1)} Profit Trend`;
+
+          // Data aggregation based on period for charts
+          const groupedData = this.groupDataByPeriod(orders, this.reportPeriod);
+          const labels = Object.keys(groupedData).sort();
+          const revenueData = labels.map(key => groupedData[key].reduce((sum, order) => sum + order.total, 0));
+          const profitData = labels.map(key => groupedData[key].reduce((sum, order) => sum + order.profit, 0));
+
+          // Primary Chart: Revenue (Bar Chart)
+          if (this.reportPrimaryChart) this.reportPrimaryChart.destroy();
+          this.reportPrimaryChart = new Chart(document.getElementById('reportPrimaryChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Revenue',
+                data: revenueData,
+                backgroundColor: '#2563eb',
+              }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+          });
+
+          // Secondary Chart: Profit (Line Chart)
+          if (this.reportSecondaryChart) this.reportSecondaryChart.destroy();
+          this.reportSecondaryChart = new Chart(document.getElementById('reportSecondaryChart').getContext('2d'), {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Profit',
+                data: profitData,
+                borderColor: '#059669',
+                tension: 0.4,
+                fill: false,
+              }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+          });
+        },
+
+        exportReportCSV() { /* CSV export logic */ },
+
+        // --- Notifications & Settings (omitted for brevity) ---
+        fetchNotifications() { /* ... */ },
+        dismissNotification(id) { /* ... */ },
+        clearAllNotifications() { /* ... */ },
+        runManualSync() { /* ... */ },
+        saveSettings() { /* ... */ },
+      }
+    });
+</script>
+</body>
+
+</html>

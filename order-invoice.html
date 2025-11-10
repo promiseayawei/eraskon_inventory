@@ -308,7 +308,7 @@
       <button class="tab-button" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">
         All ({{ orders.length }})
       </button>
-      <button class="tab-button" :class="{ active: activeTab === 'approved' }" @click="activeTab = 'approved'">
+      <button class="tab-button" :class="{ active: activeTab === 'completed' }" @click="activeTab = 'completed'">
         Completed ({{ orders.filter(o => o.status?.toLowerCase() === 'completed').length }})
       </button>
       <button class="tab-button" :class="{ active: activeTab === 'created' }" @click="activeTab = 'created'">
@@ -338,7 +338,7 @@
             <th>Date</th>
             <th>Created By</th>
             <th>Confirmed By</th>
-            <th v-if="activeTab === 'approved'">Actions</th>
+            <th v-if="activeTab === 'completed'">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -378,8 +378,13 @@
               }}
             </td>
 
-            <td>{{ order.paymentConfirmedBy?.name || 'Nil' }}</td>
-            <td v-if="activeTab === 'approved'">
+            <td>{{ order.paymentConfirmedBy
+                  ? (typeof order.paymentConfirmedBy === 'object'
+                  ? `${order.paymentConfirmedBy.firstName || ''} ${order.paymentConfirmedBy.lastName || ''}`.trim()
+                  : order.paymentConfirmedBy)
+                  : 'System Admin'
+                  }}</td>
+            <td v-if="activeTab === 'completed'">
               <button @click="printInvoice(order)" title="Print Invoice"><i class="fa fa-print"></i></button>
               <button @click="sendInvoice(order)" title="Send Invoice"><i class="fa fa-paper-plane"></i></button>
             </td>
@@ -621,16 +626,56 @@
         },
 
         
-        async sendInvoice(orderId) {
+        async sendInvoice(order) {
+          // Validate required order properties
+          if (!order?._id) {
+            alert('Invalid order data. Missing order ID.');
+            return;
+          }
+
+          // Validate customer data
+          if (!order?.customer?.email) {
+            alert('Customer email not available. Cannot send invoice.');
+            return;
+          }
+
           try {
             const token = localStorage.getItem('token');
-            await axios.post(`${API_BASE}/order/${orderId}/send-receipt`, {}, {
+            
+            // Send minimal required data to avoid template issues
+            const orderData = {
+              orderId: order._id,
+              customerEmail: order.customer.email,
+              // Include additional required template fields
+              orderCode: order.orderCode || '',
+              customerName: order.customer.name || '',
+              total: order.total || 0,
+              items: (order.items || []).map(item => ({
+                name: item.productVariantName || item.name || '',
+                quantity: item.qty || item.quantity || 0,
+                price: item.unitPrice || item.price || 0
+              }))
+            };
+
+            await axios.post(`${API_BASE}/order/${order._id}/send-receipt`, orderData, {
               headers: { Authorization: `Bearer ${token}` }
             });
-            alert('Receipt sent to customer successfully!');
+            
+            alert(`Receipt sent to ${order.customer.email} successfully!`);
           } catch (err) {
             console.error('Failed to send receipt:', err);
-            alert('Failed to send receipt');
+            let errorMessage = 'Failed to send receipt. ';
+            
+            // Handle specific error cases
+            if (err.response?.data?.message) {
+              errorMessage += err.response.data.message;
+            } else if (err.message?.includes('lookupProperty')) {
+              errorMessage += 'Email template error. Please contact support.';
+            } else {
+              errorMessage += 'Please try again later.';
+            }
+            
+            alert(errorMessage);
           }
         },
 

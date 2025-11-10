@@ -7,6 +7,7 @@
   <title>Eraskon Inventory Management</title>
 
   <!-- Boxicons CSS -->
+   <link href="assets/css/style-store.css" rel="stylesheet" />
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -15,696 +16,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-  <style>
-    :root {
-      --bg-light: #e2dcdc;
-      --bg-dark: #090F3B;
-      --text-light: #090F3B;
-      --text-dark: #f1f1f1;
-      --card-bg-light: #e2dcdc;
-      --card-bg-dark: #050d4a;
-      --input-border: #ccc;
-    }
-
-    body {
-      background-color: var(--bg-light);
-      color: var(--text-light);
-      transition: background-color 0.5s ease, color 0.5s ease;
-    }
-
-    body.dark {
-
-      --bg-light: #090F3B;
-      --bg-dark: #e2dcdc;
-      --text-light: #e2dcdc;
-      --text-dark: #090F3B;
-      --card-bg-light: #090F3B;
-      --card-bg-dark: #050d4a;
-      --input-border: #ccc;
-    }
-
-    .product-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: flex-start;
-    }
-
-    /* --- Drawer styles for Invoice, Customer Info, Discount/Tax panels --- */
-
-    .drawer-panel {
-      position: fixed;
-      top: 80px;
-      right: 0;
-      width: 370px;
-      max-width: 100vw;
-      min-width: 260px;
-      height: calc(100vh - 100px);
-      background: var(--container-bg, #fff);
-      box-shadow: -4px 0 24px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
-      border-radius: 16px 0 0 16px;
-      z-index: 1200;
-      padding: 24px 20px 20px 28px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      animation: slideInDrawer 0.5s cubic-bezier(.4, 2, .6, 1) both;
-      transition: box-shadow 0.3s, background 0.3s;
-      margin-bottom: 1.5rem;
-      gap: 18px;
-    }
-
-    @keyframes slideInDrawer {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-
-    @media (max-width: 900px) {
-      .drawer-panel {
-        width: 100vw;
-        min-width: 0;
-        right: 0;
-        left: 0;
-        top: auto;
-        bottom: 0;
-        border-radius: 16px 16px 0 0;
-        height: 60vh;
-        max-height: 80vh;
-        padding: 18px 8px 12px 12px;
-        box-shadow: 0 -4px 24px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
-        animation: slideUpDrawer 0.5s cubic-bezier(.4, 2, .6, 1) both;
-        gap: 12px;
-      }
-
-      @keyframes slideUpDrawer {
-        from {
-          transform: translateY(100%);
-          opacity: 0;
-        }
-
-        to {
-          transform: translateY(0);
-          opacity: 1;
-        }
-      }
-    }
-
-    .product-card {
-      background-color: var(--container-bg);
-      border-radius: 12px;
-      padding: 16px;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      width: calc(33.333% - 13.34px);
-      /* Three cards per row with gap compensation */
-      flex: 0 0 calc(33.333% - 13.34px);
-      box-sizing: border-box;
-    }
-
-    body.dark .product-card {
-      background-color: var(--card-bg-dark);
-    }
-
-    .product-card img {
-      width: 100%;
-      height: auto;
-      max-height: 100%;
-      /* Increased max height */
-      object-fit: cover;
-      /* Changed from 'contain' to 'cover' for better visual fit */
-      aspect-ratio: 4 / 4;
-      /* Maintain consistent aspect ratio */
-      border-radius: 12px;
-      /* Optional: soft rounded corners for modern look */
-      margin-bottom: 1rem;
-      transition: transform 0.3s ease;
-    }
-
-    .product-card img:hover {
-      transform: scale(1.05);
-      /* Subtle hover effect to make it interactive */
-    }
-
-
-    .main-content {
-      padding: 1rem;
-    }
-
-    .product-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-
-
-    .quantity-control {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 0.5rem 0;
-    }
-
-    .quantity-control button {
-      background: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .quantity-control button:hover {
-      background: #0056b3;
-    }
-
-    .quantity-control input[type="number"] {
-      width: 60px;
-      padding: 0.3rem;
-      text-align: center;
-    }
-
-    @media screen and (max-width: 1024px) {
-      .product-card {
-        width: calc(50% - 10px);
-        /* Two per row on medium screens */
-        flex: 0 0 calc(50% - 10px);
-      }
-    }
-
-    @media screen and (max-width: 768px) {
-      .product-layout {
-        flex-direction: column;
-      }
-
-      .invoice-panel {
-        position: static;
-        width: 100%;
-        margin-left: 0;
-        max-height: none;
-      }
-    }
-
-
-    @media screen and (max-width: 600px) {
-      .product-card {
-        width: 100%;
-        /* Full width on mobile */
-        flex: 0 0 100%;
-      }
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .modal-content {
-      background: var(--card-bg-light);
-      color: var(--text-light);
-      padding: 2rem;
-      border-radius: 12px;
-      min-width: 300px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
-
-    body.dark .modal-content {
-      background: var(--card-bg-dark);
-      color: var(--text-dark);
-    }
-
-    .product-list-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-
-    .product-list-table th,
-    .product-list-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .product-list-table th {
-      background-color: #f3f4f6;
-      font-weight: 600;
-      color: #2563eb;
-    }
-
-    .product-list-table tr:hover {
-      background-color: #f1f5ff;
-    }
-
-    .active {
-      background: #2563eb;
-      color: #fff;
-    }
-
-    /* Replace your invoice-panel markup with this for animated, responsive, and modern look */
-
-    .invoice-panel {
-      position: fixed;
-      top: 80px;
-      right: 0;
-      width: 370px;
-      max-width: 100vw;
-      min-width: 260px;
-      height: calc(100vh - 100px);
-      background: var(--container-bg, #fff);
-      box-shadow: -4px 0 24px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
-      border-radius: 16px 0 0 16px;
-      z-index: 1200;
-      padding: 24px 20px 20px 28px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      animation: slideInDrawer 0.5s cubic-bezier(.4, 2, .6, 1) both;
-      transition: box-shadow 0.3s, background 0.3s;
-    }
-
-    @keyframes slideInDrawer {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-
-    @media (max-width: 900px) {
-      .invoice-panel {
-        width: 100vw;
-        min-width: 0;
-        right: 0;
-        left: 0;
-        top: auto;
-        bottom: 0;
-        border-radius: 16px 16px 0 0;
-        height: 60vh;
-        max-height: 80vh;
-        padding: 18px 8px 12px 12px;
-        box-shadow: 0 -4px 24px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
-        animation: slideUpDrawer 0.5s cubic-bezier(.4, 2, .6, 1) both;
-      }
-
-      @keyframes slideUpDrawer {
-        from {
-          transform: translateY(100%);
-          opacity: 0;
-        }
-
-        to {
-          transform: translateY(0);
-          opacity: 1;
-        }
-      }
-    }
-
-    .invoice-header {
-      margin-bottom: 12px;
-    }
-
-    .cart-count {
-      background: #2563eb;
-      color: #fff;
-      border-radius: 50%;
-      padding: 4px 14px;
-      font-weight: bold;
-      font-size: 1.1em;
-      display: inline-block;
-      min-width: 32px;
-      text-align: center;
-      box-shadow: 0 2px 8px #2563eb22;
-      transition: background 0.3s;
-    }
-
-    .invoice-list {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 16px 0;
-    }
-
-    .invoice-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 10px 0;
-      transition: background 0.2s;
-    }
-
-    .invoice-item:hover {
-      background: #f3f4f6;
-    }
-
-    .variant-size {
-      color: #2563eb;
-      margin-left: 4px;
-    }
-
-    .qty {
-      margin-left: 8px;
-      color: #555;
-    }
-
-    .item-total {
-      margin-left: 8px;
-      color: #888;
-      font-weight: 500;
-    }
-
-    .remove-btn {
-      margin-left: 10px;
-      color: #e53e3e;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.1em;
-      transition: color 0.2s;
-    }
-
-    .remove-btn:hover {
-      color: #b91c1c;
-      transform: scale(1.15);
-    }
-
-    .invoice-totals {
-      border-top: 1px solid #e5e7eb;
-      padding-top: 12px;
-      margin-bottom: 10px;
-    }
-
-    .invoice-totals>div {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-      font-size: 1em;
-    }
-
-    .invoice-totals .discount {
-      color: #e53e3e;
-    }
-
-    .invoice-totals .total-row {
-      font-size: 1.15em;
-      margin-top: 8px;
-      font-weight: bold;
-    }
-
-    .invoice-totals .total {
-      color: #2563eb;
-      font-weight: bold;
-    }
-
-    .invoice-actions {
-      margin-top: 16px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .action-btn {
-      background: #f3f4f6;
-      color: #2563eb;
-      border: 1px solid #2563eb;
-      padding: 8px 18px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-    }
-
-    .action-btn.primary {
-      background: #2563eb;
-      color: #fff;
-      border: none;
-    }
-
-    .action-btn.success {
-      background: #22c55e;
-      color: #fff;
-      border: none;
-    }
-
-    .action-btn:hover {
-      box-shadow: 0 2px 8px #2563eb22;
-      opacity: 0.92;
-    }
-
-    /* Style all <select> and <option> elements for a modern look */
-    select {
-      background: #f3f4f6;
-      color: #222;
-      border: 1px solid #2563eb;
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 1em;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      margin: 0 0 4px 0;
-      min-width: 120px;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-    }
-
-    select:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 2px #2563eb22;
-    }
-
-    option {
-      background: #fff;
-      color: #222;
-      font-size: 1em;
-      padding: 8px 12px;
-    }
-
-    /* Responsive: make selects full width on mobile */
-    @media (max-width: 600px) {
-      select {
-        width: 100%;
-        min-width: 0;
-        font-size: 1em;
-      }
-    }
-
-    @media (max-width: 1024px) {
-      .invoice-panel {
-        width: 100%;
-        min-width: 0;
-        max-width: 100%;
-        margin-left: 0;
-        position: static;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .invoice-panel {
-        width: 100%;
-        min-width: 0;
-        max-width: 100%;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 1rem;
-      }
-
-      .invoice-header h3 {
-        font-size: 1.1em;
-      }
-
-      .invoice-totals>div,
-      .invoice-totals .total-row {
-        font-size: 1em;
-      }
-
-      .action-btn {
-        padding: 8px 10px;
-        font-size: 0.98em;
-      }
-    }
-
-    /* Make select, input, and invoice controls fit their containers and align with other elements */
-
-    .product-card select,
-    .product-card input[type="number"],
-    .product-list-table select,
-    .product-list-table input[type="number"],
-    .invoice-panel select,
-    .invoice-panel input[type="number"] {
-      width: 100%;
-      min-width: 0;
-      box-sizing: border-box;
-      margin-bottom: 6px;
-      margin-top: 2px;
-      font-size: 1em;
-    }
-
-    .variant-selector,
-    .quantity-control,
-    .invoice-panel .invoice-actions,
-    .invoice-panel .invoice-totals,
-    .invoice-panel .invoice-header {
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .invoice-panel {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .invoice-list {
-      width: 100%;
-    }
-
-    .invoice-actions {
-      width: 100%;
-      justify-content: flex-start;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    /* Add these toggles/buttons somewhere in your template, e.g. top right of your main-content */
-    .toggle-buttons {
-      position: fixed;
-      top: 90px;
-      right: 20px;
-      z-index: 1300;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    /* Common styles for all drawer panels */
-    .drawer-panel {
-      position: fixed;
-      top: 80px;
-      right: 0;
-      width: 370px;
-      max-width: 100vw;
-      min-width: 260px;
-      height: calc(100vh - 100px);
-      background: var(--container-bg, #fff);
-      box-shadow: -4px 0;
-      border-radius: 16px 0 0 16px;
-      z-index: 1200;
-      padding: 24px 20px 20px 28px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      animation: slideInDrawer 0.5s cubic-bezier(.4, 2, .6, 1) both;
-      transition: box-shadow 0.3s, background 0.3s;
-    }
-
-    /* Add to your <style> section for animation and positioning */
-    .drawer-fab-btn {
-      display: block;
-      margin: 10px 0 0 0;
-      box-shadow: 0 4px 16px #2563eb33;
-      background: #fff;
-      color: #2563eb;
-      border: none;
-      border-radius: 24px 8px 24px 8px;
-      padding: 12px 22px;
-      font-weight: 600;
-      min-width: 150px;
-      text-align: left;
-      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-      cursor: pointer;
-    }
-
-    .drawer-fab-btn:hover {
-      background: #2563eb;
-      color: #fff;
-      box-shadow: 0 6px 24px #2563eb44;
-    }
-
-    .drawer-btns-group {
-      position: relative;
-      width: 180px;
-      height: 140px;
-    }
-
-    .arc-btn {
-      position: absolute;
-      opacity: 1;
-      transform: scale(1);
-      transition:
-        right 0.3s cubic-bezier(.4, 2, .6, 1),
-        top 0.3s cubic-bezier(.4, 2, .6, 1),
-        opacity 0.3s,
-        box-shadow 0.2s;
-      border-radius: 24px 8px 24px 8px;
-      min-width: 150px;
-      box-shadow: 0 4px 16px #2563eb33;
-      background: #fff;
-      color: #2563eb;
-      border: none;
-      padding: 12px 22px;
-      font-weight: 600;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .arc-btn-1 {
-      top: 0px;
-      right: 0px;
-    }
-
-    .arc-btn-2 {
-      top: 50px;
-      right: 40px;
-    }
-
-    .arc-btn-3 {
-      top: 90px;
-      right: 90px;
-    }
-
-    @media (max-width: 600px) {
-      .arc-btn-1 {
-        top: 0;
-        right: 60px;
-      }
-
-      .arc-btn-2 {
-        top: 50px;
-        right: 30px;
-      }
-
-      .arc-btn-3 {
-        top: 90px;
-        right: 0;
-      }
-    }
-  </style>
 </head>
 
 
@@ -713,7 +24,7 @@
   <script src="components/spinner.js"></script>
 
   <!-- Load Auth Guard -->
-  <script src="components/authGuard.js"></script> 
+  <script src="components/authGuard.js"></script>
   <!-- Load Navbar -->
   <script src="components/navbar.js"></script>
 
@@ -961,27 +272,55 @@
             <h3>Customer Information</h3>
             <button @click="drawer.customer = false" class="remove-btn"><i class="fa fa-times"></i></button>
           </div>
-          <label for="customerSelect">Select Customer:</label>
-          <select id="customerSelect" v-model="selectedCustomerId" @change="onCustomerSelect">
-            <option value="">-- Select Customer --</option>
-            <option v-for="c in customers" :value="c._id">
-              {{ c.name }} ({{ c.email || c.phone || 'No contact' }})
-            </option>
-          </select>
-          <button @click="showAddCustomerModal = true" class="action-btn" style="margin: 10px 0;">Add New Customer
-          </button>
+
+          <label for="customerSearch">Select Customer:</label>
+          <div style="position: relative;" ref="customerSearchContainer">
+            <input id="customerSearch" type="text" v-model="customerSearchQuery" @focus="showCustomerResults = true"
+              @keydown.esc="showCustomerResults = false" placeholder="Start typing to search or select customer..."
+              style="width: 100%; padding: 8px; box-sizing: border-box;" autocomplete="off" role="combobox"
+              aria-autocomplete="list" :aria-expanded="showCustomerResults" aria-haspopup="true" />
+
+            <div v-if="showCustomerResults" class="customer-search-results" style="
+            position: absolute;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            background: white;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            " role="listbox">
+              <div v-if="!customerSearchQuery && !customers.length" style="padding: 10px; color: #999;">
+                No customers available.
+              </div>
+
+              <div @click="selectCustomer('new')" class="search-result-item"
+                style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; background-color: #f5f5f5;"
+                role="option">
+                + Add New Customer
+              </div>
+
+              <div v-for="c in filteredCustomers" :key="c._id" @click="selectCustomer(c)" class="search-result-item"
+                :class="{ 'selected-result': selectedCustomerId === c._id }" style="padding: 10px; cursor: pointer;"
+                role="option" :aria-selected="selectedCustomerId === c._id">
+                {{ c.name }} ({{ c.email || c.phone || 'No contact' }})
+              </div>
+
+              <div v-if="customerSearchQuery && filteredCustomers.length === 0" style="padding: 10px; color: #999;">
+                No results found for "{{ customerSearchQuery }}".
+              </div>
+            </div>
+          </div>
           <div v-if="selectedCustomer">
             <p><strong>Name:</strong> {{ selectedCustomer.name }}</p>
             <p><strong>Email:</strong> {{ selectedCustomer.email }}</p>
             <p><strong>Phone:</strong> {{ selectedCustomer.phone }}</p>
             <p><strong>Company:</strong> {{ selectedCustomer.company }}</p>
             <p><strong>Tax ID:</strong> {{ selectedCustomer.taxId }}</p>
-
           </div>
 
           <button @click="drawer.customer = false" class="action-btn" style="margin-left:auto;">Close</button>
         </div>
-
         <!-- Discount & Tax Drawer -->
         <div class="drawer-panel animate__animated animate__fadeInRight discount-tax-drawer" v-if="drawer.discount">
           <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -1104,6 +443,10 @@
           customer: false,
           discount: false
         },
+        // customer data for search
+        customerSearchQuery: '',
+        showCustomerResults: false,
+        selectedCustomerId: null, // Ensure this tracks the ID
         paymentMethod: 'cash',
         paymentMethods: [
           { value: 'cash', label: 'Cash' },
@@ -1115,11 +458,7 @@
       computed: {
         cartTotal() {
           // Subtotal - discount - tax
-<<<<<<< HEAD
           return Math.max(0, this.subtotal - this.discountValue + this.taxValue);
-=======
-          return Math.max(0, this.subtotal - this.discountValue - this.taxValue);
->>>>>>> origin/main
         },
         filteredProducts() {
           const term = this.searchTerm.toLowerCase();
@@ -1129,8 +468,25 @@
           );
         },
         selectedCustomer() {
+          // This makes the selected customer readily available for display
           return this.customers.find(c => c._id === this.selectedCustomerId) || null;
         },
+
+        filteredCustomers() {
+          if (!this.customerSearchQuery) {
+            return this.customers;
+          }
+
+          const query = this.customerSearchQuery.toLowerCase();
+
+          return this.customers.filter(customer => {
+            // Filter by name, email, or phone
+            return (customer.name && customer.name.toLowerCase().includes(query)) ||
+              (customer.email && customer.email.toLowerCase().includes(query)) ||
+              (customer.phone && customer.phone.includes(query));
+          });
+        },
+
         subtotal() {
           return this.cart.reduce((sum, item) => sum + (item.variant.price * item.quantity), 0);
         },
@@ -1151,133 +507,204 @@
 
       },
       methods: {
+        /**
+         * Toggles the application's dark mode and persists the preference in local storage.
+         */
         toggleDarkMode() {
           this.isDarkMode = !this.isDarkMode;
           localStorage.setItem("darkMode", this.isDarkMode);
         },
+
+        /**
+         * Increases the quantity of a product in the temporary selection state (before adding to cart).
+         * @param {object} product - The product object being prepared for cart addition.
+         */
         increaseQty(product) {
-          if (product.quantity < product.selectedVariant.stock) product.quantity++;
+          const maxStock = product.selectedVariant?.stock || 0;
+          if (product.quantity < maxStock) {
+            product.quantity++;
+          }
         },
+
+        /**
+         * Decreases the quantity of a product in the temporary selection state.
+         * Prevents quantity from dropping below 1.
+         * @param {object} product - The product object being prepared for cart addition.
+         */
         decreaseQty(product) {
-          if (product.quantity > 1) product.quantity--;
+          if (product.quantity > 1) {
+            product.quantity--;
+          }
         },
+
+        /**
+         * Adds the currently selected product/variant/batch to the cart.
+         * Handles existing item updates and stock validation.
+         * @param {object} product - The product object being added.
+         */
         addToCart(product) {
-          // If batch tracking is enabled, ensure a batch is selected
-          if (product.batchTracking && (!product.selectedBatch || !product.selectedBatch.batchNumber)) {
+          const variant = product.selectedVariant;
+
+          // 1. Pre-flight checks and error handling
+          if (!variant) {
+            alert("Error: Product variant not selected.");
+            return;
+          }
+          if (product.batchTracking && !product.selectedBatch?.batchNumber) {
             alert("Please select a batch for this product.");
             return;
           }
+
           const existing = this.cart.find(i =>
-            i.id === product.id &&
-            i.variant.sku === product.selectedVariant.sku &&
+            i.id === variant._id && // Use variant ID for better matching
+            i.variant.sku === variant.sku &&
             (!product.batchTracking || (i.batchNumber === product.selectedBatch.batchNumber))
           );
-          const maxQty = product.selectedVariant.stock;
 
-          // Determine warehouse ObjectId
+          const maxQty = variant.stock;
+
+          // 2. Determine the warehouse ID for the item
           let warehouseId = null;
           if (product.batchTracking) {
             warehouseId = product.selectedBatch?.warehouse;
-          } else if (
-            product.selectedVariant.warehouses &&
-            product.selectedVariant.warehouses.length
-          ) {
-            warehouseId = product.selectedVariant.warehouses[0].warehouse;
+          } else if (variant.warehouses?.length) {
+            // Assumes the first warehouse in the list is the source
+            warehouseId = variant.warehouses[0].warehouse;
           }
 
+          // 3. Update existing item or add new item
           if (existing) {
-            if (existing.quantity + product.quantity > maxQty) {
+            const potentialQty = existing.quantity + product.quantity;
+            if (potentialQty > maxQty) {
               alert(`Only ${maxQty - existing.quantity} more in stock for this variant.`);
               return;
             }
-            existing.quantity += product.quantity;
+            existing.quantity = potentialQty;
           } else {
             if (product.quantity > maxQty) {
               alert(`Only ${maxQty} available in stock.`);
               return;
             }
             this.cart.push({
-              id: product.selectedVariant._id || product.id, // Use variant _id if available
+              // Use variant ID consistently for cart items
+              id: variant._id,
               name: product.name,
-              variant: product.selectedVariant,
+              variant: variant,
               quantity: product.quantity,
               batchNumber: product.batchTracking ? product.selectedBatch.batchNumber : undefined,
               warehouse: warehouseId
             });
           }
+
+          // 4. Reset product selection quantity for next add
           product.quantity = 1;
         },
+
+        /**
+         * Removes an item from the cart by its index.
+         * @param {number} index - The index of the item in the cart array.
+         */
+        removeFromCart(index) {
+          this.cart.splice(index, 1);
+        },
+
+        /**
+         * Generates and downloads a plain text invoice, then opens a WhatsApp sharing link.
+         * NOTE: This is likely a legacy function; consider prioritizing generateInvoicePDF.
+         */
         generateInvoice() {
           if (!this.selectedCustomer) {
             alert("Please select a customer before generating the invoice.");
             return;
           }
-          // 1. Add Eraskon company details and beautify invoice (plain text version)
+
+          const customer = this.selectedCustomer;
+          const invoiceDate = new Date().toLocaleDateString();
+
+          // 1. Build the invoice content
           const eraskonInfo = [
-            `========= COMPANY DETAILS =========`,
+            `===================================`,
             `Eraskon Nigeria Limited`,
             `EL-AL Court, Plot 35, Chief Yesufu Abiodun Oniru Road,`,
             `VI, Lagos State, Nigeria.`,
+            `Email: info@eraskoenergy.com`,
             `===================================`
           ].join('\n');
-          const customer = this.selectedCustomer;
+
           const customerInfo = [
             `Customer: ${customer.name}`,
-            `Email: ${customer.email || '-'}`,
-            `Phone: ${customer.phone || '-'}`,
-            `Company: ${customer.company || '-'}`,
-            `Tax ID: ${customer.taxId || '-'}`
+            `Date: ${invoiceDate}`,
+            `Email: ${customer.email || 'N/A'}`,
+            `Phone: ${customer.phone || 'N/A'}`,
+            `Tax ID: ${customer.taxId || 'N/A'}`
           ].join('\n');
-          const lines = this.cart.map(
-            (item, idx) =>
-              `${idx + 1}. ${item.name} (${item.variant.sku}) x ${item.quantity} = ₦${item.variant.price * item.quantity}`
+
+          const lines = this.cart.map((item, idx) =>
+            `${idx + 1}. ${item.name} (${item.variant.sku}${item.batchNumber ? ` - Batch: ${item.batchNumber}` : ''}) | Qty: ${item.quantity} | Unit: ₦${item.variant.price.toLocaleString()} | Total: ₦${(item.variant.price * item.quantity).toLocaleString()}`
           );
+
           const content = [
             `********** INVOICE **********`,
             eraskonInfo,
+            `\n--------- CUSTOMER ---------`,
             customerInfo,
             `\n--------- ITEMS ---------`,
             lines.join('\n'),
             `-------------------------`,
-            `TOTAL: ₦${this.cartTotal}`,
+            `SUBTOTAL: ₦${this.subtotal.toLocaleString()}`,
+            `DISCOUNT: ₦${this.discountAmount.toLocaleString() || '0.00'}`,
+            `TAX (${this.taxPercent}%): ₦${this.taxValue.toLocaleString() || '0.00'}`,
+            `TOTAL: ₦${this.cartTotal.toLocaleString()}`,
             `****************************`
           ].join('\n\n');
 
-          // 2. Download invoice as .txt
+          // 2. Download invoice as .txt (Improved filename)
+          const filename = `invoice-${customer.name.replace(/\s/g, '_')}-${Date.now()}.txt`;
           const blob = new Blob([content], { type: 'text/plain' });
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
-          a.download = 'invoice.txt';
+          a.download = filename;
           a.click();
+          URL.revokeObjectURL(a.href); // Clean up the URL object
 
           // 3. Share invoice to WhatsApp
-          const whatsappMsg = encodeURIComponent(content);
+          const whatsappMsg = encodeURIComponent(`*Order Confirmation*:\n\n${content}`);
           const whatsappUrl = `https://wa.me/?text=${whatsappMsg}`;
           window.open(whatsappUrl, '_blank');
+
+          // 4. Clear cart
           this.cart = [];
         },
 
-
-
+        /**
+         * Generates a professional PDF invoice using jsPDF and opens it in a new window.
+         * Uses the window.jsPDF and window.numberToWords global dependencies.
+         */
         async generateInvoicePDF() {
           if (!this.selectedCustomer) {
             alert("Please select a customer before generating the invoice.");
             return;
           }
+          if (this.cart.length === 0) {
+            alert("The cart is empty. Please add items to generate an invoice.");
+            return;
+          }
 
+          // --- Data Setup ---
           const eraskonLogo = 'data:image/png;base64,...'; // your actual base64 logo string
           const { jsPDF } = window.jspdf;
           const doc = new jsPDF();
-
           const customer = this.selectedCustomer;
           const date = new Date().toLocaleDateString('en-GB');
-          const invoiceNo = `ENL/PRD/${new Date().getFullYear().toString().slice(2)}/${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
-          const total = this.cartTotal.toFixed(2);
-          const amountInWords = numberToWords(total);
+          // Generate a more robust/sequential invoice number if possible, or use a placeholder
+          const invoiceNo = `ENL/INV/${new Date().getFullYear().toString().slice(2)}/${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+          const total = parseFloat(this.cartTotal); // Ensure numeric
+          const amountInWords = window.numberToWords(total) || 'Zero Naira Only';
 
-          const tableBody = this.cart.map((item) => [
+          const tableBody = this.cart.map((item, index) => [
+            index + 1, // Added index as first column for better clarity
             item.quantity,
-            item.name,
+            `${item.name} (${item.variant.sku}${item.batchNumber ? ` - Batch: ${item.batchNumber}` : ''})`,
             `₦${(item.variant.price * item.quantity).toLocaleString()}`
           ]);
 
@@ -1285,7 +712,9 @@
           img.src = eraskonLogo;
           img.crossOrigin = "anonymous";
 
-          img.onload = function () {
+          // Use a promise to wait for the image to load cleanly
+          const renderPdf = () => {
+            // --- Header/Branding ---
             doc.addImage(img, 'PNG', 80, 10, 50, 20);
 
             doc.setFontSize(10);
@@ -1295,14 +724,17 @@
             doc.setFontSize(14);
             doc.text("INVOICE", 105, 50, { align: 'center' });
 
+            // --- Customer Info ---
             doc.setFontSize(10);
             doc.text(`Name: ${customer.name}`, 14, 60);
+            doc.text(`Email: ${customer.email || 'N/A'}`, 14, 66);
             doc.text(`Date: ${date}`, 150, 60);
-            doc.text(`Invoice No: ${invoiceNo}`, 14, 66);
+            doc.text(`Invoice No: ${invoiceNo}`, 150, 66);
 
+            // --- Items Table ---
             doc.autoTable({
               startY: 75,
-              head: [["QTY", "DESCRIPTION OF PRODUCTS", "TOTAL"]],
+              head: [["S/N", "QTY", "DESCRIPTION OF PRODUCTS", "TOTAL"]],
               body: tableBody,
               theme: 'grid',
               styles: { fontSize: 10 },
@@ -1312,41 +744,59 @@
 
             const finalY = doc.lastAutoTable.finalY;
 
+            // --- Summary Table ---
             doc.autoTable({
               startY: finalY + 10,
               body: [
-                ["DISCOUNT", "₦0.00"],
-                ["AMOUNT PAID", "₦0.00"],
-                ["NET BALANCE", `₦${parseFloat(total).toLocaleString()}`]
+                ["SUBTOTAL", `₦${this.subtotal.toLocaleString()}`],
+                ["DISCOUNT", `₦${this.discountAmount.toLocaleString() || '0.00'}`],
+                ["TAX", `₦${this.taxValue.toLocaleString() || '0.00'}`],
+                ["NET TOTAL", `₦${total.toLocaleString()}`]
               ],
-              styles: { fontSize: 10 },
-              tableLineWidth: 0.1,
+              styles: { fontSize: 10, cellPadding: 2, lineWidth: 0.1 },
+              tableLineColor: 180, // Light grey border
               margin: { left: 120 }
             });
 
+            // --- Totals and Payment ---
             doc.setFontSize(11);
-            doc.text(`GRAND TOTAL: ₦${parseFloat(total).toLocaleString()}`, 14, finalY + 45);
+            doc.text(`GRAND TOTAL: ₦${total.toLocaleString()}`, 14, finalY + 45);
 
             doc.setFontSize(10);
             doc.text(`Amount in words: ${amountInWords}`, 14, finalY + 55);
 
             doc.text("Payments to be made to:", 14, finalY + 65);
-            doc.text("Eraskon Nigeria Limited\nZenith Bank Plc: 1016862835\nFCMB Plc:", 14, finalY + 70);
+            doc.text("Eraskon Nigeria Limited\nZenith Bank Plc: 1016862835\nFCMB Plc: [ACCOUNT NUMBER]", 14, finalY + 70); // Added placeholder
 
+            // --- Signatures ---
             doc.text("_______________________________", 14, finalY + 95);
             doc.text("Client’s Sign", 25, finalY + 100);
             doc.text("_______________________________", 130, finalY + 95);
             doc.text("Manager’s Sign", 145, finalY + 100);
 
-            // Show PDF in a new browser window
-            const pdfOutput = doc.output('datauri');
-            const iframe = document.createElement('iframe');
-            iframe.style.width = '100%';
-            iframe.style.height = '600px';
-            iframe.src = pdfOutput;
-            document.body.appendChild(iframe); // This will append the iframe to the body
-          }.bind(this);
+            // --- Output PDF ---
+            // Open in a new tab for a better user experience than an iframe
+            doc.output('dataurlnewwindow', { filename: `Invoice-${invoiceNo}.pdf` });
+          };
+
+          // Bind the render logic to the image load event
+          img.onload = renderPdf.bind(this);
+          img.onerror = () => {
+            // Fallback if image fails to load
+            console.warn("Failed to load logo image. Generating PDF without logo.");
+            renderPdf();
+          };
+
+          // If the image is already loaded/cached (e.g., base64), call immediately
+          if (img.complete) {
+            renderPdf();
+          }
         },
+
+        /**
+         * Fetches all product variants and transforms them into a unified product model
+         * suitable for the POS interface, including initial variant and batch selection.
+         */
         async fetchProducts() {
           try {
             const response = await axios.get(`${API_BASE}/product-variant`);
@@ -1354,182 +804,253 @@
             if (response.data && Array.isArray(response.data)) {
               this.products = response.data.map(pv => {
                 const variant = {
+                  _id: pv._id, // IMPORTANT: Use product variant ID as the ID for cart item
                   sku: pv.sku,
                   price: pv.price,
-                  costPrice: pv.costPrice || 0, // Ensure costPrice is defined
+                  costPrice: pv.costPrice || 0,
                   stock: pv.totalStock,
                   barcode: pv.barcode,
-                  warehouses: pv.warehouses || []
+                  warehouses: pv.warehouses || [],
+                  image: pv.image || null,
                 };
 
                 return {
-                  id: pv._id,
+                  id: pv._id, // Retain for linking, but cart uses variant._id
                   name: pv.name,
                   image: pv.image,
-                  quantity: 1,
-                  batchNumber: pv.batchNumber,
+                  quantity: 1, // Default quantity for adding to cart
                   description: pv.description,
                   batchTracking: pv.batchTracking,
-                  batches: pv.batches || [],
+                  batches: pv.batches?.filter(b => b.stock > 0) || [], // Only show batches with stock
                   warehouses: pv.warehouses || [],
-                  variants: [variant],
+                  variants: [variant], // Simpler structure since the response is already a variant
                   selectedVariant: variant,
-                  selectedBatch: pv.batches && pv.batches.length > 0 ? pv.batches[0] : null
+                  // Pre-select the first available batch (if tracking is on and batches exist)
+                  selectedBatch: (pv.batchTracking && pv.batches?.length > 0) ? pv.batches.find(b => b.stock > 0) || null : null
                 };
               });
             } else {
               console.warn("Unexpected response format:", response.data);
-              alert("Unexpected data format received.");
+              alert("Unexpected data format received from the server.");
             }
           } catch (err) {
             console.error("Failed to load products:", err);
             alert("Error loading products. Please check the console for details.");
           }
         },
+
+        /**
+         * Fetches the list of all customers.
+         */
         async fetchCustomers() {
           try {
             const res = await axios.get(`${API_BASE}/customer`);
+            // Safely assign customers, defaulting to an empty array
             this.customers = Array.isArray(res.data) ? res.data : (res.data.customers || []);
-            console.log("Loaded customers:", this.customers);
+            // console.log("Loaded customers:", this.customers); // Clean up unnecessary console logs
           } catch (err) {
             console.error("Failed to load customers:", err);
+            // Optionally, show a gentle toast or alert here
           }
         },
+
+        /**
+         * Handles logic after a customer is selected.
+         * Currently a placeholder, but good for future logic (e.g., loading customer-specific pricing).
+         */
         onCustomerSelect() {
-          // Optionally handle customer selection logic here
+          // Find and set the selected customer object for quick access
+          this.selectedCustomer = this.customers.find(c => c._id === this.selectedCustomerId) || null;
         },
+
+        /**
+         * Creates a new customer and automatically selects them for the current order.
+         */
         async addCustomer() {
+          if (!this.newCustomer.name) {
+            alert("Customer name is required.");
+            return;
+          }
           try {
             const res = await axios.post(`${API_BASE}/customer`, this.newCustomer);
             const added = res.data.customer || res.data;
-            this.customers.push(added);
-            this.selectedCustomerId = added._id;
+            this.customers.push(added); // Add to local list
+            this.selectedCustomerId = added._id; // Select the new customer
             this.showAddCustomerModal = false;
+            // Reset the form model
             this.newCustomer = { name: '', email: '', phone: '', company: '', taxId: '' };
+            this.onCustomerSelect(); // Update the selectedCustomer object
           } catch (err) {
-            alert("Failed to add customer. Please check details.");
+            console.error("Failed to add customer:", err);
+            alert("Failed to add customer. Please check the input details.");
           }
         },
+
+        /**
+         * Finalizes the sale by posting the order and updating stock via stock movements.
+         */
         async postOrder() {
+          if (!this.selectedCustomer || this.cart.length === 0) {
+            alert("Please select a valid customer and add items to the cart.");
+            return;
+          }
+
           try {
             const token = localStorage.getItem('token');
-            // Find the selected customer object
-            const customerObj = this.customers.find(c => c._id === this.selectedCustomerId);
-            const taxValue = this.taxValue || 0; // Ensure taxValue is a number
-            console.log("taxValue:", taxValue);
-            console.log("Discount value:", this.discountValue);
-            discountValue = this.discountValue || 0; // Ensure discountValue is a number
-            console.log("Discount amount:", this.discountAmount);
-            console.log("Cart total:", this.cartTotal);
-            if (!customerObj) {
-              alert("Please select a valid customer.");
-              return;
-            }
-
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const userId = user._id || localStorage.getItem('userId');
+
             if (!userId) {
               alert("User not logged in. Please log in to continue.");
               return;
             }
+
+            // Clean up discount/tax values to ensure they are safe numbers
+            const taxValue = this.taxValue || 0;
+            const discountAmount = this.discountAmount || 0;
+
             const payload = {
               items: this.cart.map(item => ({
-                ProductVariant: item.id,
+                ProductVariant: item.id, // ID of the product variant
                 productVariantName: item.name,
                 qty: item.quantity,
                 unitPrice: item.variant.price,
-                costPrice: item.variant.costPrice || 0, // Ensure costPrice is defined
-                image: item.variant.image || item.image || null
+                costPrice: item.variant.costPrice || 0,
+                // Note: image is usually not needed on item level payload
               })),
-              subTotal: this.subtotal, // match backend field name
+              subTotal: this.subtotal,
               discounts: [
                 {
-                  type: this.discountType,
-                  value: this.discountAmount,
-                  amount: discountValue
+                  type: this.discountType, // e.g., 'percent', 'flat'
+                  value: this.discountValue, // Original value (e.g., 10 or 10%)
+                  amount: discountAmount // Calculated money value
                 }
               ],
-              taxRate: this.taxPercent, // percent value, e.g. 7.5
-              // Optionally, you can omit 'tax' and let backend calculate it
+              taxRate: this.taxPercent,
               tax: taxValue,
-              // ...other fields
               total: this.cartTotal,
               createdAt: new Date(),
               customerId: this.selectedCustomerId,
-              customer: customerObj, // Send full customer details
+              customer: this.selectedCustomer, // Full customer object
               paymentMethod: this.paymentMethod,
 
-              // Add user info to payload
+              // User/Order context information
               user: userId,
               userFirstname: user.firstname || '',
               userRole: user.role || '',
-              userWarehouse: user.warehouse?.name || user.warehouse || ''
+              userWarehouse: user.warehouse?.name || user.warehouse?._id || ''
             };
-
 
             // 1. Submit the order
             const orderRes = await axios.post(`${API_BASE}/order`, payload, {
               headers: { Authorization: `Bearer ${token}` }
             });
-            console.log("Order response:", orderRes.data);
+            const savedOrder = orderRes.data;
+            // console.log("Order submitted successfully:", savedOrder);
+
             // 2. For each item, deduct stock by posting to stock-movement
             for (const item of this.cart) {
-              if (item.variant.batchTracking && !item.batchNumber) {
-                alert(`Batch number missing for ${item.name}. Please remove and re-add with batch.`);
+              // Ensure the item has a warehouse assigned before attempting stock movement
+              if (!item.warehouse) {
+                console.warn(`Skipping stock movement for ${item.name}: Warehouse ID is missing.`);
                 continue;
               }
-              console.log("Posting stock movement for item:", item);
-              console.log("Discount value:", this.discountValue);
-              console.log("Tax value:", this.taxValue);
 
               const stockMovement = {
-                productVariantId: item.id, // match backend expectation
+                productVariantId: item.id,
                 type: "out",
                 quantity: item.quantity,
-                warehouse: item.warehouse,
-                destinationWarehouse: this.selectedCustomer?.warehouse || undefined,
-                destinationCustomer: this.selectedCustomerId?.name || undefined,
-                reference: `Order#${orderRes.data.orderCode || new Date().toISOString()}`,
-                reason: "Stock transfer",
-                batchNumber: item.batchNumber
+                warehouse: item.warehouse, // Source warehouse (from cart item)
+                reference: `Order#${savedOrder.orderCode}`,
+                reason: "Sale/Order Fulfillment",
+                batchNumber: item.batchNumber // Only if batchTracking is true
               };
-<<<<<<< HEAD
+
               await axios.post(`${API_BASE}/stock-movement`, stockMovement, {
                 headers: { Authorization: `Bearer ${token}` }
               });
-              
-=======
-              await axios.post(`${API_BASE}/stock-movement`, stockMovement);
->>>>>>> origin/main
-              console.log("Stock movement posted for item:", stockMovement);
-              // Optionally, you can update the product variant stock in the frontend
+              // console.log("Stock movement posted for item:", stockMovement);
             }
 
-            alert("Order submitted and stock updated successfully!");
-            this.cart = [];
+            // 3. Finalize and clean up
+            alert(`Order ${savedOrder.orderCode} submitted and stock updated successfully!`);
+            this.cart = []; // Clear the cart
+            this.fetchProducts(); // Refresh product stock levels after sale
           } catch (err) {
             let msg = "Error submitting order or updating stock.";
-            if (err.response && err.response.data) {
-              msg += `\nStatus: ${err.response.status || '-'}\n`;
-              msg += `Message: ${err.response.data.message || JSON.stringify(err.response.data)}`;
+            if (err.response) {
+              msg += `\nStatus: ${err.response.status}`;
+              msg += `\nMessage: ${err.response.data.message || JSON.stringify(err.response.data)}`;
             } else if (err.message) {
               msg += `\n${err.message}`;
-            } else {
-              msg += `\n${JSON.stringify(err)}`;
             }
             console.error("Order/stock post failed:", err);
             alert(msg);
           }
         },
-        removeFromCart(index) {
-          this.cart.splice(index, 1);
-        },
+
+        /**
+         * Manages the state of the various side drawers/panels.
+         * @param {string} type - The drawer to open ('invoice', 'customer', 'discount').
+         */
         openDrawer(type) {
-          this.drawer.invoice = false;
-          this.drawer.customer = false;
-          this.drawer.discount = false;
+          // Close all drawers first
+          Object.keys(this.drawer).forEach(key => {
+            this.drawer[key] = false;
+          });
+          // Open the selected drawer
           this.drawer[type] = true;
           this.drawerMenuOpen = false;
+        },
+        /**
+   * Updates the search query model and ensures results are displayed.
+   * @param {string} value - The current value of the search input.
+   */
+        updateSearchQuery(value) {
+          this.customerSearchQuery = value;
+          this.showCustomerResults = true;
+
+          // FIX: If the user manually clears the input AND a customer was previously selected,
+          // we must clear the selection to stop the name from popping back in.
+          if (value === '' && this.selectedCustomerId) {
+            this.selectedCustomerId = null;
+            // Optionally, you might want to reset the selectedCustomer computed property too,
+            // but setting the ID to null should be enough if the computed property is correct.
+          }
+        },
+        /**
+         * Handles customer selection from the list or the 'add new' action.
+         * @param {object|string} customer - The selected customer object or the string 'new'.
+         */
+        selectCustomer(customer) {
+          if (customer === 'new') {
+            this.showAddCustomerModal = true;
+            this.customerSearchQuery = ''; // Clear search when opening modal
+          } else {
+            this.selectedCustomerId = customer._id;
+            // When a customer is selected, update the input text to show their name
+            this.customerSearchQuery = customer.name;
+            // Manually trigger any existing selection logic
+            this.onCustomerSelect();
+          }
+          // Always hide the results panel after a selection is made
+          this.showCustomerResults = false;
+        },
+
+        /**
+         * Listens for clicks outside the component to close the dropdown.
+         * NOTE: This should be added to your component's mounted/beforeUnmount hooks.
+         * @param {Event} event - The click event.
+         */
+        handleClickOutside(event) {
+          // Check if the click happened outside of the search/results container
+          if (this.$refs.customerSearchContainer && !this.$refs.customerSearchContainer.contains(event.target)) {
+            this.showCustomerResults = false;
+            // If no customer is selected, clear the search box content (better UX)
+            if (!this.selectedCustomerId) {
+              this.customerSearchQuery = '';
+            }
+          }
         },
       },
       watch: {
@@ -1538,12 +1059,29 @@
         }
       },
       mounted() {
-        document.getElementById("darkLight").addEventListener("click", () => {
-          this.toggleDarkMode();
-        });
+        // Global click handler to close customer results when clicking outside
+        document.addEventListener('click', this.handleClickOutside);
+
+        // Attach dark mode toggle only if the element exists. Store the handler
+        // reference so it can be removed when the component is destroyed.
+        const darkBtn = document.getElementById("darkLight");
+        if (darkBtn) {
+          this._darkLightHandler = () => { this.toggleDarkMode(); };
+          darkBtn.addEventListener("click", this._darkLightHandler);
+        }
+
         document.body.classList.toggle('dark', this.isDarkMode);
         this.fetchProducts(); // Load from API
         this.fetchCustomers(); // Load customers for selection
+      },
+      beforeDestroy() {
+        // Vue 2 lifecycle hook for cleanup
+        document.removeEventListener('click', this.handleClickOutside);
+        const darkBtn = document.getElementById("darkLight");
+        if (darkBtn && this._darkLightHandler) {
+          darkBtn.removeEventListener("click", this._darkLightHandler);
+          this._darkLightHandler = null;
+        }
       }
     });
   </script>

@@ -221,6 +221,10 @@ input, select {
         </select>
         <span class="error" v-if="errors.category">{{ errors.category }}</span>
 
+        <label>SKU (Leave blank for auto-generation)</label>
+        <input type="text" v-model="form.sku" placeholder="Enter SKU or leave blank for auto-generation" />
+        <span class="error" v-if="errors.sku">{{ errors.sku }}</span>
+
         <button type="submit">{{ form._id ? 'Update' : 'Add' }} Product</button>
         <button type="button" v-if="form._id" @click="resetForm"
             style="background:#aaa;margin-left:10px;">Cancel</button>
@@ -286,7 +290,8 @@ input, select {
                     _id: '',
                     name: '',
                     description: '',
-                    category: ''
+                    category: '',
+                    sku: ''
                 },
                 errors: {},
                 formError: '',
@@ -356,7 +361,28 @@ input, select {
                         this.errors.category = "Category is required";
                         valid = false;
                     }
+                    // Validate SKU format if provided
+                    if (this.form.sku && !/^[A-Za-z0-9-_]{3,}$/.test(this.form.sku)) {
+                        this.errors.sku = "SKU must be at least 3 characters and contain only letters, numbers, hyphens and underscores";
+                        valid = false;
+                    }
                     return valid;
+                },
+                generateSKU() {
+                    const name = this.form.name.trim();
+                    if (!name) return '';
+                    
+                    // Create base SKU from product name
+                    const baseSkuFromName = name
+                        .replace(/[^A-Za-z0-9]/g, '-') // Replace non-alphanumeric with hyphens
+                        .replace(/-+/g, '-') // Replace multiple hyphens with single
+                        .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+                        .toUpperCase()
+                        .slice(0, 20); // Limit length
+                        
+                    // Add random suffix for uniqueness
+                    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+                    return `${baseSkuFromName}-${randomSuffix}`;
                 },
                 async submitForm() {
                     if (!this.validateForm()) return;
@@ -367,14 +393,16 @@ input, select {
                             await axios.put(`${API_BASE}/products/${this.form._id}`, {
                                 name: this.form.name,
                                 description: this.form.description,
-                                category: this.form.category
+                                category: this.form.category,
+                                sku: this.form.sku || this.generateSKU()
                             });
                         } else {
                             // Create
                             await axios.post(`${API_BASE}/products`, {
                                 name: this.form.name,
                                 description: this.form.description,
-                                category: this.form.category
+                                category: this.form.category,
+                                sku: this.form.sku || this.generateSKU()
                             });
                         }
                         this.resetForm();
@@ -403,7 +431,7 @@ input, select {
                     }
                 },
                 resetForm() {
-                    this.form = { _id: '', name: '', description: '', category: '' };
+                    this.form = { _id: '', name: '', description: '', category: '', sku: '' };
                     this.formError = '';
                     this.errors = {};
                 }

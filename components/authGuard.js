@@ -2,6 +2,7 @@
   const currentPath = window.location.pathname.split('/').pop();
 
   const pagePermissions = {
+    'chairman.html':     ['chairman', 'admin'],
     'index.html':        ['admin', 'sales', 'inventory', 'warehouse', 'finance'],
     'approve.html':      ['admin', 'finance'],
     'category.html':     ['admin', 'sales', 'inventory', 'warehouse'],
@@ -20,7 +21,7 @@
     'store.html':        ['admin', 'sales', 'inventory', 'warehouse'],
     'user.html':         ['admin', 'finance'],
     'warehouse.html':    ['admin', 'inventory', 'warehouse'],
-    'welcome.html':      ['admin', 'sales', 'inventory', 'warehouse', 'finance']
+    'welcome.html':      ['admin', 'sales', 'inventory', 'warehouse', 'finance', 'chairman']
   };
 
   const userRole = localStorage.getItem('role');
