@@ -650,7 +650,7 @@
 
             const request = editingUserId
                 ? axios.put(`${API_BASE}/auth/user/${editingUserId}`, data)
-                : axios.post(`${API_BASE}/auth/user`, data);
+                : axios.post(`${API_BASE}/auth/register`, data);
 
             request.then(() => {
                 alert(editingUserId ? 'User updated' : 'User added');
