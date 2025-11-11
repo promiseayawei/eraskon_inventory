@@ -28,7 +28,7 @@ const CONFIG = {
         operations: { 
             'sale.html': { roles: ['admin', 'sales'], icon: 'bx-cart', label: 'Sales' },
             'shipping.html': { roles: ['admin', 'sales', 'warehouse'], icon: 'bx-send', label: 'Shipping' },
-            'inventory-check.html': { roles: ['admin', 'inventory', 'warehouse'], icon: 'bx-clipboard', label: 'Inventory Check' }
+        //     'inventory-check.html': { roles: ['admin', 'inventory', 'warehouse'], icon: 'bx-clipboard', label: 'Inventory Check' }
         }
     }
 };
@@ -50,11 +50,15 @@ document.write(`
     @import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
 
     /* BASE STYLES */
+    html, body {
+      height: 100%;
+      margin: 0;
+  }
     .sidebar {
       position: fixed;
       top: 0;
       left: 0;
-      height: 100vh;
+      height: 100%;
       width: 260px;
       background: #fff;
       border-right: 1px solid #e5e7eb;

@@ -11,12 +11,33 @@
 body {
   min-height: 100vh;
   display: flex;
+  /* Use column direction to stack logo/title above the container */
+  flex-direction: column; 
   align-items: center;
   justify-content: center;
-  background: #0e1652
-;
+  background: #0e1652;
   padding: 30px;
 }
+
+/* New/Adjusted Styles for External Header (Logo & H1) */
+.logo-header {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    margin-bottom: 20px; /* Space between logo/header and form container */
+    color: #e2dcdc; /* Light text color to match the container background */
+    text-align: center;
+}
+.logo-header img {
+    height: 3.5em; /* Adjusted size for the external logo */
+    width: 3.5em;
+}
+.logo-header h1 {
+    font-size: 2em;
+    font-weight: 600;
+    margin: 0;
+}
+
 
 .container {
   position: relative;
@@ -24,8 +45,7 @@ body {
   width: 100%;
   --card-bg: #e2dcdc;
   background: #e2dcdc;
-;
-  padding: 40px 30px;
+  padding: 40px 40px;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   perspective: 2700px;
 }
@@ -35,7 +55,7 @@ body {
   top: 0;
   left: 50%;
   height: 100%;
-  width: 50%;
+  width: 50%; 
   z-index: 98;
   transition: all 1s ease;
   transform-origin: left;
@@ -89,8 +109,7 @@ body {
   height: 100%;
   width: 100%;
   opacity: 0.5;
-  background: #0e1652
-;
+  background: #0e1652;
 }
 
 .cover .text .text-1,
@@ -99,7 +118,6 @@ body {
   font-size: 26px;
   font-weight: 600;
   color: #e2dcdc;
-;
   text-align: center;
 }
 
@@ -112,7 +130,6 @@ body {
   height: 100%;
   width: 100%;
   background: #e2dcdc;
-;
 }
 
 .container .form-content {
@@ -128,25 +145,29 @@ body {
 
 .forms .form-content .title {
   position: relative;
-  font-size: 24px;
-  font-weight: 500;
-  color: #333;
+  font-size: 26px; /* Slightly increased size */
+  font-weight: 700; /* Bolder font for professionalism */
+  color: #222; /* Darker than #333 for better contrast */
+  text-align: center; 
+  margin-bottom: 20px; /* Add margin where the underline used to be */
 }
 
+/* REMOVED: The following rules that created the dash/underline are removed.
 .forms .form-content .title:before {
   content: '';
   position: absolute;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%); 
   bottom: 0;
   height: 3px;
   width: 25px;
-  background: #0e1652
-;
+  background: #0e1652;
 }
 
 .forms .signup-form .title:before {
   width: 20px;
 }
+*/
 
 .forms .form-content .input-boxes {
   margin-top: 30px;
@@ -166,7 +187,7 @@ body {
   width: 100%;
   outline: none;
   border: none;
-  padding: 0 30px;
+  padding: 0 30px 0 45px;
   font-size: 16px;
   font-weight: 500;
   border-bottom: 2px solid rgba(0, 0, 0, 0.2);
@@ -174,18 +195,18 @@ body {
 }
 
 .form-content .input-box .i{
-  margin-left: 5px;
+  margin-left: 0; 
 }
+
 .form-content .input-box input:focus,
 .form-content .input-box input:valid {
-  border-color: #0e1652
-;
+  border-color: #0e1652;
 }
 
 .form-content .input-box i {
   position: absolute;
-  color: #0e1652
-;
+  left: 10px;
+  color: #0e1652;
   font-size: 17px;
 }
 
@@ -205,16 +226,12 @@ body {
 
 .forms .form-content .button {
   color: #e2dcdc;
-;
   margin-top: 40px;
 }
 
 .forms .form-content .button input {
   color: #e1e2dc;
-;
   background: #0e1652;
-
-;
   border-radius: 6px;
   padding: 0;
   cursor: pointer;
@@ -223,14 +240,10 @@ body {
 
 .forms .form-content .button input:hover {
   background: #4254dc;
-
-;
 }
 
 .forms .form-content label {
   color: #4254dc;
-
-;
   cursor: pointer;
 }
 

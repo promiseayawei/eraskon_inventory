@@ -5,23 +5,30 @@
   <meta charset="UTF-8">
   <title>Login and Activation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Spinner Loader -->
   <script src="components/spinner.js"></script>
-
-  <!-- Stylesheets -->
   <link rel="stylesheet" href="assets/css/style_auth.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
+  <script src="assets/js/metaManager.js"></script>
+  <script>
+    setMeta({
+      title: "Eraskon | Login & Activation",
+      desc: "Access the Eraskon Inventory portal to login or activate your account.",
+      image: "assets/images/eraskon_logo.webp",
+      favicon: "assets/images/eraskon_favicon.png",
+      keywords: "Inventory, Warehouse, Stock, Sales, Login, Activation"
+    });
+  </script>
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
+      flex-direction: column
     }
 
+    /* --- REFINEMENT 1: Container and Forms Margin --- */
     .container {
       flex: 1;
       display: flex;
@@ -29,12 +36,12 @@
       align-items: center;
       justify-content: center;
       border-radius: 15px;
-      border-style: solid;
-      border-width: 15px;
-      border-color: transparent;
+      /* Removed transparent border to let box-shadow be cleaner */
       padding: 20px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      margin: 1em auto;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, .2); /* Slightly deeper shadow */
+      margin: 3em auto 1em; /* Increased top margin for balance */
+      max-width: 720px; /* Optional: Set max width for better desktop balance */
+      width: 100%;
     }
 
     .logo-header {
@@ -43,73 +50,148 @@
       gap: 1em;
       margin-top: 2em;
       color: #f3f0f0;
+      text-align: center;
+      padding: 0 10px;
     }
 
     .logo-header img {
       height: 4em;
       width: 4em;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .logo-header h1 {
+      font-size: 2em;
+      margin: 0;
     }
 
     .message-box {
       display: none;
-      margin-bottom: 1em;
+      /* REFINEMENT 2: Tightened message box margin for better vertical rhythm */
+      margin-bottom: 0.8em; 
       padding: 1em 1.5em;
       border-radius: 8px;
       max-width: 400px;
       font-weight: 600;
-      text-align: center;
+      text-align: center
     }
 
     .message-box.success {
-      background-color: #d4edda;
+      background: #d4edda;
       color: #155724;
-      border: 1px solid #c3e6cb;
+      border: 1px solid #c3e6cb
     }
 
     .message-box.error {
-      background-color: #f8d7da;
+      background: #f8d7da;
       color: #721c24;
-      border: 1px solid #f5c6cb;
+      border: 1px solid #f5c6cb
     }
-
+    
+    /* REFINEMENT 3: Input Box Spacing and Height */
+    .input-box {
+        margin: 1.2em 0; /* Increased margin between inputs for better separation */
+        position: relative;
+    }
+    .input-box i {
+      /* REFINEMENT 4: Position icon absolute for better input alignment */
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999; /* Greyed out icon color */
+      z-index: 2;
+      margin-left: 4; /* Remove the old margin */
+      font-size: 1.1em;
+    }
+    
     .input-box input {
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      padding: 10px;
+      border-radius: 10px; /* Slightly tighter radius */
+      border: 1px solid #ddd; /* Lighter, cleaner border */
+      padding: 12px 12px 12px 40px; /* Added left padding for icon, increased vertical padding for height */
       outline: none;
       font-size: 1em;
+      height: 48px; /* Standardized professional input height */
       width: 100%;
       box-sizing: border-box;
-      transition: border-color 0.3s ease;
+      transition: border-color .3s, box-shadow .3s;
+      background-color: #f9f9f9; /* Subtle off-white background for input */
     }
 
     .input-box input:focus {
-      border-color: #007bff;
-      box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+      border-color: #0056b3; /* Darker blue focus */
+      box-shadow: 0 0 0 2px rgba(0, 86, 179, .2); /* Cleaner focus ring */
+      background-color: #fff;
     }
-
-    .input-box i.fas,
-    .input-box i.fa {
-      margin-left: 10px;
+    
+    /* REFINEMENT 5: Submit Button Height and Styling */
+    .button.input-box {
+        margin-top: 2em; /* Extra margin above button */
+    }
+    .button input[type="submit"] {
+        background-color: #007bff;
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 12px 20px;
+        height: 50px; /* Standardized button height */
+        border: none;
+        border-radius: 10px;
+        transition: background-color 0.3s;
+    }
+    .button input[type="submit"]:hover {
+        background-color: #0056b3;
     }
 
     footer {
       text-align: center;
       padding: 1em 0;
-      font-size: 0.9em;
-      color: #f1f1f1;
+      font-size: .9em;
+      color: #f1f1f1
+    }
+
+    /* --- MOBILE-FRIENDLY IMPROVEMENTS (kept intact) --- */
+    @media (max-width: 600px) {
+        .logo-header {
+            margin-top: 1.5em;
+            flex-direction: row;
+            align-items: center;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .logo-header img {
+            height: 2.5em;
+            width: 2.5em;
+        }
+
+        .logo-header h1 {
+            font-size: 1.2em;
+            white-space: normal;
+            line-height: 1.2;
+            max-width: 70%;
+        }
+
+        .container {
+            width: calc(100% - 20px);
+            margin: 1em 10px;
+            padding: 10px;
+        }
+
+        .forms {
+            width: 100%;
+        }
     }
   </style>
 </head>
 
 <body>
   <script src="components/uiComponents.js"></script>
-  <!-- Config & Axios -->
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="assets/js/utils.js"></script>
 
-  <!-- Logo Header -->
   <div class="logo-header animated delay-1">
     <img src="assets/images/eraskon_logo.webp" alt="Eraskon Logo">
     <h1>Eraskon Inventory Management Solution</h1>
@@ -117,195 +199,85 @@
 
   <div class="container animated delay-2">
     <input type="checkbox" id="flip">
-
-    <!-- Cover Images -->
     <div class="cover">
       <div class="front">
         <img src="assets/images/erasko_gold.png" alt="">
-        <div class="text">
-          <span class="text-1">Eraskon <br> Inventory</span>
-          <span class="text-2">Ready Let's go</span>
+        <div class="text"><span class="text-1">Eraskon <br> Inventory</span><span class="text-2">Ready Let's go</span>
         </div>
       </div>
       <div class="back">
         <img class="backImg" src="assets/images/eraskon image2.jpeg" alt="">
-        <div class="text">
-          <span class="text-1">Inventory Systems<br> Automation</span>
-          <span class="text-2">Let's get started</span>
-        </div>
+        <div class="text"><span class="text-1">Inventory Systems<br> Automation</span><span class="text-2">Let's get
+            started</span></div>
       </div>
     </div>
 
-    <!-- Forms Section -->
     <div class="forms animated delay-3">
-      <div id="loginMessageBox" class="message-box"></div>
+      
       <div class="form-content">
-
-        <!-- Login Form -->
         <div class="login-form">
           <div class="title">Login</div>
           <form>
             <div class="input-boxes">
-              <div class="input-box">
-                <i class="fas fa-envelope"></i>
-                <input type="text" placeholder="Enter your email" required autocomplete="email">
-              </div>
-              <div class="input-box">
-                <i class="fas fa-lock"></i>
-                <input type="password" placeholder="Enter your password" required autocomplete="current-password">
-              </div>
+              <div class="input-box"><i class="fas fa-envelope"></i><input type="text" placeholder="Enter your email"
+                  required autocomplete="email"></div>
+              <div class="input-box"><i class="fas fa-lock"></i><input type="password" placeholder="Enter your password"
+                  required autocomplete="current-password"></div>
               <div class="text"><a href="#">Forgot password?</a></div>
-              <div class="button input-box">
-                <input type="submit" value="Submit">
-              </div>
-              <div class="text sign-up-text">
-                Don't have login credentials? <label for="flip">Activate Account</label>
+              <div class="button input-box"><input type="submit" value="Submit"></div>
+              <div class="text sign-up-text">Don't have login credentials? <label for="flip">Activate Account</label>
               </div>
             </div>
           </form>
         </div>
-
-        <!-- Signup Form -->
         <div class="signup-form">
           <div id="signupMessageBox" class="message-box"></div>
           <div class="title">Signup Account</div>
           <form>
             <div class="input-boxes">
-              <div class="input-box">
-                <i class="fas fa-envelope"></i>
-                <input type="text" placeholder="Enter your email" required autocomplete="email">
-              </div>
-              <div class="input-box">
-                <i class="fas fa-user"></i>
-                <input type="text" placeholder="First name" required autocomplete="given-name">
-              </div>
-              <div class="input-box">
-                <i class="fas fa-user"></i>
-                <input type="text" placeholder="Last name" required autocomplete="family-name">
-              </div>
-              <div class="input-box">
-                <i class="fas fa-lock"></i>
-                <input type="text" placeholder="Enter your password" required autocomplete="new-password">
-              </div>
-              <div class="input-box">
-                <i class="fas fa-lock"></i>
-                <input type="password" placeholder="Confirm your password" required autocomplete="new-password">
-              </div>
-              <div class="button input-box">
-                <input type="submit" value="Submit">
-              </div>
-              <div class="text sign-up-text">
-                Already have an account? <label for="flip">Login now</label>
-              </div>
+              <div class="input-box"><i class="fas fa-envelope"></i><input type="text" placeholder="Enter your email"
+                  required autocomplete="email"></div>
+              <div class="input-box"><i class="fas fa-user"></i><input type="text" placeholder="First name" required
+                  autocomplete="given-name"></div>
+              <div class="input-box"><i class="fas fa-user"></i><input type="text" placeholder="Last name" required
+                  autocomplete="family-name"></div>
+              <div class="input-box"><i class="fas fa-lock"></i><input type="text" placeholder="Enter your password"
+                  required autocomplete="new-password"></div>
+              <div class="input-box"><i class="fas fa-lock"></i><input type="password"
+                  placeholder="Confirm your password" required autocomplete="new-password"></div>
+              <div class="button input-box"><input type="submit" value="Submit"></div>
+              <div class="text sign-up-text">Already have an account? <label for="flip">Login now</label></div>
             </div>
+            <div id="loginMessageBox" class="message-box"></div>
           </form>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="forms animated delay-4">
-    &copy; 2025 Eraskon Inventory. All rights reserved || Developed by
-    <a href="https://github.com/ayaweisoft">Ayaweisoft</a>
-  </footer>
+  <footer class="forms animated delay-4">&copy; 2025 Eraskon Inventory. All rights reserved || Developed by <a
+      href="https://github.com/ayaweisoft">Ayaweisoft</a></footer>
 
-  <!-- Logic -->
   <script>
-    const API_BASE = window.BASE_URL;
-
-    function showMessage(id, message, type = "success") {
-      const box = document.getElementById(id);
-      box.textContent = message;
-      box.className = `message-box ${type}`;
-      box.style.display = "block";
-      setTimeout(() => box.style.display = "none", 5000);
-    }
-
-    // LOGIN
-    document.querySelector(".login-form form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const email = e.target.querySelector("input[type='text']").value;
-      const password = e.target.querySelector("input[type='password']").value;
-
-      axios.post(`${API_BASE}/auth/login`, { email, password })
-        .then(response => {
-          const { token, user } = response.data;
-          localStorage.setItem('token', token);
-          localStorage.setItem('email', user.email);
-          localStorage.setItem('role', user.role);
-          localStorage.setItem('name', `${user.firstName} ${user.lastName}`);
-          localStorage.setItem('firstName', user.firstName);
-          localStorage.setItem('lastName', user.lastName);
-          localStorage.setItem('userId', user._id);
-          localStorage.setItem(
-            'warehouse',
-            (user.warehouse && typeof user.warehouse === 'object' && user.warehouse.name)
-              ? user.warehouse.name
-              : (typeof user.warehouse === 'string' ? user.warehouse : '')
-          );
-          showMessage("loginMessageBox", "Login successful!", "success");
-
-          const redirectMap = {
-            admin: "stats.html",
-            inventory: "stock-movement.html",
-            sales: "store.html",
-            warehouse: "warehouse.html",
-            finance: "approve.html",
-            chairman: "chairman.html"
-          };
-          const target = redirectMap[user.role] || "welcome.html";
-          setTimeout(() => window.location.href = target, 1500);
-        })
-        .catch(err => {
-          const msg = err.response?.data?.error || "Login failed.";
-          showMessage("loginMessageBox", msg, "error");
-        });
+    const API_BASE = window.BASE_URL, loginForm = document.querySelector(".login-form form"), signupForm = document.querySelector(".signup-form form");
+    const setFormState = (f, l) => { const s = f.querySelector('input[type="submit"]'); s.disabled = l; s.value = l ? "Loading..." : "Submit"; l ? window.showSpinner && showSpinner() : window.hideSpinner && hideSpinner() };
+    const showMessage = (id, m, t = "success") => { const b = document.getElementById(id); b.textContent = m; b.className = `message-box ${t}`; b.style.display = "block"; setTimeout(() => b.style.display = "none", 5e3) };
+    loginForm.addEventListener("submit", e => {
+      e.preventDefault(); setFormState(loginForm, 1); const [email, pwd] = [...e.target.querySelectorAll("input")].map(i => i.value);
+      axios.post(`${API_BASE}/auth/login`, { email, password: pwd }).then(r => {
+        setFormState(loginForm, 0); const { token, user } = r.data; Object.entries({ token, email: user.email, role: user.role, name: `${user.firstName} ${user.lastName}`, firstName: user.firstName, lastName: user.lastName, userId: user._id, warehouse: user.warehouse?.name || user.warehouse || "" }).forEach(([k, v]) => localStorage.setItem(k, v)); showMessage("loginMessageBox", "Login successful!", "success");
+        const m = { admin: "stats.html", inventory: "stock-movement.html", sales: "store.html", warehouse: "warehouse.html", finance: "approve.html", chairman: "chairman.html" }; setTimeout(() => location.href = m[user.role] || "welcome.html", 1500);
+      }).catch(e => { setFormState(loginForm, 0); showMessage("loginMessageBox", e.response?.data?.error || "Login failed.", "error") });
     });
-
-    // REGISTER
-    document.querySelector(".signup-form form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const inputs = e.target.querySelectorAll("input");
-      const email = inputs[0].value;
-      const firstName = inputs[1].value;
-      const lastName = inputs[2].value;
-      const password = inputs[3].value;
-      const confirmPassword = inputs[4].value;
-
-      if (password !== confirmPassword) {
-        showMessage("signupMessageBox", "Passwords do not match", "error");
-        return;
-      }
-
-      axios.post(`${API_BASE}/auth/register`, { email, firstName, lastName, password })
-        .then(res => showMessage("signupMessageBox", res.data.message || "Account activated!", "success"))
-        .catch(err => {
-          const msg = err.response?.data?.error || "Activation failed.";
-          showMessage("signupMessageBox", msg, "error");
-        });
+    signupForm.addEventListener("submit", e => {
+      e.preventDefault(); setFormState(signupForm, 1); const [a, b, c, d, g] = [...e.target.querySelectorAll("input")].map(i => i.value);
+      if (d !== g) return setFormState(signupForm, 0), showMessage("signupMessageBox", "Passwords do not match", "error");
+      axios.post(`${API_BASE}/auth/register`, { email: a, firstName: b, lastName: c, password: d }).then(r => { setFormState(signupForm, 0); showMessage("signupMessageBox", r.data.message || "Account activated!", "success") }).catch(e => { setFormState(signupForm, 0); showMessage("signupMessageBox", e.response?.data?.error || "Activation failed.", "error") });
     });
-
-    // FORGOT PASSWORD
-    document.querySelector(".login-form .text a").addEventListener("click", function (e) {
-      e.preventDefault();
-      const email = prompt("Enter your email address:");
-      if (email) {
-        axios.post(`${API_BASE}/auth/forgot-password`, { email })
-          .then(res => showMessage("loginMessageBox", res.data.message || "Password reset link sent!", "success"))
-          .catch(err => {
-            const msg = err.response?.data?.error || "Password reset failed.";
-            showMessage("loginMessageBox", msg, "error");
-          });
-      }
-    });
-
-    // Auto-hide spinner on page load
-    window.addEventListener("load", () => {
-      if (window.hideSpinner) window.hideSpinner();
-    });
+    document.querySelector(".login-form .text a").addEventListener("click", e => { e.preventDefault(); const email = prompt("Enter your email address:"); if (email) { showSpinner && showSpinner(); axios.post(`${API_BASE}/auth/forgot-password`, { email }).then(r => { hideSpinner && hideSpinner(); showMessage("loginMessageBox", r.data.message || "Password reset link sent!", "success") }).catch(err => { hideSpinner && hideSpinner(); showMessage("loginMessageBox", err.response?.data?.error || "Password reset failed.", "error") }) } });
+    window.addEventListener("load", () => hideSpinner && hideSpinner());
   </script>
+
 </body>
 
 </html>
