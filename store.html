@@ -15,7 +15,16 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
+   <script src="assets/js/metaManager.js"></script>
+  <script>
+    setMeta({
+      title: "Eraskon | Store",
+      desc: "Access the Eraskon Inventory portal to manage the store.",
+      image: "assets/images/eraskon_logo.webp",
+      favicon: "assets/images/eraskon_logo.webp",
+      keywords: "Inventory, Warehouse, Stock, Store"
+    });
+  </script>
 </head>
 
 
@@ -31,321 +40,273 @@
   <!-- Load Sidebar -->
   <script src="components/sidebar.js"></script>
 
-  <!-- Main Content -->
-  <main id="app" class="main-content">
-    <section class="product-page">
-      <h2 style="margin: 20px 0;">Products</h2>
-      <div class="search-box">
-        <input type="text" v-model="searchTerm" placeholder="Search products...">
-      </div>
+ <main id="app" class="main-content">
+  <section class="product-page">
+    <h2 style="margin: 20px 0;">Products</h2>
+    <div class="search-box">
+      <input type="text" v-model="searchTerm" placeholder="Search products...">
+    </div>
 
-      <!-- Add this toggle button above your product grid -->
-      <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
-        <button :class="{active: productView === 'card'}" @click="productView = 'card'"
-          style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer;">
-          Card View
-        </button>
-        <button :class="{active: productView === 'list'}" @click="productView = 'list'"
-          style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #f3f4f6; color: #2563eb; font-weight: 600; cursor: pointer;">
-          List View
-        </button>
-      </div>
+    <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
+      <button :class="{active: productView === 'card'}" @click="productView = 'card'"
+        style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer;">
+        Card View
+      </button>
+      <button :class="{active: productView === 'list'}" @click="productView = 'list'"
+        style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #f3f4f6; color: #2563eb; font-weight: 600; cursor: pointer;">
+        List View
+      </button>
+    </div>
 
-      <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
-        <!-- Product Grid -->
-        <div v-if="productView === 'card'" class="product-grid" style="flex: 1;">
-          <div class="product-card" v-for="product in filteredProducts" :key="product.id">
-            <img :src="product.image" :alt="product.name" />
-            <div class="product-header">
-              <h3>{{ product.name }}</h3>
-              <p>{{ product.description }}</p>
-            </div>
-            <div class="variant-selector">
-              <label>Variant:</label>
-              <select v-model="product.selectedVariant">
-                <option v-for="variant in product.variants" :value="variant">
-                  {{ variant.size }} - ₦{{ variant.price }} ({{ variant.stock }} available)
-                </option>
-              </select>
-            </div>
-            <div v-if="product.batchTracking && product.batches && product.batches.length">
-              <label>Select Batch:</label>
-              <select v-model="product.selectedBatch">
-                <option v-for="batch in product.batches" :value="batch">
-                  {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
-                </option>
-              </select>
-            </div>
-            <div class="quantity-control">
-              <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
-              <input type="number" v-model.number="product.quantity" min="1" />
-              <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
-            </div>
-            <p>Stock: {{ product.selectedVariant.stock }}</p>
-            <button class="order-btn" @click="addToCart(product)">Order</button>
+    <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+      
+      <div v-if="productView === 'card'" class="product-grid" style="flex: 1;">
+        <div class="product-card" v-for="product in filteredProducts" :key="product.id">
+          <img :src="product.image" :alt="product.name" />
+          <div class="product-header">
+            <h3>{{ product.name }}</h3>
+            <p>{{ product.description }}</p>
           </div>
+          <div class="variant-selector">
+            <label>Variant:</label>
+            <select v-model="product.selectedVariant">
+              <option v-for="variant in product.variants" :value="variant">
+                {{ variant.size }} - ₦{{ variant.price }} ({{ variant.stock }} available)
+              </option>
+            </select>
+          </div>
+          <div v-if="product.batchTracking && product.batches && product.batches.length">
+            <label>Select Batch:</label>
+            <select v-model="product.selectedBatch">
+              <option v-for="batch in product.batches" :value="batch">
+                {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
+              </option>
+            </select>
+          </div>
+          <div class="quantity-control">
+            <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
+            <input type="number" v-model.number="product.quantity" min="1" />
+            <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
+          </div>
+          <p>Stock: {{ product.selectedVariant.stock }}</p>
+          <button class="order-btn" @click="addToCart(product); drawer.invoice = true">Order</button>
         </div>
+      </div>
 
-        <div v-else class="product-list-view" style="flex: 1;">
-          <table class="product-list-table">
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th>Name & Description</th>
-                <th>Variant</th>
-                <th>Batch</th>
-                <th>Stock</th>
-                <th>Qty</th>
-                <th>Order</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="product in filteredProducts" :key="product.id">
-                <td><img :src="product.image" :alt="product.name"
-                    style="width:60px; height:60px; object-fit:cover; border-radius:8px;" /></td>
-                <td>
-                  <strong>{{ product.name }}</strong>
-                  <div style="font-size:0.95em;">{{ product.description }}</div>
-                </td>
-                <td>
-                  <select v-model="product.selectedVariant">
-                    <option v-for="variant in product.variants" :value="variant">
-                      {{ variant.size }} - ₦{{ variant.price }} ({{ variant.stock }} available)
+      <div v-else class="product-list-view" style="flex: 1;">
+        <table class="product-list-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name & Description</th>
+              <th>Variant</th>
+              <th>Batch</th>
+              <th>Stock</th>
+              <th>Qty</th>
+              <th>Order</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="product in filteredProducts" :key="product.id">
+              <td data-label="Image:"><img :src="product.image" :alt="product.name"
+                  style="width:60px; height:60px; object-fit:cover; border-radius:8px;" /></td>
+              <td data-label="Name:">
+                <strong>{{ product.name }}</strong>
+                <div style="font-size:0.95em;">{{ product.description }}</div>
+              </td>
+              <td data-label="Variant:">
+                <select v-model="product.selectedVariant">
+                  <option v-for="variant in product.variants" :value="variant">
+                    {{ variant.size }} - ₦{{ variant.price }} ({{ variant.stock }} available)
+                  </option>
+                </select>
+              </td>
+              <td data-label="Batch:">
+                <div v-if="product.batchTracking && product.batches && product.batches.length">
+                  <select v-model="product.selectedBatch">
+                    <option v-for="batch in product.batches" :value="batch">
+                      {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
                     </option>
                   </select>
-                </td>
-                <td>
-                  <div v-if="product.batchTracking && product.batches && product.batches.length">
-                    <select v-model="product.selectedBatch">
-                      <option v-for="batch in product.batches" :value="batch">
-                        {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
-                      </option>
-                    </select>
-                  </div>
-                  <div v-else>-</div>
-                </td>
-                <td>{{ product.selectedVariant.stock }}</td>
-                <td>
-                  <div class="quantity-control" style="margin:0;">
-                    <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
-                    <input type="number" v-model.number="product.quantity" min="1" style="width:50px;" />
-                    <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
-                  </div>
-                </td>
-                <td>
-                  <button class="order-btn" @click="addToCart(product)">Order</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                </div>
+                <div v-else>-</div>
+              </td>
+              <td data-label="Stock:">{{ product.selectedVariant.stock }}</td>
+              <td data-label="Quantity:">
+                <div class="quantity-control" style="margin:0;">
+                  <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
+                  <input type="number" v-model.number="product.quantity" min="1" style="width:50px;" />
+                  <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
+                </div>
+              </td>
+              <td data-label="Action:">
+                <button class="order-btn" @click="addToCart(product); drawer.invoice = true">Order</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <!-- Invoice Panel -->
-        <div class="drawer-panel animate__animated animate__fadeInRight invoice-drawer" v-if=" cart.length">
-          <div class="invoice-header"
-            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-            <h3 style="margin: 0;">Invoice Summary</h3>
-            <span class="cart-count">
-              {{ cart.length }}
-            </span>
+      <div v-if="showAddCustomerModal" class="modal-overlay">
+        <div class="modal-content">
+          <h3>Add Customer</h3>
+          <input v-model="newCustomer.name" placeholder="Customer Name" required>
+          <input v-model="newCustomer.email" placeholder="Email">
+          <input v-model="newCustomer.phone" placeholder="Phone">
+          <input v-model="newCustomer.company" placeholder="Company">
+          <input v-model="newCustomer.taxId" placeholder="Tax ID">
+          <div style="margin-top: 1rem;">
+            <button @click="addCustomer">Save</button>
+            <button @click="showAddCustomerModal = false">Cancel</button>
           </div>
-          <ul class="invoice-list">
-            <li v-for="(item, index) in cart" :key="index" class="invoice-item">
-              <div>
-                <strong>{{ item.name }}</strong>
-                <span class="variant-size">({{ item.variant.size }})</span>
-                <span class="qty">x{{ item.quantity }}</span>
-                <span class="item-total">₦{{ item.variant.price * item.quantity }}</span>
-              </div>
-              <button @click="removeFromCart(index)" class="remove-btn" aria-label="Remove item">
-                <i class="fa fa-trash"></i>
-              </button>
-            </li>
-          </ul>
-          <div style="margin-bottom: 1em;">
-            <label for="paymentMethod"><strong>Payment Method:</strong></label>
-            <select id="paymentMethod" v-model="paymentMethod" style="width: 100%; margin-top: 4px;">
-              <option v-for="pm in paymentMethods" :value="pm.value">{{ pm.label }}</option>
-            </select>
-          </div>
-          <div class="invoice-totals">
-            <div><span>Subtotal:</span><span>₦{{ subtotal }}</span></div>
-            <div><span>Discount:</span><span class="discount">-₦{{ discountValue }}</span></div>
-            <div><span>Tax:</span><span>₦{{ taxValue }}</span></div>
-            <div class="total-row"><span>Total:</span><span class="total">₦{{ cartTotal }}</span></div>
-          </div>
-          <div class="invoice-actions">
-            <button @click="generateInvoice" class="action-btn primary">Generate Invoice</button>
-            <button @click="generateInvoicePDF" class="action-btn">Generate PDF Invoice</button>
-            <button @click="postOrder" class="action-btn success">Submit Order</button>
-            <!-- Close button in footer -->
-            <button @click="drawer.invoice = false" class="action-btn" style="margin-left:auto;">Close</button>
-
-
-          </div>
-        </div>
-
-
-
-        <!-- Modal for adding a new customer -->
-        <div v-if="showAddCustomerModal" class="modal-overlay">
-          <div class="modal-content">
-            <h3>Add Customer</h3>
-            <input v-model="newCustomer.name" placeholder="Customer Name" required>
-            <input v-model="newCustomer.email" placeholder="Email">
-            <input v-model="newCustomer.phone" placeholder="Phone">
-            <input v-model="newCustomer.company" placeholder="Company">
-            <input v-model="newCustomer.taxId" placeholder="Tax ID">
-            <div style="margin-top: 1rem;">
-              <button @click="addCustomer">Save</button>
-              <button @click="showAddCustomerModal = false">Cancel</button>
-            </div>
-          </div>
-        </div>
-
-
-        <!-- Add these toggles/buttons somewhere in your template, e.g. top right of your main-content -->
-        <!-- Vertically arranged, curved drawer toggle buttons -->
-        <div id="drawer-toggle" @click="drawerMenuOpen = !drawerMenuOpen" :class="{ open: drawerMenuOpen }"
-          style="position: fixed; top: 100px; right: 24px; z-index: 1400; display: flex; flex-direction: column; align-items: flex-end;">
-          <div>
-            <i class="fa" :class="drawerMenuOpen ? 'fa-times' : 'fa-bars'"></i>
-          </div>
-          <transition-group name="drawer-btns" tag="div"
-            style="display: flex; flex-direction: column; align-items: flex-end; margin-top: 10px;">
-            <button v-if="drawerMenuOpen" key="invoice" @click.stop="openDrawer('invoice')" class="drawer-fab-btn">
-              <i class="fa fa-file-invoice"></i> Invoice
-            </button>
-            <button v-if="drawerMenuOpen" key="customer" @click.stop="openDrawer('customer')" class="drawer-fab-btn">
-              <i class="fa fa-user"></i> Customer Info
-            </button>
-            <button v-if="drawerMenuOpen" key="discount" @click.stop="openDrawer('discount')" class="drawer-fab-btn">
-              <i class="fa fa-percent"></i> Discount/Tax
-            </button>
-          </transition-group>
-        </div>
-
-        <!-- Invoice Drawer -->
-        <div class="drawer-panel animate__animated animate__fadeInRight invoice-drawer"
-          v-if="drawer.invoice && cart.length">
-          <div class="invoice-header"
-            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-            <h3 style="margin: 0;">Invoice Summary</h3>
-            <span class="cart-count">
-              {{ cart.length }}
-            </span>
-            <button @click="drawer.invoice = false" class="remove-btn" style="margin-left:10px;"><i
-                class="fa fa-times"></i></button>
-          </div>
-          <ul class="invoice-list">
-            <li v-for="(item, index) in cart" :key="index" class="invoice-item">
-              <div>
-                <strong>{{ item.name }}</strong>
-                <span class="variant-size">({{ item.variant.size }})</span>
-                <span class="qty">x{{ item.quantity }}</span>
-                <span class="item-total">₦{{ item.variant.price * item.quantity }}</span>
-              </div>
-              <button @click="removeFromCart(index)" class="remove-btn" aria-label="Remove item">
-                <i class="fa fa-trash"></i>
-              </button>
-            </li>
-          </ul>
-          <div class="invoice-totals">
-            <div><span>Subtotal:</span><span>₦{{ subtotal }}</span></div>
-            <div><span>Discount:</span><span class="discount">-₦{{ discountValue }}</span></div>
-            <div><span>Tax:</span><span>₦{{ taxValue }}</span></div>
-            <div class="total-row"><span>Total:</span><span class="total">₦{{ cartTotal }}</span></div>
-          </div>
-          <div class="invoice-actions">
-            <button @click="generateInvoice" class="action-btn primary">Generate Invoice</button>
-            <button @click="generateInvoicePDF" class="action-btn">Generate PDF Invoice</button>
-            <button @click="postOrder" class="action-btn success">Submit Order</button>
-
-            <!-- Close button in footer -->
-            <button @click="drawer.invoice = false" class="action-btn" style="margin-left:auto;">Close</button>
-          </div>
-        </div>
-
-        <!-- Customer Info Drawer -->
-        <div class="drawer-panel animate__animated animate__fadeInRight customer-info-drawer" v-if="drawer.customer">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <h3>Customer Information</h3>
-            <button @click="drawer.customer = false" class="remove-btn"><i class="fa fa-times"></i></button>
-          </div>
-
-          <label for="customerSearch">Select Customer:</label>
-          <div style="position: relative;" ref="customerSearchContainer">
-            <input id="customerSearch" type="text" v-model="customerSearchQuery" @focus="showCustomerResults = true"
-              @keydown.esc="showCustomerResults = false" placeholder="Start typing to search or select customer..."
-              style="width: 100%; padding: 8px; box-sizing: border-box;" autocomplete="off" role="combobox"
-              aria-autocomplete="list" :aria-expanded="showCustomerResults" aria-haspopup="true" />
-
-            <div v-if="showCustomerResults" class="customer-search-results" style="
-            position: absolute;
-            width: 100%;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            background: white;
-            z-index: 10;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            " role="listbox">
-              <div v-if="!customerSearchQuery && !customers.length" style="padding: 10px; color: #999;">
-                No customers available.
-              </div>
-
-              <div @click="selectCustomer('new')" class="search-result-item"
-                style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; background-color: #f5f5f5;"
-                role="option">
-                + Add New Customer
-              </div>
-
-              <div v-for="c in filteredCustomers" :key="c._id" @click="selectCustomer(c)" class="search-result-item"
-                :class="{ 'selected-result': selectedCustomerId === c._id }" style="padding: 10px; cursor: pointer;"
-                role="option" :aria-selected="selectedCustomerId === c._id">
-                {{ c.name }} ({{ c.email || c.phone || 'No contact' }})
-              </div>
-
-              <div v-if="customerSearchQuery && filteredCustomers.length === 0" style="padding: 10px; color: #999;">
-                No results found for "{{ customerSearchQuery }}".
-              </div>
-            </div>
-          </div>
-          <div v-if="selectedCustomer">
-            <p><strong>Name:</strong> {{ selectedCustomer.name }}</p>
-            <p><strong>Email:</strong> {{ selectedCustomer.email }}</p>
-            <p><strong>Phone:</strong> {{ selectedCustomer.phone }}</p>
-            <p><strong>Company:</strong> {{ selectedCustomer.company }}</p>
-            <p><strong>Tax ID:</strong> {{ selectedCustomer.taxId }}</p>
-          </div>
-
-          <button @click="drawer.customer = false" class="action-btn" style="margin-left:auto;">Close</button>
-        </div>
-        <!-- Discount & Tax Drawer -->
-        <div class="drawer-panel animate__animated animate__fadeInRight discount-tax-drawer" v-if="drawer.discount">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <h3>Discount & Tax</h3>
-            <button @click="drawer.discount = false" class="remove-btn"><i class="fa fa-times"></i></button>
-          </div>
-          <div style="margin-bottom: 1em;">
-            <label>Discount:</label>
-            <input type="number" v-model.number="discountAmount" min="0" style="width:100px;">
-            <select v-model="discountType" style="width:110px;">
-              <option value="flat">₦ Flat</option>
-              <option value="percent">% Percent</option>
-            </select>
-          </div>
-          <div>
-            <label>Tax (%):</label>
-            <input type="number" v-model.number="taxPercent" min="0" max="100" style="width:100px;">
-          </div>
-
-          <button @click="drawer.discount = false" class="action-btn" style="margin-left:auto;">Close</button>
         </div>
       </div>
-    </section>
 
-  </main>
+
+      <div id="drawer-toggle" @click="drawerMenuOpen = !drawerMenuOpen" :class="{ open: drawerMenuOpen }"
+        style="position: fixed; top: 100px; right: 24px; z-index: 1400; display: flex; flex-direction: column; align-items: flex-end;">
+        <div>
+          <i class="fa" :class="drawerMenuOpen ? 'fa-times' : 'fa-bars'"></i>
+        </div>
+        <transition-group name="drawer-btns" tag="div"
+          style="display: flex; flex-direction: column; align-items: flex-end; margin-top: 10px;">
+          <button v-if="drawerMenuOpen" key="invoice" @click.stop="openDrawer('invoice')" class="drawer-fab-btn">
+            <i class="fa fa-file-invoice"></i> Invoice
+          </button>
+          <button v-if="drawerMenuOpen" key="customer" @click.stop="openDrawer('customer')" class="drawer-fab-btn">
+            <i class="fa fa-user"></i> Customer Info
+          </button>
+          <button v-if="drawerMenuOpen" key="discount" @click.stop="openDrawer('discount')" class="drawer-fab-btn">
+            <i class="fa fa-percent"></i> Discount/Tax
+          </button>
+        </transition-group>
+      </div>
+
+      <div class="drawer-panel animate__animated animate__fadeInRight invoice-drawer"
+        v-if="drawer.invoice && cart.length">
+        <div class="invoice-header"
+          style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <h3 style="margin: 0;">Invoice Summary</h3>
+          <span class="cart-count">
+            {{ cart.length }}
+          </span>
+          <button @click="drawer.invoice = false" class="remove-btn" aria-label="Close Invoice"><i
+              class="fa fa-times"></i></button>
+        </div>
+        <ul class="invoice-list">
+          <li v-for="(item, index) in cart" :key="index" class="invoice-item">
+            <div>
+              <strong>{{ item.name }}</strong>
+              <span class="variant-size">({{ item.variant.size }})</span>
+              <span class="qty">x{{ item.quantity }}</span>
+              <span class="item-total">₦{{ item.variant.price * item.quantity }}</span>
+            </div>
+            <button @click="removeFromCart(index)" class="remove-btn" aria-label="Remove item">
+              <i class="fa fa-trash"></i>
+            </button>
+          </li>
+        </ul>
+
+        <div style="margin-bottom: 1em;">
+          <label for="paymentMethod"><strong>Payment Method:</strong></label>
+          <select id="paymentMethod" v-model="paymentMethod" style="width: 100%; margin-top: 4px;">
+            <option v-for="pm in paymentMethods" :value="pm.value">{{ pm.label }}</option>
+          </select>
+        </div>
+
+        <div class="invoice-totals">
+          <div><span>Subtotal:</span><span>₦{{ subtotal }}</span></div>
+          <div><span>Discount:</span><span class="discount">-₦{{ discountValue }}</span></div>
+          <div><span>Tax:</span><span>₦{{ taxValue }}</span></div>
+          <div class="total-row"><span>Total:</span><span class="total">₦{{ cartTotal }}</span></div>
+        </div>
+        <div class="invoice-actions">
+          <button @click="postOrder" class="action-btn success">Submit Order</button>
+
+          <button @click="drawer.invoice = false" class="action-btn" style="margin-left:auto;">Close</button>
+        </div>
+      </div>
+
+      <div class="drawer-panel animate__animated animate__fadeInRight customer-info-drawer" v-if="drawer.customer">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <h3>Customer Information</h3>
+          <button @click="drawer.customer = false" class="remove-btn" aria-label="Close Customer Info"><i
+              class="fa fa-times"></i></button>
+        </div>
+
+        <label for="customerSearch">Select Customer:</label>
+        <div style="position: relative;" ref="customerSearchContainer">
+          <input id="customerSearch" type="text" v-model="customerSearchQuery" @focus="showCustomerResults = true"
+            @keydown.esc="showCustomerResults = false" placeholder="Start typing to search or select customer..."
+            style="width: 100%; padding: 8px; box-sizing: border-box;" autocomplete="off" role="combobox"
+            aria-autocomplete="list" :aria-expanded="showCustomerResults" aria-haspopup="true" />
+
+          <div v-if="showCustomerResults" class="customer-search-results" style="
+              position: absolute;
+              width: 100%;
+              max-height: 300px;
+              overflow-y: auto;
+              border: 1px solid #ccc;
+              background: white;
+              z-index: 10;
+              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+              " role="listbox">
+            <div v-if="!customerSearchQuery && !customers.length" style="padding: 10px; color: #999;">
+              No customers available.
+            </div>
+
+            <div @click="selectCustomer('new')" class="search-result-item"
+              style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; background-color: #f5f5f5;"
+              role="option">
+              + Add New Customer
+            </div>
+
+            <div v-for="c in filteredCustomers" :key="c._id" @click="selectCustomer(c)" class="search-result-item"
+              :class="{ 'selected-result': selectedCustomerId === c._id }" style="padding: 10px; cursor: pointer;"
+              role="option" :aria-selected="selectedCustomerId === c._id">
+              {{ c.name }} ({{ c.email || c.phone || 'No contact' }})
+            </div>
+
+            <div v-if="customerSearchQuery && filteredCustomers.length === 0" style="padding: 10px; color: #999;">
+              No results found for "{{ customerSearchQuery }}".
+            </div>
+          </div>
+        </div>
+        <div v-if="selectedCustomer">
+          <p><strong>Name:</strong> {{ selectedCustomer.name }}</p>
+          <p><strong>Email:</strong> {{ selectedCustomer.email }}</p>
+          <p><strong>Phone:</strong> {{ selectedCustomer.phone }}</p>
+          <p><strong>Company:</strong> {{ selectedCustomer.company }}</p>
+          <p><strong>Tax ID:</strong> {{ selectedCustomer.taxId }}</p>
+        </div>
+
+        <button @click="drawer.customer = false" class="action-btn" style="margin-left:auto;">Close</button>
+      </div>
+      <div class="drawer-panel animate__animated animate__fadeInRight discount-tax-drawer" v-if="drawer.discount">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <h3>Discount & Tax</h3>
+          <button @click="drawer.discount = false" class="remove-btn" aria-label="Close Discount/Tax"><i
+              class="fa fa-times"></i></button>
+        </div>
+        <div style="margin-bottom: 1em;">
+          <label>Discount:</label>
+          <input type="number" v-model.number="discountAmount" min="0" style="width:100px;">
+          <select v-model="discountType" style="width:110px;">
+            <option value="flat">₦ Flat</option>
+            <option value="percent">% Percent</option>
+          </select>
+        </div>
+        <div>
+          <label>Tax (%):</label>
+          <input type="number" v-model.number="taxPercent" min="0" max="100" style="width:100px;">
+        </div>
+
+        <button @click="drawer.discount = false" class="action-btn" style="margin-left:auto;">Close</button>
+      </div>
+    </div>
+  </section>
+
+</main>
   <!-- JavaScript -->
   <!-- JavaScript -->
   <script src="assets/js/script.js"></script>

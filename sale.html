@@ -6,74 +6,141 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Eraskon Inventory Management</title>
 
-  <!-- Boxicons CSS -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Animate.css for card animation -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
-  <style>
-    /* Your base styles here */
-    /* Root color variables for light and dark mode */
+  <script src="assets/js/metaManager.js"></script>
+  <script>
+    setMeta({
+      title: "Eraskon | Sales",
+      desc: "Access the Eraskon Inventory portal to manage sales.",
+      image: "assets/images/eraskon_logo.webp",
+      favicon: "assets/images/eraskon_logo.webp",
+      keywords: "Inventory, Warehouse, Stock, Sales"
+    });
+  </script>
+  // <style>
+    /* 1. SIMPLIFIED COLOR VARIABLES FOR BALANCE */
     :root {
-      --bg-light: #e2dcdc;
-      --bg-dark: #090F3B;
-      --text-light: #090F3B;
-      --text-dark: #f1f1f1;
-      --card-bg-light: #fff;
+      --bg-light: #f3f4f6;
+      /* Tailwind gray-100 */
+      --bg-dark: #0f172a;
+      /* Tailwind slate-900 */
+      --text-light: #1f2937;
+      /* Tailwind gray-800 */
+      --text-dark: #f9fafb;
+      /* Tailwind gray-50 */
+      --card-bg-light: #ffffff;
+      /* Pure White */
       --card-bg-dark: #1e293b;
+      /* Tailwind slate-800 */
+      --primary-color: #3b82f6;
+      /* Tailwind blue-500 */
+      --secondary-text-light: #6b7280;
+      /* Tailwind gray-500 */
+      --secondary-text-dark: #9ca3af;
+      /* Tailwind gray-400 */
+
+      /* Icon/Accent Colors */
       --icon-sales: #2563eb;
-      --icon-orders: #22c55e;
-      --icon-customers: #f59e42;
+      --icon-orders: #10b981;
+      /* Green */
+      --icon-customers: #f97316;
+      /* Orange */
       --icon-returns: #ef4444;
-      --input-border: #ccc;
+      /* Red */
+      --icon-team: #7c3aed;
+      /* Purple */
     }
 
-    /* Light mode */
+    /* Base Styling */
     body {
       background-color: var(--bg-light);
       color: var(--text-light);
-      transition: background-color 0.5s, color 0.5s;
+      transition: all 0.5s ease-in-out;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     }
 
-    .card.bg-white,
-    .bg-white {
-      background: var(--card-bg-light) !important;
+    /* Dark Mode Styling */
+    .dark {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    /* Card/Container Overrides for consistency */
+    .bg-white,
+    .dark .bg-white,
+    .dark .bg-gray-800,
+    .card {
+      background-color: var(--card-bg-light) !important;
       color: var(--text-light) !important;
+      transition: background-color 0.5s, color 0.5s;
+      border-radius: 1rem !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
     }
 
+    .dark .bg-white,
+    .dark .bg-gray-800,
+    .dark .card {
+      background-color: var(--card-bg-dark) !important;
+      color: var(--text-dark) !important;
+      border: 1px solid #334155;
+    }
+
+    /* Text Color Adjustments */
     .card-title,
-    .card-text {
+    .text-gray-800 {
       color: var(--text-light);
     }
 
-
-    body.dark .card.bg-dark,
-    .dark .card.bg-dark,
-    body.dark .bg-gray-800,
-    .dark .bg-gray-800 {
-      background: var(--card-bg-dark) !important;
+    .dark .card-title,
+    .dark .text-gray-800 {
       color: var(--text-dark);
-
-      --bg-light: #090F3B;
-      --bg-dark: #e2dcdc;
-      --text-light: #e2dcdc;
-      --text-dark: #090F3B;
-      --card-bg-light: #090F3B;
-      --card-bg-dark: #050d4a;
-      --input-border: #ccc;
     }
 
-    /* Card icon color pattern */
+    .card-text.small,
+    .text-gray-500 {
+      color: var(--secondary-text-light);
+    }
+
+    .dark .card-text.small,
+    .dark .text-gray-500,
+    .dark .text-gray-400 {
+      color: var(--secondary-text-dark) !important;
+    }
+
+    /* 1. Modify Card Fonts */
+    .card-title {
+      font-weight: 600;
+      /* Semibold for titles */
+      color: var(--text-light) !important;
+    }
+
+    .card-text.main-value {
+      font-weight: 700;
+      /* Bold for the main value */
+      font-size: 2.25rem;
+      /* Larger font size */
+      line-height: 1.2;
+      color: var(--primary-color) !important;
+      /* Use primary color for emphasis */
+    }
+
+    .dark .card-text.main-value {
+      color: #60a5fa !important;
+      /* Light blue for dark mode */
+    }
+    /* End of Card Font Modification */
+
+
+    /* Icon Card Styling */
     .card-icon {
       display: flex;
       align-items: center;
@@ -106,452 +173,301 @@
       color: #fff;
     }
 
-    #main-content {
+    .main-content {
       margin-left: 250px;
-      /* Adjust based on sidebar width */
       margin-top: 60px;
-      /* Adjust based on navbar height */
       padding: 20px;
-      background: #fff;
       min-height: calc(100vh - 60px);
-      overflow-y: auto;
-    }
-
-    /* User management specific styles */
-    .user-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    .user-header input[type="text"] {
-      width: 300px;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .user-header button {
-      padding: 8px 16px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    table.user-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    table.user-table th,
-    table.user-table td {
-      padding: 12px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
-
-    table.user-table th {
-      background: var(--text-light);
-    }
-
-    table.user-table td.actions button {
-      margin-right: 5px;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-
-    table.user-table td.actions button.edit {
-      background: #3b82f6;
-      color: white;
-    }
-
-    table.user-table td.actions button.delete {
-      background: #ef4444;
-      color: white;
-    }
-
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      /* Hide modal by default */
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal.show {
-      display: flex;
-      /* Show modal when .show is added */
-    }
-
-    .modal-content {
-      background: white;
-      padding: 25px;
-      border-radius: 8px;
-      width: 380px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .modal-content h3 {
-      margin-top: 0;
-      margin-bottom: 1rem;
-      font-weight: 700;
-      color: #334155;
-    }
-
-    .modal-content label {
-      display: block;
-      margin: 10px 0 4px;
-      font-weight: 600;
-      color: #475569;
-    }
-
-    .modal-content input,
-    .modal-content select {
-      width: 100%;
-      padding: 8px;
-      font-size: 1rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      outline: none;
-    }
-
-    .modal-content button {
-      margin-top: 15px;
-      padding: 10px 16px;
-      font-weight: 600;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .modal-content button.save {
-      background-color: #2563eb;
-      color: white;
-      margin-right: 10px;
-    }
-
-    .modal-content button.cancel {
-      background-color: #6b7280;
-      color: white;
-    }
-
-    #pagination {
-      margin-top: 1rem;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      justify-content: flex-end;
-    }
-
-    #pagination button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    #pagination button:disabled {
-      background: #e2e8f0;
-      color: #a0aec0;
-      cursor: not-allowed;
-    }
-
-    #pagination #pageInfo {
-      font-weight: 500;
-      color: #4a5568;
     }
 
     @media (max-width: 900px) {
-      #main-content {
+      .main-content {
         margin-left: 0 !important;
         width: 100vw !important;
-        min-width: 0 !important;
-        box-sizing: border-box;
-        padding: 10px;
-        min-height: unset;
-      }
-
-      .user-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-      }
-
-      .user-header input[type="text"] {
-        width: 100%;
-        min-width: 0;
-      }
-
-      .user-header button {
-        width: 100%;
-        margin: 0 0 5px 0;
-      }
-
-      .modal-content {
-        width: 95vw;
-        min-width: 0;
         padding: 10px;
       }
-
-      table.customer-table th,
-      table.customer-table td {
-        padding: 8px 4px;
-        font-size: 0.95em;
-      }
     }
 
-    /* Mobile responsive user card/table styles */
-    @media (max-width: 600px) {
-
-      table.user-table,
-      table.user-table thead,
-      table.user-table tbody,
-      table.user-table th,
-      table.user-table td,
-      table.user-table tr {
-        display: block;
-        width: 100%;
-      }
-
-      table.user-table thead {
-        display: none;
-      }
-
-      table.user-table tr {
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        background: var(--card-bg-light);
-        color: var(--text-light);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-        padding: 8px 0;
-        overflow-wrap: break-word;
-        word-break: break-word;
-        transition: background 0.3s, color 0.3s;
-      }
-
-      body.dark table.user-table tr {
-        background: var(--card-bg-dark);
-        color: var(--text-dark);
-        border: 1px solid #222;
-      }
-
-      table.user-table td {
-        border: none;
-        position: relative;
-        padding-left: 50%;
-        min-height: 36px;
-        text-align: left;
-        background: none;
-        white-space: normal;
-        overflow-wrap: break-word;
-        word-break: break-word;
-        max-width: 100%;
-        box-sizing: border-box;
-        color: inherit;
-      }
-
-      table.user-table td:before {
-        position: absolute;
-        top: 8px;
-        left: 8px;
-        width: 45%;
-        white-space: nowrap;
-        font-weight: bold;
-        color: #888;
-        content: attr(data-label);
-      }
-
-      table.user-table td.actions {
-        padding-left: 8px;
-      }
-    }
-
-    /* Add margin around the table for both light and dark mode */
-    .bg-white,
-    .dark\:bg-gray-800 {
-      margin-bottom: 2rem;
-      padding: 1.5rem !important;
-    }
-
-    table.min-w-full {
-      margin: 2rem auto;
-      /* Add top and bottom margin, center horizontally */
-      border-radius: 0.75rem;
-      overflow: hidden;
-      background: var(--card-bg-light);
-      color: var(--text-light);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    }
-
-    body.dark table.min-w-full {
-      background: var(--card-bg-dark);
-      color: var(--text-dark);
-    }
-
-    /* Button color accuracy */
-    .user-header button,
-    button.save,
-    button.cancel {
-      background: #2563eb;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
+    .badge {
+      padding: 4px 8px;
+      border-radius: 9999px;
       font-weight: 600;
+      font-size: 0.75rem;
+      display: inline-block;
+    }
+
+    .status-created {
+      background-color: #3b82f6;
+      color: white;
+    }
+
+    .status-completed {
+      background-color: #10b981;
+      color: white;
+    }
+
+    /* Custom styles for radio button group */
+    .radio-group input[type="radio"] {
+      display: none;
+    }
+
+    .radio-group label {
       cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .user-header button#addCustomerBtn {
-      background: #22c55e;
-    }
-
-    .user-header button[onclick*="exportCustomersToExcel"] {
-      background: #2563eb;
-    }
-
-    .user-header button[onclick*="exportCustomersToPDF"] {
-      background: #ef4444;
-    }
-
-    button.save {
-      background: #2563eb;
-    }
-
-    button.cancel {
-      background: #6b7280;
-    }
-
-    table.customer-table td.actions button.edit {
-      background: #3b82f6;
-      color: #fff;
-    }
-
-    table.customer-table td.actions button.delete {
-      background: #ef4444;
-      color: #fff;
-    }
-
-    /* Card amount and description color for light/dark mode */
-    .card-text.fw-bold.mb-2,
-    .card-text.small {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      border: 1px solid transparent;
       color: var(--text-light);
     }
 
-    body.dark .card-text.fw-bold.mb-2,
-    body.dark .card-text.small {
+    .dark .radio-group label {
       color: var(--text-dark);
+    }
+
+    .radio-group input[type="radio"]:checked+label {
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .radio-group label:hover {
+      background-color: #e5e7eb;
+      /* Tailwind gray-200 */
+    }
+
+    .dark .radio-group label:hover:not(.checked) {
+      background-color: #334155;
+      /* Darker background */
     }
   </style>
 </head>
 
 
-<body>
+<body :class="{ 'dark': darkMode }">
   <script src="components/uiComponents.js"></script>
   <script src="components/spinner.js"></script>
-
-      <!-- Load Auth Guard -->
   <script src="components/authGuard.js"></script>
-
-  <!-- Load Navbar -->
   <script src="components/navbar.js"></script>
-
-  <!-- Load Sidebar -->
   <script src="components/sidebar.js"></script>
 
-  <!-- Main Content -->
-  <main id="app" class="main-content ">
+  <main id="app" class="main-content">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-50 flex items-center">
+      <i class='bx bx-shopping-bag mr-3 text-primary-color'></i> Sales Management
+    </h1>
 
+    <div class="flex flex-col gap-4 mb-6">
+      <div class="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-50">Filter Period:</h3>
+        <div class="radio-group flex gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
+          <input type="radio" id="mtd" value="MTD" v-model="timeFilter">
+          <label for="mtd">Month-to-Date</label>
 
+          <input type="radio" id="wtd" value="WTD" v-model="timeFilter">
+          <label for="wtd">Week-to-Date</label>
 
-    <!-- Beautified Bootstrap Cards with Animation -->
-    <div class="row g-4 mb-5">
-      <div class="col-sm-6 col-md-4 col-lg-3" v-for="(card, index) in performanceCards" :key="index">
-        <div class="card h-100 p-3 border-0 shadow-lg animate__animated animate__fadeInUp"
-          :class="darkMode ? 'bg-dark text-white' : 'bg-white text-dark'"
-          :style="`animation-delay: ${index * 100}ms; animation-duration: 600ms; border-radius: 1rem; transition: transform 0.3s ease, box-shadow 0.3s ease;`"
-          @mouseover="hoverIndex = index" @mouseleave="hoverIndex = null"
-          :class="{ 'shadow-lg': hoverIndex === index, 'shadow': hoverIndex !== index }">
-          <div class="card-body text-center">
-            <div class="mb-3">
-              <span :class="['card-icon', card.iconClass]">
-                <i :class="['bx', card.icon]"></i>
-              </span>
+          <input type="radio" id="ytd" value="YTD" v-model="timeFilter">
+          <label for="ytd">Year-to-Date</label>
+
+          <input type="radio" id="all-time" value="ALL" v-model="timeFilter">
+          <label for="all-time">All Time</label>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-start items-start sm:items-center gap-4">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-50">Filter Status:</h3>
+        <div class="radio-group flex gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
+          <input type="radio" id="status-all-perf" value="ALL" v-model="statusFilter">
+          <label for="status-all-perf">All Statuses</label>
+
+          <input type="radio" id="status-created-perf" value="created" v-model="statusFilter">
+          <label for="status-created-perf">Created</label>
+
+          <input type="radio" id="status-processing-perf" value="processing" v-model="statusFilter">
+          <label for="status-processing-perf">Processing</label>
+
+          <input type="radio" id="status-completed-perf" value="completed" v-model="statusFilter">
+          <label for="status-completed-perf">Completed</label>
+
+          <input type="radio" id="status-cancelled-perf" value="cancelled" v-model="statusFilter">
+          <label for="status-cancelled-perf">Cancelled</label>
+        </div>
+      </div>
+    </div>
+    <hr class="mb-6 dark:border-gray-700" />
+
+    <div v-if="isLoading" class="text-center py-10 text-gray-500 dark:text-gray-400">
+      <div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-blue-500" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading sales data...</p>
+    </div>
+
+    <div v-else>
+      <div class="row g-4 mb-8">
+        <div class="col-sm-6 col-md-4 col-lg-3" v-for="(card, index) in performanceCards" :key="index">
+          <div class="card h-100 p-4 border-0 shadow-lg animate__animated animate__fadeInUp"
+            :class="darkMode ? 'bg-dark text-white' : 'bg-white text-dark'"
+            :style="`animation-delay: ${index * 100}ms; animation-duration: 600ms; transition: transform 0.3s ease, box-shadow 0.3s ease;`">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <span :class="['card-icon', card.iconClass]">
+                  <i :class="['bx', card.icon]"></i>
+                </span>
+              </div>
+              <h5 class="card-title text-gray-700 dark:text-gray-300">{{ card.title }}</h5>
+              <h3 class="card-text main-value mb-2">{{ card.amount }}</h3>
+              <p class="card-text small text-gray-500 dark:text-gray-400">
+                {{ card.description }}
+              </p>
             </div>
-            <h5 class="card-title fw-semibold">{{ card.title }}</h5>
-            <h3 class="card-text fw-bold mb-2">{{ card.amount }}</h3>
-            <p class="card-text small" :style="darkMode ? 'color: var(--text-light);' : 'color: var(--text-light);'">
-              {{ card.description }}
-            </p>
+          </div>
+        </div>
+      </div>
+
+      <hr class="mb-6 dark:border-gray-700" />
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl p-6">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-50">
+            Sales Performance by Agent ({{ timeFilter }} | {{ statusFilter }})
+          </h2>
+          <div class="h-96">
+            <canvas id="salesAgentChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-50">
+            Your Performance ({{ timeFilter }} | {{ statusFilter }})
+          </h2>
+          <div class="space-y-4">
+            <div class="p-3 bg-blue-50 dark:bg-blue-900 rounded-lg">
+              <p class="text-sm font-medium text-blue-600 dark:text-blue-300">Total Sales</p>
+              <p class="text-2xl font-bold text-gray-800 dark:text-white">
+                ₦{{ currentAgentPerformance.totalSales.toLocaleString() }}
+              </p>
+            </div>
+            <div class="p-3 bg-green-50 dark:bg-green-900 rounded-lg">
+              <p class="text-sm font-medium text-green-600 dark:text-green-300">Total Orders</p>
+              <p class="text-2xl font-bold text-gray-800 dark:text-white">
+                {{ currentAgentPerformance.orderCount.toLocaleString() }}
+              </p>
+            </div>
+            <div class="p-3 bg-purple-50 dark:bg-purple-900 rounded-lg">
+              <p class="text-sm font-medium text-purple-600 dark:text-purple-300">Average Order Value</p>
+              <p class="text-2xl font-bold text-gray-800 dark:text-white">
+                ₦{{ currentAgentPerformance.aov.toLocaleString() }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="mb-6 dark:border-gray-700" />
+
+
+      <div class="bg-white rounded-2xl shadow-xl p-6">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-50">
+          Recent Orders
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            ({{ userRole === 'admin' ? 'Global View' : userWarehouse + ' Warehouse' }})
+          </span>
+        </h2>
+
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+          <input type="text" v-model="searchQuery" placeholder="Search orders..."
+            class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg w-full sm:w-64 focus:ring-blue-500 focus:border-blue-500 transition duration-200 dark:bg-gray-700 dark:text-gray-50" />
+          <div class="flex gap-2">
+            <button v-if="userRole === 'admin' || userRole === 'sales'"
+              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-200 flex items-center">
+              <i class='bx bx-plus mr-2'></i> Create New Sale
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto text-sm divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Order ID</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Customer</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Warehouse</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Agent</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Amount</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Status</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Date</th>
+                <th
+                  class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <tr v-for="(order, index) in paginatedOrders" :key="order._id"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150">
+                <td class="px-4 py-3 whitespace-nowrap">{{ order.orderCode || order._id.substring(0, 8).toUpperCase()
+                  }}</td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  {{ order.customer && order.customer.name ? order.customer.name : 'N/A' }}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">{{ order.warehouse || order.createdBy?.warehouse || 'N/A' }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-600 dark:text-gray-300">
+                  {{ order.createdBy?.firstName + ' ' + order.createdBy?.lastName || 'System' }}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap font-medium">₦{{ (Number(order.total) || 0).toLocaleString() }}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <span :class="getStatusBadgeClass(order.status)" class="badge">{{ order.status }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{{ formatDate(order.createdAt)
+                  }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-center">
+                  <button @click="viewOrderDetails(order)"
+                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 transition duration-150 mx-1"
+                    title="View Details">
+                    <i class='bx bx-search-alt text-lg'></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-if="paginatedOrders.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+            No orders found matching your criteria.
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-between items-center px-4">
+          <span class="text-sm text-gray-700 dark:text-gray-400">
+            Showing {{ (currentPage - 1) * rowsPerPage + 1 }} to {{ Math.min(currentPage * rowsPerPage,
+            filteredOrders.length) }} of {{ filteredOrders.length }} results
+          </span>
+          <div class="flex gap-4">
+            <button @click="prevPage" :disabled="currentPage === 1"
+              class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">Prev</button>
+            <button @click="nextPage" :disabled="currentPage === totalPages || totalPages === 0"
+              class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">Next</button>
           </div>
         </div>
       </div>
     </div>
-
-
-    <!-- Orders Table -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
-      <div class="mb-4 flex justify-between items-center">
-        <h2 class="text-xl font-semibold">Orders</h2>
-        <input type="text" v-model="searchQuery" placeholder="Search..."
-          class="border px-3 py-2 rounded dark:bg-gray-700 dark:text-white" />
-      </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full table-auto text-sm">
-          <thead>
-            <tr class="bg-gray-100 dark:bg-gray-700">
-              <th class="px-4 py-2">Order ID</th>
-              <th class="px-4 py-2">Customer</th>
-              <th class="px-4 py-2">Amount</th>
-              <th class="px-4 py-2">Status</th>
-              <th class="px-4 py-2">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(order, index) in paginatedOrders" :key="index" class="border-t dark:border-gray-700">
-              <td class="px-4 py-2">{{ order.orderCode }}</td>
-              <td class="px-4 py-2">
-                {{ order.customer && order.customer.name ? order.customer.name : 'N/A' }}
-              </td>
-              <td class="px-4 py-2">₦{{ order.total }}</td>
-              <td class="px-4 py-2">{{ order.status }}</td>
-              <td class="px-4 py-2">{{ order.createdAt }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div class="mt-4 flex justify-center items-center gap-4">
-        <button @click="prevPage" :disabled="currentPage === 1"
-          class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded">Prev</button>
-        <span>Page {{ currentPage }} of {{ totalPages }}</span>
-        <button @click="nextPage" :disabled="currentPage === totalPages"
-          class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded">Next</button>
-      </div>
-    </div>
-    </div>
-
   </main>
-  <!-- JavaScript -->
-  <!-- JavaScript -->
   <script src="assets/js/script.js"></script>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script> <!-- ✅ Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="config.js"></script>
 
   <script>
@@ -560,27 +476,103 @@
       createApp
     } = Vue;
 
+    let salesChartInstance = null;
+
     createApp({
       data() {
         return {
-          isDark: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
-          hoverIndex: null,
+          // --- User Context (Pulled from local storage) ---
+          userRole: localStorage.getItem('role') || 'sales',
+          userWarehouse: localStorage.getItem('warehouse') || 'lagos', // Ensure lowercase for comparison
+          currentUserId: localStorage.getItem('userId') || '6830837561f125a272431f04', // Defaulting to Jude Uwandu's ID for mock data testing
+
+          // --- UI/Table State ---
           darkMode: localStorage.getItem('darkMode') === 'true',
           searchQuery: '',
           currentPage: 1,
           rowsPerPage: 10,
-          orders: [],
-          customers: new Set(),
-          returns: 0
+          allOrders: [], // All orders fetched from API
+          isLoading: false,
+
+          // --- Performance State ---
+          timeFilter: 'MTD', // MTD, WTD, YTD, ALL
+          statusFilter: 'ALL', // ALL, created, processing, completed, cancelled
         };
       },
       computed: {
-        filteredOrders() {
-          return this.orders.filter(order =>
-            Object.values(order).some(val =>
-              String(val).toLowerCase().includes(this.searchQuery.toLowerCase())
-            )
+        // --- Core Data Filtering based on RBAC ---
+        // Filters the ALL orders list based on the user's role and warehouse.
+        rbacOrders() {
+          const role = this.userRole.toLowerCase();
+          const warehouse = this.userWarehouse.toLowerCase();
+
+          if (role === 'admin' || role === 'chairman') {
+            return this.allOrders; // Admin sees everything
+          } else if (role === 'sales') {
+            // Sales agent sees only orders associated with their warehouse
+            return this.allOrders.filter(order =>
+              // Uses warehouse ID from createdBy if not directly on the order
+              (order.warehouse || order.createdBy?.warehouse || '').toLowerCase() === warehouse
+            );
+          }
+          return [];
+        },
+
+        // --- Time Filtering ---
+        timeFilteredOrders() {
+          if (this.timeFilter === 'ALL') return this.rbacOrders;
+
+          const now = new Date();
+          let startDate;
+
+          if (this.timeFilter === 'MTD') {
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          } else if (this.timeFilter === 'WTD') {
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+            startDate.setHours(0, 0, 0, 0);
+          } else if (this.timeFilter === 'YTD') {
+            startDate = new Date(now.getFullYear(), 0, 1);
+          }
+
+          return this.rbacOrders.filter(order => {
+            const orderDate = new Date(order.createdAt);
+            return orderDate >= startDate && orderDate <= now;
+          });
+        },
+
+        // --- Status Filtering ---
+        statusFilteredOrders() {
+          if (this.statusFilter === 'ALL') {
+            return this.timeFilteredOrders;
+          }
+          const filterValue = this.statusFilter.toLowerCase();
+          return this.timeFilteredOrders.filter(order =>
+            (order.status || '').toLowerCase() === filterValue
           );
+        },
+
+        // --- Performance & Table Source Data (Item 2: Apply Status/Time Filters to everything) ---
+        performanceOrders() {
+          // This is the fully filtered list used for the cards, charts, and tables.
+          return this.statusFilteredOrders;
+        },
+
+
+        // --- UI Computations (Table Filtering) ---
+        filteredOrders() {
+          let list = this.performanceOrders; // Use the fully filtered list for the table
+          if (this.searchQuery) {
+            const query = this.searchQuery.toLowerCase();
+            list = list.filter(order =>
+              String(order.orderCode || order._id || '').toLowerCase().includes(query) ||
+              String(order.total || '').toLowerCase().includes(query) ||
+              String(order.status || '').toLowerCase().includes(query) ||
+              String(order.warehouse || '').toLowerCase().includes(query) ||
+              String(order.createdBy?.firstName + ' ' + order.createdBy?.lastName || '').toLowerCase().includes(query) ||
+              (order.customer && String(order.customer.name || '').toLowerCase().includes(query))
+            );
+          }
+          return list;
         },
         totalPages() {
           return Math.ceil(this.filteredOrders.length / this.rowsPerPage);
@@ -589,80 +581,275 @@
           const start = (this.currentPage - 1) * this.rowsPerPage;
           return this.filteredOrders.slice(start, start + this.rowsPerPage);
         },
+
+        // --- Performance Card Data (Uses performanceOrders) ---
         performanceCards() {
-          // Calculate values from orders
-          const totalSales = this.orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
-          const orderCount = this.orders.length;
-          const customerSet = new Set(this.orders.map(o => o.customer?.name || o.customer));
-          const returnsCount = this.orders.filter(o => (o.status || '').toLowerCase() === 'returned').length;
-          return [
-            {
-              title: 'Total Sales',
+          const orders = this.performanceOrders; // Use fully filtered list
+          const totalSales = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+          const orderCount = orders.length;
+          const customerSet = new Set(orders.map(o => o.customer?.name || o.customer));
+          const returnsCount = orders.filter(o => (o.status || '').toLowerCase() === 'returned').length;
+          const timeDesc = this.timeFilter === 'ALL' ? 'Total' : this.timeFilter;
+
+          return [{
+              title: 'Total Revenue',
               amount: `₦${totalSales.toLocaleString()}`,
-              description: "This month's sales",
-              icon: 'bx-bar-chart-alt-2',
+              description: `${timeDesc} sales revenue`,
+              icon: 'bx-dollar-circle',
               iconClass: 'icon-sales'
             },
             {
-              title: 'Orders',
-              amount: orderCount,
-              description: 'Completed orders',
-              icon: 'bx-cart',
+              title: 'Total Orders',
+              amount: orderCount.toLocaleString(),
+              description: `${timeDesc} orders count`,
+              icon: 'bx-receipt',
               iconClass: 'icon-orders'
             },
             {
-              title: 'Customers',
-              amount: customerSet.size,
-              description: 'Active users',
-              icon: 'bx-user',
+              title: 'Unique Customers',
+              amount: customerSet.size.toLocaleString(),
+              description: 'Unique customers served',
+              icon: 'bx-group',
               iconClass: 'icon-customers'
             },
             {
-              title: 'Returns',
-              amount: returnsCount,
-              description: 'Returned items',
+              title: 'Returned Orders',
+              amount: returnsCount.toLocaleString(),
+              description: `Returns in ${timeDesc} period`,
               icon: 'bx-undo',
               iconClass: 'icon-returns'
             }
           ];
+        },
+
+        // --- Chart Data (Uses performanceOrders) ---
+        salesAgentData() {
+          const salesByAgent = {};
+          this.performanceOrders.forEach(order => { // Use fully filtered list
+            const agentId = order.createdBy?._id || 'Unassigned_ID';
+            const agentName = order.createdBy?.firstName && order.createdBy?.lastName ?
+              `${order.createdBy.firstName} ${order.createdBy.lastName}` :
+              'Unassigned';
+            const total = Number(order.total) || 0;
+
+            if (!salesByAgent[agentId]) {
+              salesByAgent[agentId] = {
+                name: agentName,
+                totalSales: 0,
+                orderCount: 0
+              };
+            }
+            salesByAgent[agentId].totalSales += total;
+            salesByAgent[agentId].orderCount += 1;
+          });
+
+          const sortedAgents = Object.keys(salesByAgent).map(id => salesByAgent[id]).sort((a, b) => b.totalSales - a
+            .totalSales);
+
+          return {
+            labels: sortedAgents.map(a => a.name),
+            sales: sortedAgents.map(a => a.totalSales)
+          };
+        },
+
+        // --- Current Agent Summary (Item 1: Only current user) ---
+        currentAgentPerformance() {
+          // Filter the fully restricted performanceOrders list by the current user's ID
+          const agentOrders = this.performanceOrders.filter(order =>
+            order.createdBy?._id === this.currentUserId
+          );
+
+          const totalSales = agentOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+          const orderCount = agentOrders.length;
+          const aov = orderCount > 0 ? totalSales / orderCount : 0;
+
+          return {
+            totalSales: Math.round(totalSales),
+            orderCount: orderCount,
+            aov: Math.round(aov)
+          };
         }
       },
       watch: {
         darkMode(newVal) {
           document.documentElement.classList.toggle('dark', newVal);
           localStorage.setItem('darkMode', newVal);
+          this.$nextTick(() => this.renderSalesChart());
         },
         searchQuery() {
           this.currentPage = 1;
+        },
+        // Re-render chart and reset page when filters change
+        timeFilter() {
+          this.currentPage = 1;
+          this.renderSalesChart();
+        },
+        statusFilter() {
+          this.currentPage = 1;
+          this.renderSalesChart();
+        },
+        salesAgentData: {
+          handler() {
+            this.renderSalesChart();
+          },
+          deep: true,
         }
       },
       methods: {
+        // --- Utility Methods ---
         toggleDarkMode() {
           this.darkMode = !this.darkMode;
         },
+        formatDate(dateString) {
+          const options = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          };
+          try {
+            return new Date(dateString).toLocaleDateString(undefined, options);
+          } catch {
+            return 'N/A';
+          }
+        },
+        getStatusBadgeClass(status) {
+          const lowerStatus = (status || '').toLowerCase();
+          if (lowerStatus === 'created') return 'status-created';
+          if (lowerStatus === 'processing') return 'bg-yellow-500 text-white';
+          if (lowerStatus === 'completed') return 'status-completed';
+          if (lowerStatus === 'cancelled') return 'bg-red-600 text-white';
+          if (lowerStatus === 'pending') return 'bg-yellow-500 text-white';
+          if (lowerStatus === 'returned') return 'bg-red-500 text-white';
+          if (lowerStatus === 'shipped') return 'bg-blue-500 text-white';
+          return 'bg-gray-400 text-white';
+        },
+
         nextPage() {
           if (this.currentPage < this.totalPages) this.currentPage++;
         },
         prevPage() {
           if (this.currentPage > 1) this.currentPage--;
         },
-        async fetchOrders() {
-          try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE}/order`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            if (!res.ok) throw new Error('Failed to fetch orders');
-            const data = await res.json();
-            console.log('Orders fetched:', data);
-            this.orders = Array.isArray(data) ? data : (data.orders || []);
-          } catch (err) {
-            alert('Error loading orders: ' + err.message);
+        viewOrderDetails(order) {
+          // You would typically navigate to a detail page here
+          alert(`Viewing details for Order ID: ${order.orderCode || order._id}.`);
+        },
+
+        // --- Chart Rendering ---
+        renderSalesChart() {
+          if (salesChartInstance) {
+            salesChartInstance.destroy();
           }
-        }
+
+          const ctx = document.getElementById('salesAgentChart')?.getContext('2d');
+          if (!ctx) return;
+
+          const data = this.salesAgentData;
+          const chartConfig = {
+            type: 'bar',
+            data: {
+              labels: data.labels,
+              datasets: [{
+                label: `Total Sales Revenue (${this.timeFilter})`,
+                data: data.sales,
+                backgroundColor: this.darkMode ? '#3b82f6' : '#2563eb', // Blue
+                borderColor: this.darkMode ? '#2563eb' : '#1e40af',
+                borderWidth: 1,
+                borderRadius: 6,
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Revenue (₦)',
+                    color: this.darkMode ? 'white' : 'black',
+                  },
+                  ticks: {
+                    color: this.darkMode ? 'white' : 'black',
+                    callback: function(value) {
+                      return '₦' + (value / 1000).toLocaleString() + 'K';
+                    }
+                  },
+                  grid: {
+                    color: this.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                  }
+                },
+                x: {
+                  title: {
+                    display: true,
+                    text: 'Sales Agent',
+                    color: this.darkMode ? 'white' : 'black',
+                  },
+                  ticks: {
+                    color: this.darkMode ? 'white' : 'black',
+                  },
+                  grid: {
+                    color: this.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                  }
+                }
+              },
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      let label = context.dataset.label || '';
+                      if (label) {
+                        label += ': ';
+                      }
+                      if (context.parsed.y !== null) {
+                        label += '₦' + context.parsed.y.toLocaleString();
+                      }
+                      return label;
+                    }
+                  }
+                }
+              }
+            }
+          };
+
+          salesChartInstance = new Chart(ctx, chartConfig);
+        },
+
+        // --- Connect to Live API ---
+        async fetchOrders() {
+          this.isLoading = true;
+          try {
+            // MOCK DATA START
+            // Note: The new agent (6920111161f125a272431f05) will now be excluded from 'Your Performance' 
+            // if your currentUserId is set to '6830837561f125a272431f04' (Jude Uwandu).
+            const mockData = [{"_id":"6912126de53ef6c60b05fdfd","customerId":"682da3855ad8255526cafa89","customer":{"name":"kingsley Chukwunta","email":"kingsley.chukwunta@eraskorp.com","phone":"08037513298","company":"erasko","taxId":"12345678","_id":"682da3855ad8255526cafa89"},"user":{"_id":"6830837561f125a272431f04","email":"jude.uwandu@eraskorp.com","password":"$2b$10$dKCMpKFHvIodpyGZrF.em.xQ3CKpNsdsaKXNamOxOjVs8g.oW9Jby","firstName":"Jude","lastName":"Uwandu","role":"admin","__v":0,"warehouse":"Lagos"},"createdBy":{"_id":"6830837561f125a272431f04","email":"jude.uwandu@eraskorp.com","password":"$2b$10$dKCMpKFHvIodpyGZrF.em.xQ3CKpNsdsaKXNamOxOjVs8g.oW9Jby","firstName":"Jude","lastName":"Uwandu","role":"admin","__v":0,"warehouse":"Lagos"},"createdAt":"2025-11-10T16:27:24.594Z","status":"completed","orderCode":"order-kexnoi","subTotal":3000,"total":3063.75,"items":[{"productVariantName":"Erasko-Gold 10lites","qty":1,"unitPrice":3000,"costPrice":2500,"_id":"6912126de53ef6c60b05fdff"}],"discounts":[{"type":"percent","value":150,"amount":5}],"paymentConfirmed":false,"paymentStatus":"paid","paymentMethod":"transfer","paymentCurrency":"NG","taxRate":7.5,"tax":213.75,"paymentReceipts":[],"rejectionMessages":[],"updatedAt":"2025-11-10T16:27:24.594Z","__v":0,"warehouse":"Lagos"},{"_id":"6912128ce53ef6c60b05fe02","customerId":"682da3855ad8255526cafa89","customer":{"name":"kingsley Chukwunta","email":"kingsley.chukwunta@eraskorp.com","phone":"08037513298","company":"erasko","taxId":"12345678","_id":"682da3855ad8255526cafa89"},"user":{"_id":"6830837561f125a272431f04","email":"jude.uwandu@eraskorp.com","password":"$2b$10$dKCMpKFHvIodpyGZrF.em.xQ3CKpNsdsaKXNamOxOjVs8g.oW9Jby","firstName":"Jude","lastName":"Uwandu","role":"admin","__v":0,"warehouse":"Lagos"},"createdBy":{"_id":"6830837561f125a272431f04","email":"jude.uwandu@eraskorp.com","password":"$2b$10$dKCMpKFHvIodpyGZrF.em.xQ3CKpNsdsaKXNamOxOjVs8g.oW9Jby","firstName":"Jude","lastName":"Uwandu","role":"admin","__v":0,"warehouse":"Lagos"},"createdAt":"2025-11-10T16:27:55.338Z","status":"created","orderCode":"order-pqrkm6","subTotal":3000,"total":3063.75,"items":[{"productVariantName":"Erasko-Gold 10lites","qty":1,"unitPrice":3000,"costPrice":2500,"_id":"6912128ce53ef6c60b05fe04"}],"discounts":[{"type":"percent","value":150,"amount":5}],"paymentConfirmed":false,"paymentStatus":"not paid","paymentMethod":"transfer","paymentCurrency":"NG","taxRate":7.5,"tax":213.75,"paymentReceipts":[],"rejectionMessages":[],"updatedAt":"2025-11-10T16:27:55.338Z","__v":0,"warehouse":"Lagos"},{"_id":"6912135ee53ef6c60b05fe0b","customerId":"682cd93599ab8539d4bd35ab","customer":{"name":"george queenet","email":"georgequeenet@gmail.com","phone":"08137596764","company":"map","taxId":"12312","_id":"682cd93599ab8539d4bd35ab"},"user":{"_id":"6830837561f125a272431f04","email":"jude.uwandu@eraskorp.com","password":"$2b$10$dKCMpKFHvIodpyGZrF.em.xQ3CKpNsdsaKXNamOxOjVs8g.oW9Jby","firstName":"Jude","lastName":"Uwandu","role":"admin","__v":0,"warehouse":"Lagos"},"createdBy":{"_id":"6830837561f125a272431f04","email":"jude.uwandu@eraskorp.com","password":"$2b$10$dKCMpKFHvIodpyGZrF.em.xQ3CKpNsdsaKXNamOxOjVs8g.oW9Jby","firstName":"Jude","lastName":"Uwandu","role":"admin","__v":0,"warehouse":"Lagos"},"createdAt":"2025-11-10T16:31:25.029Z","status":"processing","orderCode":"order-onlic0","subTotal":3000,"total":3203.5,"items":[{"productVariantName":"Erasko-Gold 10lites","qty":1,"unitPrice":3000,"costPrice":2500,"_id":"6912135ee53ef6c60b05fe0d"}],"discounts":[{"type":"flat","value":20,"amount":20}],"paymentConfirmed":false,"paymentStatus":"not paid","paymentMethod":"pos","paymentCurrency":"NG","taxRate":7.5,"tax":223.5,"paymentReceipts":[],"rejectionMessages":[],"updatedAt":"2025-11-10T16:31:25.029Z","__v":0,"warehouse":"Lagos"},{"_id":"69121487e53ef6c60b05fe10","customerId":"682cd93599ab8539d4bd35ab","customer":{"name":"george queenet","email":"georgequeenet@gmail.com","phone":"08137596764","company":"map","taxId":"12312","_id":"682cd93599ab8539d4bd35ab"},"user":{"_id":"6920111161f125a272431f05","email":"new.agent@eraskorp.com","password":"$2b$10$dKCMpKFHvIodpyGZrF.em.xQ3CKpNsdsaKXNamOxOjVs8g.oW9Jby","firstName":"New","lastName":"Agent","role":"sales","__v":0,"warehouse":"Abuja"},"createdBy":{"_id":"6920111161f125a272431f05","email":"new.agent@eraskorp.com","password":"$2b$10$dKCMpKFHvIodpyGZrF.em.xQ3CKpNsdsaKXNamOxOjVs8g.oW9Jby","firstName":"New","lastName":"Agent","role":"sales","__v":0,"warehouse":"Abuja"},"createdAt":"2025-11-11T16:36:22.331Z","status":"cancelled","orderCode":"order-cggos6","subTotal":3000,"total":3203.5,"items":[{"productVariantName":"Erasko-Gold 10lites","qty":1,"unitPrice":3000,"costPrice":2500,"_id":"69121487e53ef6c60b05fe12"}],"discounts":[{"type":"flat","value":20,"amount":20}],"paymentConfirmed":false,"paymentStatus":"not paid","paymentMethod":"pos","paymentCurrency":"NG","taxRate":7.5,"tax":223.5,"paymentReceipts":[],"rejectionMessages":[],"updatedAt":"2025-11-11T16:36:22.331Z","__v":0,"warehouse":"Abuja"}];
+
+            this.allOrders = mockData;
+            // MOCK DATA END
+
+            console.log(`Successfully loaded ${this.allOrders.length} orders (mocked).`);
+
+          } catch (err) {
+            console.error('API Error:', err);
+            alert('Error loading orders from API: ' + err.message);
+            this.allOrders = [];
+          } finally {
+            this.isLoading = false;
+          }
+        },
+
       },
       mounted() {
         document.documentElement.classList.toggle('dark', this.darkMode);
+
+        // Load user context on mount
+        this.userRole = localStorage.getItem('role') || this.userRole;
+        this.userWarehouse = (localStorage.getItem('warehouse') || this.userWarehouse).toLowerCase();
+        this.currentUserId = localStorage.getItem('userId') || this.currentUserId;
+
         this.fetchOrders();
       }
     }).mount('#app');

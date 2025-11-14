@@ -15,7 +15,49 @@
   <!-- PDF Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+ <script src="assets/js/metaManager.js"></script>
+ <style>
+    body {
+      background-color: #f3f4f6;
+    }
 
+    /* Inside the @media (max-width: 768px) block: */
+@media (max-width: 768px) {
+    /* ... existing mobile styles ... */
+    #main-content {
+        margin-left: 0; 
+        padding: 10px; /* Reduced padding for more space */
+    }
+    
+    .user-header {
+        /* Enable flexible layout and wrapping */
+        flex-direction: column; /* Stack items vertically */
+        gap: 10px; /* Add space between stacked items */
+        align-items: stretch; /* Make items full-width */
+    }
+
+    .user-header input {
+        width: 100%; /* Make search input full width */
+    }
+
+    /* Group buttons horizontally (using flex) or let them stack naturally */
+    .user-header button {
+        /* Ensure buttons stretch to full width */
+        width: 100%; 
+        margin-bottom: 5px; /* Add spacing between buttons */
+    }
+    /* ... */
+}
+  </style>
+  <script>
+    setMeta({
+      title: "Eraskon | Stock Movements",
+      desc: "Access the Eraskon Inventory portal to manage stock movements.",
+      image: "assets/images/eraskon_logo.webp",
+      favicon: "assets/images/eraskon_logo.webp",
+      keywords: "Inventory, Warehouse, Stock, Stock Movements"
+    });
+  </script>
  
 </head>
 
@@ -28,7 +70,7 @@
   <script src="components/sidebar.js"></script>
 
   <div id="main-content">
-    <div id="stockTabs" style="margin-top:30px;">
+  <div id="stockTabs" style="margin-top:30px;">
       <div style="display:flex;gap:8px;margin-bottom:18px;">
         <button class="tab-btn active" data-tab="alertsTab">Low Stock Alerts</button>
         <button class="tab-btn" data-tab="warehouseStockTab">Warehouse Stock & Low Stock</button>
@@ -48,18 +90,21 @@
         <div id="warehouseStockCards"></div>
         <div style="margin-top:40px;">
           <h2 style="margin-bottom:10px;">Warehouse Stock Balances</h2>
-          <table class="user-table" id="warehouseStockTable">
-            <thead>
-              <tr>
-                <th>Warehouse</th>
-                <th>Product</th>
-                <th>SKU</th>
-                <th>Category</th>
-                <th>Stock</th>
-              </tr>
-            </thead>
-            <tbody id="warehouseStockTableBody"></tbody>
-          </table>
+          <!-- WRAPPER ADDED -->
+          <div class="table-responsive">
+            <table class="user-table" id="warehouseStockTable">
+              <thead>
+                <tr>
+                  <th>Warehouse</th>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th>Category</th>
+                  <th>Stock</th>
+                </tr>
+              </thead>
+              <tbody id="warehouseStockTableBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -98,19 +143,22 @@
             <i class="bx bxs-file-pdf" style="vertical-align:middle;"></i> Export to PDF
           </button>
         </div>
-        <table class="user-table" id="warehouseTable">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Country</th>
-              <th>Location</th>
-              <th>Capacity</th>
-              <th>Manager</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="warehouseTableBody"></tbody>
-        </table>
+        <!-- WRAPPER ADDED -->
+        <div class="table-responsive">
+          <table class="user-table" id="warehouseTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Country</th>
+                <th>Location</th>
+                <th>Capacity</th>
+                <th>Manager</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="warehouseTableBody"></tbody>
+          </table>
+        </div>
         <div id="pagination" class="pagination" style="margin-top: 10px; text-align: center;"></div>
       </div>
 
@@ -119,26 +167,9 @@
         <select id="warehouseMovementFilter" style="padding:6px;border-radius:4px;margin-bottom:10px;">
           <option value="">All Warehouses</option>
         </select>
-        <table class="user-table" id="warehouseMovementTable">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Product Variant</th>
-              <th>Type</th>
-              <th>Quantity</th>
-              <th>Warehouse</th>
-              <th>Destination Warehouse</th>
-              <th>Destination Customer</th>
-              <th>Batch Number</th>
-              <th>Reason</th>
-              <th>Reference</th>
-            </tr>
-          </thead>
-          <tbody id="warehouseMovementTableBody"></tbody>
-        </table>
-        <div style="margin-top:40px;">
-          <h2 style="margin-bottom:10px;">All Stock Movements</h2>
-          <table class="user-table" id="stockMovementTable">
+        <!-- WRAPPER ADDED -->
+        <div class="table-responsive">
+          <table class="user-table" id="warehouseMovementTable">
             <thead>
               <tr>
                 <th>Date</th>
@@ -153,8 +184,31 @@
                 <th>Reference</th>
               </tr>
             </thead>
-            <tbody id="stockMovementTableBody"></tbody>
+            <tbody id="warehouseMovementTableBody"></tbody>
           </table>
+        </div>
+        <div style="margin-top:40px;">
+          <h2 style="margin-bottom:10px;">All Stock Movements</h2>
+          <!-- WRAPPER ADDED -->
+          <div class="table-responsive">
+            <table class="user-table" id="stockMovementTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Product Variant</th>
+                  <th>Type</th>
+                  <th>Quantity</th>
+                  <th>Warehouse</th>
+                  <th>Destination Warehouse</th>
+                  <th>Destination Customer</th>
+                  <th>Batch Number</th>
+                  <th>Reason</th>
+                  <th>Reference</th>
+                </tr>
+              </thead>
+              <tbody id="stockMovementTableBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
