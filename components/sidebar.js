@@ -1,8 +1,8 @@
 // ============================================
-// SIDEBAR MENU SYSTEM - Final UX Improved Version (Logout Centering Fix)
+// SIDEBAR MENU SYSTEM - Mobile & Desktop Fixed Version
 // ============================================
 
-// Configuration (unchanged)
+// Configuration
 const CONFIG = {
     permissions: {
         dashboard: {
@@ -28,12 +28,12 @@ const CONFIG = {
         operations: { 
             'sale.html': { roles: ['admin', 'sales'], icon: 'bx-cart', label: 'Sales' },
             'shipping.html': { roles: ['admin', 'sales', 'warehouse'], icon: 'bx-send', label: 'Shipping' },
-        //     'inventory-check.html': { roles: ['admin', 'inventory', 'warehouse'], icon: 'bx-clipboard', label: 'Inventory Check' }
+            'inventory-check.html': { roles: ['admin', 'inventory', 'warehouse'], icon: 'bx-clipboard', label: 'Inventory Check' }
         }
     }
 };
 
-// Check for login status (unchanged)
+// Check for login status
 (function () {
     const name = localStorage.getItem('name');
     const role = localStorage.getItem('role');
@@ -46,42 +46,77 @@ const CONFIG = {
 // Sidebar UI 
 document.write(`
   <style>
-    /* Import Boxicons for the icons */
     @import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
 
     /* BASE STYLES */
-    html, body {
-      height: 100%;
-      margin: 0;
-  }
     .sidebar {
       position: fixed;
       top: 0;
       left: 0;
-      height: 100%;
+      height: 100vh;
       width: 260px;
       background: #fff;
       border-right: 1px solid #e5e7eb;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 999;
+      z-index: 1001;
       display: flex;
       flex-direction: column;
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
     }
+    
     .sidebar.close {
       width: 70px;
     }
+    
+    /* Mobile: Hidden by default, slides in when open */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+      }
+      
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+      
+      /* Override close class on mobile */
+      .sidebar.close {
+        width: 280px;
+      }
+    }
+    
+    /* Overlay for mobile */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+    
     .menu_content {
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
       padding: 12px 0;
     }
+    
     .menu_items {
       list-style: none;
       padding: 0;
       margin: 0;
     }
+    
     .nav_link {
       display: flex;
       align-items: center;
@@ -93,16 +128,41 @@ document.write(`
       transition: all 0.2s;
       cursor: pointer;
       user-select: none;
+      position: relative;
     }
-    .nav_link:hover { 
-        background: #f8fafc; 
-        color: #475569;
-    }
-    /* Main links are already centered due to min-width: 20px on navlink_icon and the overall padding */
-    .navlink_icon { font-size: 20px; min-width: 20px; display: flex; align-items: center; justify-content: center; }
-    .navlink { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity 0.3s; }
     
-    /* UI IMPROVEMENT: Logo/Header */
+    .nav_link:hover { 
+      background: #f8fafc; 
+      color: #475569;
+    }
+    
+    .navlink_icon { 
+      font-size: 20px; 
+      min-width: 20px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+    }
+    
+    .navlink { 
+      flex: 1; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      transition: opacity 0.3s; 
+    }
+    
+    .arrow-left {
+      font-size: 16px;
+      transition: transform 0.3s;
+      margin-left: auto;
+    }
+    
+    .arrow-left.rotated {
+      transform: rotate(90deg);
+    }
+    
+    /* Sidebar Header */
     .sidebar-header {
       padding: 20px;
       border-bottom: 1px solid #e5e7eb;
@@ -110,55 +170,107 @@ document.write(`
       align-items: center;
       min-height: 70px;
       gap: 12px;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
       color: #1e293b;
       position: relative; 
     }
+    
     .sidebar-header i.bx-store-alt { 
       font-size: 28px;
       color: #3b82f6;
     }
+    
     .sidebar.close .sidebar-logo-text {
-        opacity: 0;
-        width: 0;
-        overflow: hidden;
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
     }
-    /* Toggle Button in Header */
+    
+    /* Toggle Button - Only visible on desktop */
     #sidebarToggle {
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        padding: 8px;
-        margin-right: 10px;
-        cursor: pointer;
-        font-size: 24px;
-        color: #64748b;
-        transition: transform 0.3s;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 8px;
+      cursor: pointer;
+      font-size: 24px;
+      color: #64748b;
+      transition: all 0.3s;
     }
+    
     .sidebar.close #sidebarToggle {
-        position: static;
-        transform: none;
-        margin: 0 auto;
+      position: static;
+      transform: none;
+      margin: 0 auto;
     }
+    
     .sidebar.close .sidebar-header {
-        justify-content: center;
-        padding: 0;
+      justify-content: center;
+      padding: 20px 10px;
     }
+    
     .sidebar.close .sidebar-header i.bx-store-alt {
-        display: none; 
+      display: none; 
     }
-
-    /* Collapsed State Text Hiding */
+    
+    /* Hide toggle button on mobile */
+    @media (max-width: 768px) {
+      #sidebarToggle {
+        display: none;
+      }
+      
+      .sidebar-header {
+        padding: 16px 20px;
+        min-height: 60px;
+      }
+      
+      .sidebar-header i.bx-store-alt {
+        font-size: 24px;
+      }
+      
+      .sidebar-logo-text {
+        font-size: 16px;
+      }
+    }
+    
+    /* Collapsed State */
     .sidebar.close .navlink, 
     .sidebar.close .sidebar-logo-text { 
-        opacity: 0; 
-        width: 0; 
-        pointer-events: none; 
+      opacity: 0; 
+      width: 0; 
+      pointer-events: none; 
     }
-
-    /* User Info (unchanged) */
+    
+    .sidebar.close .arrow-left {
+      display: none;
+    }
+    
+    /* On mobile, always show text even with close class */
+    @media (max-width: 768px) {
+      .sidebar.close .navlink,
+      .sidebar.close .sidebar-logo-text {
+        opacity: 1;
+        width: auto;
+        pointer-events: auto;
+      }
+      
+      .sidebar.close .arrow-left {
+        display: block;
+      }
+      
+      .sidebar.close .sidebar-header {
+        justify-content: flex-start;
+        padding: 16px 20px;
+      }
+      
+      .sidebar.close .sidebar-header i.bx-store-alt {
+        display: block;
+      }
+    }
+    
+    /* User Info */
     .user_info-animated {
       border-bottom: 1px solid #e5e7eb;
       margin-bottom: 12px;
@@ -166,81 +278,143 @@ document.write(`
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
     }
+    
     .user_info-animated div {
-        padding: 4px 0;
-        font-size: 13px;
+      padding: 4px 0;
+      font-size: 13px;
     }
+    
     .sidebar.close .user_info-animated strong,
     .sidebar.close .user_info-animated span {
-      opacity: 0; width: 0;
+      opacity: 0; 
+      width: 0;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar.close .user_info-animated strong,
+      .sidebar.close .user_info-animated span {
+        opacity: 1;
+        width: auto;
+      }
     }
     
     a.nav_link.active { 
-        background: linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%); 
-        font-weight: 600; 
-        color: #3b82f6; 
-        border-right: 3px solid #3b82f6;
+      background: linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%); 
+      font-weight: 600; 
+      color: #3b82f6; 
+      border-right: 3px solid #3b82f6;
     }
-
-    /* Submenu fixes (unchanged) */
-    ul.submenu { display: none; padding-left: 0; margin-left: 0; } 
-    ul.submenu.open { display: block; }
-    .toggle-submenu { cursor: pointer; user-select: none; }
-
+    
+    /* Submenu */
+    ul.submenu { 
+      display: none; 
+      padding-left: 0; 
+      margin-left: 0; 
+    } 
+    
+    ul.submenu.open { 
+      display: block; 
+    }
+    
+    .toggle-submenu { 
+      cursor: pointer; 
+      user-select: none; 
+    }
+    
     .nav_link.sublink {
       padding-left: 52px; 
     }
+    
     .sidebar.close .nav_link.sublink {
-        padding-left: 20px;
+      padding-left: 20px;
     }
-
-    /* Logout Button Styling */
+    
+    @media (max-width: 768px) {
+      .sidebar.close .nav_link.sublink {
+        padding-left: 52px;
+      }
+    }
+    
+    /* Logout Button */
     .sidebar-actions {
-        padding: 0 20px;
-        border-top: 1px solid #e5e7eb; 
-        margin-top: auto; 
-        padding-top: 16px;
+      padding: 16px 20px;
+      border-top: 1px solid #e5e7eb; 
+      margin-top: auto; 
     }
+    
     .sidebar.close .sidebar-actions {
-        padding: 0;
-        padding-top: 16px;
-        /* Ensure container alignment when text is gone */
-        display: flex;
-        justify-content: center; /* Center the entire block */
-        align-items: center;
-        flex-direction: column;
+      padding: 16px 0;
+      display: flex;
+      justify-content: center;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar.close .sidebar-actions {
+        padding: 16px 20px;
+        display: block;
+      }
     }
     
     #logoutBtn {
-        padding-bottom: 12px; 
-        width: 100%; 
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      background: none;
+      border: none;
+      color: #e53e3e;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+      border-radius: 6px;
     }
     
-    /* FIX: Center the Logout icon when collapsed */
+    #logoutBtn:hover {
+      background: #fef2f2;
+    }
+    
+    #logoutBtn i {
+      font-size: 20px;
+    }
+    
     .sidebar.close #logoutBtn {
-        justify-content: center; 
-        padding-left: 0;
-        padding-right: 0;
-        width: 100%; /* Allows flex centering to work within the 70px sidebar */
-    }
-
-    #logoutBtn span {
-        color: #e53e3e;
-        font-weight: 600;
-        transition: opacity 0.3s;
-    }
-    .sidebar.close #logoutBtn span {
-        opacity: 0; 
+      justify-content: center;
+      padding: 12px;
+      width: auto;
     }
     
+    .sidebar.close #logoutBtn span {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar.close #logoutBtn {
+        justify-content: flex-start;
+        padding: 12px 20px;
+        width: 100%;
+      }
+      
+      .sidebar.close #logoutBtn span {
+        opacity: 1;
+        width: auto;
+        overflow: visible;
+      }
+    }
   </style>
 
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <i class='bx '></i>
-        <span class="sidebar-logo-text">Inventory Management</span>
-        <i id="sidebarToggle" class='bx bx-log-out'></i>
+      <i class='bx bx-store-alt'></i>
+      <span class="sidebar-logo-text">Inventory Management</span>
+      <i id="sidebarToggle" class='bx bx-chevron-left'></i>
     </div>
+    
     <div class="menu_content">
       <ul class="menu_items">
         <li class="item user_info-animated">
@@ -280,17 +454,16 @@ document.write(`
       </ul>
 
       <div class="sidebar-actions">
-        <div id="logoutBtn" class="bottom-action">
-          <span>Logout</span><i class='bx bx-power-off'></i>
-        </div>
+        <button id="logoutBtn">
+          <i class='bx bx-power-off'></i>
+          <span>Logout</span>
+        </button>
       </div>
-      
     </div>
   </nav>
 `);
 
-
-// Capitalize helper (unchanged)
+// Capitalize helper
 function capitalizeWords(str) {
     if (!str) return '-';
     return String(str).toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
@@ -304,12 +477,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user?.warehouse?.name) warehouse = user.warehouse.name;
 
-    // 1. Update User Info (unchanged)
+    // Update User Info
     document.getElementById('sidebarUserName').textContent = capitalizeWords(name);
     document.getElementById('sidebarUserRole').textContent = capitalizeWords(role);
     document.getElementById('sidebarUserWarehouse').textContent = capitalizeWords(warehouse);
 
-    // 2. Logout Handler (unchanged)
+    // Logout Handler
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
         if (confirm('Are you sure you want to logout?')) {
             localStorage.clear();
@@ -318,9 +491,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const currentPage = window.location.pathname.split('/').pop();
-    let isCollapsed = false;
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const overlay = document.getElementById('sidebarOverlay');
+    let isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    const isMobile = window.innerWidth <= 768;
 
-    // 3. Link Rendering Function (unchanged)
+    // Link Rendering Function
     function renderLinks(sectionKey) {
         const container = document.querySelector(`.${sectionKey}-links`);
         if (!container) {
@@ -352,74 +529,115 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Render all sections (unchanged)
+    // Render all sections
     renderLinks('dashboard');
     renderLinks('admin');
     renderLinks('operations');
 
-    // 4. Collapse/Expand Handlers (MODIFIED)
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('sidebarToggle'); 
-    
-    // Check for initial state (if a class was set externally)
-    if (sidebar?.classList.contains('close')) {
-         toggleBtn?.classList.replace('bx-log-out', 'bx-menu'); 
-         isCollapsed = true;
-    } else {
-         toggleBtn?.classList.replace('bx-menu', 'bx-log-out'); 
-         isCollapsed = false;
+    // Desktop: Set initial collapse state
+    if (!isMobile && isCollapsed) {
+        sidebar?.classList.add('close');
+        toggleBtn?.classList.replace('bx-chevron-left', 'bx-chevron-right');
     }
 
+    // Toggle button for desktop only
+    toggleBtn?.addEventListener('click', () => {
+        if (window.innerWidth <= 768) return;
+        
+        sidebar?.classList.toggle('close');
+        isCollapsed = sidebar?.classList.contains('close');
+        
+        if (isCollapsed) {
+            toggleBtn.classList.replace('bx-chevron-left', 'bx-chevron-right');
+        } else {
+            toggleBtn.classList.replace('bx-chevron-right', 'bx-chevron-left');
+        }
+        
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+    });
 
-    if (toggleBtn && sidebar) {
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('close');
-            isCollapsed = !isCollapsed;
-
-            // Swap icon based on state
+    // Desktop: Hover behavior when collapsed
+    if (!isMobile) {
+        sidebar?.addEventListener('mouseenter', () => {
             if (isCollapsed) {
-                toggleBtn.classList.replace('bx-log-out', 'bx-menu');
-            } else {
-                toggleBtn.classList.replace('bx-menu', 'bx-log-out');
+                sidebar.classList.remove('close');
+                toggleBtn?.classList.replace('bx-chevron-right', 'bx-chevron-left');
+            }
+        });
+        
+        sidebar?.addEventListener('mouseleave', () => {
+            if (isCollapsed) {
+                sidebar.classList.add('close');
+                toggleBtn?.classList.replace('bx-chevron-left', 'bx-chevron-right');
             }
         });
     }
 
-    // 5. Hover behavior for desktop when collapsed (unchanged)
-    sidebar?.addEventListener('mouseenter', () => {
-        if (isCollapsed) {
-            sidebar.classList.remove('close');
-            toggleBtn?.classList.replace('bx-menu', 'bx-log-out'); 
-        }
-    });
-    sidebar?.addEventListener('mouseleave', () => {
-        if (isCollapsed) {
-            sidebar.classList.add('close');
-            toggleBtn?.classList.replace('bx-log-out', 'bx-menu'); 
-        }
+    // Mobile: Open sidebar function (called from navbar)
+    window.openMobileSidebar = function() {
+        sidebar?.classList.add('mobile-open');
+        overlay?.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    // Mobile: Close sidebar function
+    window.closeMobileSidebar = function() {
+        sidebar?.classList.remove('mobile-open');
+        overlay?.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    // Close on overlay click
+    overlay?.addEventListener('click', () => {
+        window.closeMobileSidebar();
     });
 
+    // Close sidebar when clicking a link on mobile
+    if (isMobile) {
+        document.querySelectorAll('.sidebar a.nav_link').forEach(link => {
+            link.addEventListener('click', () => {
+                setTimeout(() => window.closeMobileSidebar(), 150);
+            });
+        });
+    }
 
-    // 6. Submenu Toggle Display (unchanged)
+    // Submenu Toggle
     document.querySelectorAll('.toggle-submenu').forEach(toggle => {
         toggle.addEventListener('click', function () {
-            if (isCollapsed && window.innerWidth > 768) {
-                return; 
-            }
-            
             const submenu = this.nextElementSibling;
             if (!submenu) return;
-            submenu.classList.toggle('open');
             
+            // On desktop collapsed mode without hover, don't toggle
+            if (window.innerWidth > 768 && isCollapsed && !sidebar?.matches(':hover')) {
+                return;
+            }
+            
+            submenu.classList.toggle('open');
             const arrow = this.querySelector('.arrow-left');
             if (arrow) arrow.classList.toggle('rotated');
         });
 
+        // Auto-open submenu if it contains active link
         const submenu = toggle.nextElementSibling;
         if (submenu && submenu.querySelector('a.active')) {
             submenu.classList.add('open');
             const arrow = toggle.querySelector('.arrow-left');
             if (arrow) arrow.classList.add('rotated');
         }
+    });
+    
+    // Handle window resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            const nowMobile = window.innerWidth <= 768;
+            if (nowMobile) {
+                // Switched to mobile - close sidebar if open
+                sidebar?.classList.remove('mobile-open');
+                overlay?.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }, 250);
     });
 });

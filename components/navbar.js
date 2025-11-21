@@ -1,119 +1,200 @@
-// ============================================
-// NAVBAR SYSTEM - Final Cleaned Version (Fixed Position Layout)
-// ============================================
-
-// Check for login status (retaining the existing check from the sidebar context)
-(function () {
-    const name = localStorage.getItem('name');
-    const role = localStorage.getItem('role');
-    if (!name || !role) {
-        // NOTE: Keeping this logic separate from the navbar script's core purpose.
-    }
-})();
-
-// Navbar UI 
 document.write(`
   <style>
-    /* Import Boxicons for the icons */
     @import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
     
-    /* --- Navbar Base (FIXED POSITION) --- */
+    /* Main Content Push (for sidebar) */
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    
+    .main-content {
+      margin-left: 260px;
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      min-height: 100vh;
+    }
+    
+    .sidebar.close ~ * .main-content,
+    body.sidebar-collapsed .main-content {
+      margin-left: 70px;
+    }
+    
+    @media (max-width: 768px) {
+      .main-content {
+        margin-left: 0 !important;
+      }
+    }
+    
+    /* Navbar Base */
     .navbar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      /* Adjusted padding for better fit on all screens */
-      padding: 10px 18px; 
-      background: #fff; 
+      justify-content: space-between; 
+      padding: 12px 20px;
+      background: #fff; /* Default color: White */
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
-      flex-wrap: wrap;
-      
-      /* CRITICAL FIX: Use fixed position for true viewport locking */
-      position: fixed; 
+      position: sticky; 
       top: 0;
-      left: 0; 
-      width: 100%; 
-      /* Ensure navbar is high priority */
-      z-index: 1000; 
+      z-index: 1100;
+      height: 60px;
+      box-sizing: border-box;
+      transition: background 0.3s ease; /* Added transition for smooth color change */
     }
 
-    /* --- Logo/Title --- */
+    /* === NEW: Offline State Style === */
+    .navbar.offline {
+      background: #fef2f2; /* Very light red background */
+      border-bottom: 3px solid #ef4444; /* Red bottom border */
+    }
+    
+    /* Logo/Title */
     .logo_item {
       display: flex;
       align-items: center;
       gap: 12px;
       font-weight: 700;
-      font-size: 16px;
+      font-size: 18px;
       color: #1e293b;
     }
+    
     .logo_item img {
-      height: 30px;
-      width: 30px;
+      height: 35px;
+      width: 35px;
       object-fit: contain;
     }
+    
+    /* Mobile menu button - hidden on desktop */
     .logo_item i.bx-menu {
-        font-size: 28px;
-        cursor: pointer;
-        color: #3b82f6;
+      align-self: center;
+      font-size: 30px;
+      cursor: pointer;
+      color: #3b82f6;
+      display: none;
+      padding: 4px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    
+    .logo_item i.bx-menu:active {
+      background: #eff6ff;
+    }
+    
+    @media (max-width: 768px) {
+      .logo_item i.bx-menu {
+        display: block;
+      }
+      
+      .navbar {
+        padding: 10px 15px;
+        height: 56px;
+      }
+      
+      .logo_item {
+        font-size: 15px;
+        gap: 10px;
+      }
+      
+      .logo_item img {
+        height: 30px;
+        width: 30px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .logo_item {
+        font-size: 14px;
+        gap: 8px;
+      }
+      
+      .logo_item img {
+        height: 26px;
+        width: 26px;
+      }
     }
 
-    /* --- Desktop Content --- */
+    /* Desktop Content */
     .navbar_content {
       display: flex;
       align-items: center;
       gap: 16px;
     }
+    
     .navbar_content .profile {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       object-fit: cover;
       cursor: pointer;
+      border: 2px solid #e5e7eb;
+      transition: border-color 0.2s;
     }
-    .navbar_content i {
-        display: none; 
+    
+    .navbar_content .profile:hover {
+      border-color: #3b82f6;
     }
 
     /* Network Status Badge */
     #networkStatus {
-      padding: 4px 8px;
-      border-radius: 4px;
+      padding: 6px 12px;
+      border-radius: 6px;
       font-weight: 600;
-      font-size: 11px;
-      margin-left: 8px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       background: #f1f5f9;
     }
 
-    /* --- Mobile Dropdown Toggle --- */
+    /* Mobile Dropdown Toggle */
     .dropdown-toggle {
       display: none;
       background: none;
       border: none;
-      font-size: 24px; 
+      font-size: 28px;
       cursor: pointer;
       color: #475569;
+      padding: 4px;
+      line-height: 1;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    
+    .dropdown-toggle:active {
+      background: #f1f5f9;
     }
 
-    /* --- Mobile Dropdown Menu --- */
+    /* Mobile Dropdown Menu */
     .dropdown-menu {
       display: none;
-      /* Needs to be fixed or absolute to the fixed navbar parent */
-      position: fixed; 
+      position: fixed;
       right: 10px;
-      /* Use a top value relative to the viewport height */
-      top: 70px; 
+      top: 66px;
       background: #fff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      min-width: 180px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      border-radius: 12px;
+      min-width: 200px;
       z-index: 1050;
       padding: 8px 0;
+      animation: slideDown 0.2s ease-out;
     }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
     .dropdown-menu.show {
       display: block;
     }
+    
     .dropdown-menu .dropdown-item {
-      padding: 10px 18px;
+      padding: 12px 18px;
       cursor: pointer;
       font-size: 14px;
       color: #334155;
@@ -124,114 +205,245 @@ document.write(`
       display: flex;
       align-items: center;
       gap: 12px;
+      transition: background 0.2s;
     }
+    
     .dropdown-menu .dropdown-item:hover {
       background: #f1f5f9;
     }
     
     .dropdown-menu .dropdown-item img.profile {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #e5e7eb;
     }
     
-    /* Mobile Network Status in Dropdown */
-    #networkStatusMobile {
-        padding: 10px 18px 10px 18px;
-        font-weight: 600;
-        font-size: 13px;
-        border-top: 1px solid #e2e8f0;
-        margin-top: 4px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .dropdown-menu .dropdown-item i {
+      font-size: 20px;
+      color: #64748b;
+    }
+    
+    /* Mobile Network Status - Now a button/item */
+    .dropdown-item.network-status-item {
+      cursor: default; /* Not clickable */
+      font-weight: 600;
+      font-size: 13px;
+      color: #475569;
+      background: none;
     }
 
-
-    /* --- Responsive Mobile Styles --- */
+    /* Responsive Mobile Styles */
     @media (max-width: 768px) {
-      .navbar {
-        padding: 8px 10px; 
-      }
-      .logo_item {
-        font-size: 14px;
-        gap: 8px;
-      }
       .dropdown-toggle {
         display: block;
       }
+      
       .navbar_content {
         display: none;
       }
-      /* Adjust mobile dropdown top offset if Navbar height changes */
+      
       .dropdown-menu {
         top: 60px;
       }
+       /* Ensure the sidebar open button is correctly aligned on mobile */
+      .logo_item {
+        justify-content: flex-start;
+      }
+    }
+    
+    /* Tablet adjustments */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .navbar {
+        padding: 12px 18px;
+      }
+      .logo_item {
+        font-size: 16px;
+      }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 360px) {
+      .logo_item span {
+        display: none;
+      }
+    }
+    
+    /* === DESKTOP CENTERING LOGIC (769px+) === */
+    .navbar-center-spacer {
+      display: none; 
+    }
+    
+    @media (min-width: 769px) {
+      .navbar {
+        justify-content: flex-start; 
+      }
+      
+      .navbar-center-spacer {
+        display: block; 
+        flex-basis: 0;
+        flex-grow: 1; 
+      }
+      
+      .logo_item {
+        order: 2; 
+        flex-grow: 0; 
+        flex-shrink: 0;
+      }
+      
+      .navbar_content {
+        order: 3; 
+        flex-basis: 0;
+        flex-grow: 1; 
+        justify-content: flex-end; 
+      }
+      
+      .logo_item {
+        justify-content: flex-start;
+      }
     }
   </style>
+  
   <nav class="navbar" id="mainNavbar">
     <div class="logo_item">
       <i class="bx bx-menu" id="sidebarOpen"></i>
-      <img src="assets/images/eraskon_logo.webp" alt=""> Eraskon Nigeria Ltd
+      <img src="assets/images/eraskon_logo.webp" alt="Eraskon Logo"> 
+      <span class="logo-text">Eraskon Nigeria Ltd</span>
     </div>
-    <button class="dropdown-toggle" id="navbarDropdown"><i class='bx bx-dots-vertical-rounded'></i></button>
+    
+    <div class="navbar-center-spacer"></div>
+    
+    <button class="dropdown-toggle" id="navbarDropdown">
+      <i class='bx bx-dots-vertical-rounded'></i>
+    </button>
     
     <div class="navbar_content" id="navbarContent">
       <div id="networkStatus"></div>
-      <img src="assets/images/avatar.png" alt="" class="profile" title="User Profile" />
+      <img src="assets/images/avatar.png" alt="User Profile" class="profile" title="User Profile" />
     </div>
     
     <div class="dropdown-menu" id="navbarDropdownMenu">
-      
-      <button class="dropdown-item">
-        <img src="assets/images/avatar.png" alt="" class="profile" style="margin-right:8px;"> Profile
+      <button class="dropdown-item network-status-item" id="mobileNetworkStatusItem">
+        <span>Network:</span>
+        <span id="mobileStatusText"></span>
       </button>
       
-      <div id="networkStatusMobile">
-        <span>Network Status:</span>
-        <span id="mobileStatusText"></span>
-      </div>
+      <button class="dropdown-item" id="mobileProfileBtn">
+        <img src="assets/images/avatar.png" alt="Profile" class="profile">
+        <span>Profile</span>
+      </button>
       
     </div>
   </nav>
+  
   <script>
-    // Network status (unchanged)
-    function updateStatus() {
-      const statusDiv = document.getElementById("networkStatus");
-      const statusTextSpan = document.getElementById("mobileStatusText");
-      const online = navigator.onLine;
-      const statusText = online ? "ONLINE" : "OFFLINE";
-      const statusSymbol = online ? "🟢 " : "🔴 ";
-      
-      // Desktop view
-      if (statusDiv) {
-        statusDiv.textContent = statusSymbol + statusText;
-        statusDiv.style.color = online ? "green" : "red";
+    (function() {
+      // Network status update and navbar color change
+      function updateStatus() {
+        const navbar = document.getElementById("mainNavbar");
+        const statusDiv = document.getElementById("networkStatus");
+        const statusTextSpan = document.getElementById("mobileStatusText");
+        const online = navigator.onLine;
+        const statusText = online ? "ONLINE" : "OFFLINE";
+        const statusSymbol = online ? "🟢" : "🔴";
+        
+        // Toggle red navbar color
+        if (navbar) {
+          navbar.classList.toggle('offline', !online);
+        }
+        
+        // Desktop view
+        if (statusDiv) {
+          statusDiv.innerHTML = statusSymbol + " " + statusText;
+          statusDiv.style.color = online ? "#10b981" : "#ef4444";
+        }
+        
+        // Mobile view
+        if (statusTextSpan) {
+          statusTextSpan.innerHTML = statusSymbol + " " + statusText;
+          statusTextSpan.style.color = online ? "#10b981" : "#ef4444";
+        }
       }
       
-      // Mobile view
-      if (statusTextSpan) {
-        statusTextSpan.textContent = statusSymbol + statusText;
-        statusTextSpan.style.color = online ? "green" : "red";
-      }
-    }
-    window.addEventListener("online", updateStatus);
-    window.addEventListener("offline", updateStatus);
-    document.addEventListener("DOMContentLoaded", updateStatus);
+      window.addEventListener("online", updateStatus);
+      window.addEventListener("offline", updateStatus);
+      document.addEventListener("DOMContentLoaded", updateStatus);
 
-    // Dropdown for mobile (unchanged)
-    const dropdownBtn = document.getElementById('navbarDropdown');
-    const dropdownMenu = document.getElementById('navbarDropdownMenu');
-    dropdownBtn?.addEventListener('click', function(e) {
-      e.stopPropagation();
-      dropdownMenu?.classList.toggle('show');
-    });
-    // Optional: close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-      if (!dropdownBtn?.contains(e.target) && !dropdownMenu?.contains(e.target)) {
-        dropdownMenu?.classList.remove('show');
-      }
-    });
+      // Wait for DOM to be ready
+      document.addEventListener('DOMContentLoaded', function() {
+        // Mobile sidebar open button
+        const sidebarOpenBtn = document.getElementById('sidebarOpen');
+        
+        if (sidebarOpenBtn) {
+          sidebarOpenBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('Hamburger menu clicked'); // Debug log
+            
+            // Check if function exists
+            if (typeof window.openMobileSidebar === 'function') {
+              window.openMobileSidebar();
+            } else {
+              // Fallback: directly manipulate sidebar
+              console.log('Using fallback method');
+              const sidebar = document.getElementById('sidebar');
+              const overlay = document.getElementById('sidebarOverlay');
+              
+              if (sidebar && overlay) {
+                sidebar.classList.add('mobile-open');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+              }
+            }
+          });
+        }
 
+        // Mobile dropdown toggle
+        const dropdownBtn = document.getElementById('navbarDropdown');
+        const dropdownMenu = document.getElementById('navbarDropdownMenu');
+        
+        if (dropdownBtn && dropdownMenu) {
+          dropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('show');
+          });
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+          if (dropdownBtn && dropdownMenu) {
+            if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+              dropdownMenu.classList.remove('show');
+            }
+          }
+        });
+        
+        // Close dropdown on item click
+        // Filter out the network status item from closing the menu
+        document.querySelectorAll('.dropdown-item:not(.network-status-item)').forEach(item => {
+          item.addEventListener('click', function() {
+            if (dropdownMenu) {
+              dropdownMenu.classList.remove('show');
+            }
+          });
+        });
+      });
+      
+      // Responsive text handling
+      function handleResize() {
+        const logoText = document.querySelector('.logo-text');
+        if (!logoText) return;
+        
+        if (window.innerWidth < 400) {
+          logoText.textContent = 'Eraskon';
+        } else {
+          logoText.textContent = 'Eraskon Nigeria Ltd';
+        }
+      }
+      
+      window.addEventListener('resize', handleResize);
+      document.addEventListener('DOMContentLoaded', handleResize);
+    })();
   </script>
 `);
