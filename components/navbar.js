@@ -1,5 +1,5 @@
 // ============================================
-// NAVBAR SYSTEM - Final Cleaned Version (Mobile Fit Fix)
+// NAVBAR SYSTEM - Final Cleaned Version (Fixed Position Layout)
 // ============================================
 
 // Check for login status (retaining the existing check from the sidebar context)
@@ -17,7 +17,7 @@ document.write(`
     /* Import Boxicons for the icons */
     @import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
     
-    /* --- Navbar Base --- */
+    /* --- Navbar Base (FIXED POSITION) --- */
     .navbar {
       display: flex;
       align-items: center;
@@ -27,8 +27,12 @@ document.write(`
       background: #fff; 
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
       flex-wrap: wrap;
-      position: sticky; 
+      
+      /* CRITICAL FIX: Use fixed position for true viewport locking */
+      position: fixed; 
       top: 0;
+      left: 0; 
+      width: 100%; 
       /* Ensure navbar is high priority */
       z-index: 1000; 
     }
@@ -86,7 +90,6 @@ document.write(`
       background: none;
       border: none;
       font-size: 24px; 
-      /* Removed unnecessary margin-left */
       cursor: pointer;
       color: #475569;
     }
@@ -94,9 +97,11 @@ document.write(`
     /* --- Mobile Dropdown Menu --- */
     .dropdown-menu {
       display: none;
-      position: absolute;
+      /* Needs to be fixed or absolute to the fixed navbar parent */
+      position: fixed; 
       right: 10px;
-      top: 55px;
+      /* Use a top value relative to the viewport height */
+      top: 70px; 
       background: #fff;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
@@ -146,7 +151,6 @@ document.write(`
     /* --- Responsive Mobile Styles --- */
     @media (max-width: 768px) {
       .navbar {
-        /* FIX: Tightened horizontal padding to ensure elements fit */
         padding: 8px 10px; 
       }
       .logo_item {
@@ -158,6 +162,10 @@ document.write(`
       }
       .navbar_content {
         display: none;
+      }
+      /* Adjust mobile dropdown top offset if Navbar height changes */
+      .dropdown-menu {
+        top: 60px;
       }
     }
   </style>
@@ -187,7 +195,7 @@ document.write(`
     </div>
   </nav>
   <script>
-    // Network status
+    // Network status (unchanged)
     function updateStatus() {
       const statusDiv = document.getElementById("networkStatus");
       const statusTextSpan = document.getElementById("mobileStatusText");
@@ -211,7 +219,7 @@ document.write(`
     window.addEventListener("offline", updateStatus);
     document.addEventListener("DOMContentLoaded", updateStatus);
 
-    // Dropdown for mobile
+    // Dropdown for mobile (unchanged)
     const dropdownBtn = document.getElementById('navbarDropdown');
     const dropdownMenu = document.getElementById('navbarDropdownMenu');
     dropdownBtn?.addEventListener('click', function(e) {

@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Product Variant Manager</title>
+    <title>Product Manager</title>
 
-    <!-- Boxicons CSS -->
+    <!-- External CSS -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-     <script src="assets/js/metaManager.js"></script>
-  <script>
-    setMeta({
-      title: "Eraskon | Product",
-      desc: "Access the Eraskon Inventory portal to manage products.",
-      image: "assets/images/eraskon_logo.webp",
-      favicon: "assets/images/eraskon_logo.webp",
-      keywords: "Inventory, Warehouse, Stock, Sales, Product"
-    });
-  </script>
+
+    <script src="assets/js/metaManager.js"></script>
+    <script>
+        setMeta({
+            title: "Eraskon | Product",
+            desc: "Access the Eraskon Inventory portal to manage products.",
+            image: "assets/images/eraskon_logo.webp",
+            favicon: "assets/images/eraskon_logo.webp",
+            keywords: "Inventory, Warehouse, Stock, Sales, Product"
+        });
+    </script>
+
 <style>
-    :root {
+:root {
   --bg-color: #e2dcdc;
   --text-color: #090F3B;
   --card-bg: #ffffff;
@@ -47,174 +50,64 @@ body {
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
-/* TABLE */
+/* Table */
 table {
   width: 100%;
   border-collapse: collapse;
-  background-color: var(--card-bg);
-  color: var(--text-color);
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 th, td {
   padding: 10px;
   border: 1px solid var(--border-color);
-  text-align: left;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-th {
-  background-color: rgba(0, 0, 0, 0.05);
-}
+th { background-color: rgba(0, 0, 0, 0.05); }
+body.dark th { background-color: rgba(255, 255, 255, 0.05); }
 
-body.dark th {
-  background-color: rgba(255, 255, 255, 0.05);
-}
+tr:hover { background-color: rgba(0, 0, 0, 0.03); }
+body.dark tr:hover { background-color: rgba(255, 255, 255, 0.06); }
 
-tr:hover {
-  background-color: rgba(0, 0, 0, 0.03);
-}
-body.dark tr:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-/* BUTTON */
+/* Buttons */
 button {
   padding: 8px 12px;
-  margin: 5px;
   border: none;
   background: #3b82f6;
   color: white;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s ease;
 }
-button:hover {
-  background: #2563eb;
-}
+button:hover { background: #2563eb; }
 
-/* MODAL */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal {
-  background: var(--card-bg);
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 700px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* CARDS */
-.card-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: flex-start;
-}
-
-.card {
-  border: 1px solid var(--border-color);
-  padding: 15px;
-  border-radius: 8px;
-  background: var(--card-bg);
-  width: 100%;
-  max-width: 320px;
-  transition: transform 0.2s ease, background 0.3s ease;
-}
-.card:hover {
-  transform: scale(1.02);
-}
-
-@media (min-width: 600px) {
-  .card {
-    width: calc(50% - 20px);
-  }
-}
-@media (min-width: 900px) {
-  .card {
-    width: calc(33.333% - 20px);
-  }
-}
-
-/* FORMS */
-label {
-  display: block;
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-input, select {
+/* Inputs */
+input, select, textarea {
   width: 100%;
   padding: 6px 8px;
   margin-top: 4px;
   border: 1px solid var(--input-border);
   border-radius: 4px;
-  background-color: var(--bg-color);
+  background: var(--bg-color);
   color: var(--text-color);
 }
 
-/* OTHER */
-.preview {
-  max-width: 100px;
-  margin-top: 10px;
-}
-
-.inline-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.error {
-  color: red;
-  font-size: 0.9em;
-}
-
+/* Error */
+.error { color: red; font-size: 0.9em; }
 </style>
-    
 </head>
 
-
 <body>
-   <script src="components/uiComponents.js"></script>
-<!-- Load Auth Guard -->
- <script src="components/spinner.js"></script>
-<script src="components/authGuard.js"></script>
-  <!-- Load Navbar -->
-  <script src="components/navbar.js"></script>
+    <!-- Components -->
+    <script src="components/uiComponents.js"></script>
+    <script src="components/spinner.js"></script>
+    <script src="components/authGuard.js"></script>
+    <script src="components/navbar.js"></script>
+    <script src="components/sidebar.js"></script>
 
-  <!-- Load Sidebar -->
-  <script src="components/sidebar.js"></script>
-   
-    <main id="app" class="main-content">
+<main id="app" class="main-content">
     <h1>Product Manager</h1>
 
+    <!-- PRODUCT FORM -->
     <form @submit.prevent="submitForm">
         <label>Name</label>
         <input type="text" v-model="form.name" required />
@@ -222,40 +115,31 @@ input, select {
 
         <label>Description</label>
         <textarea v-model="form.description" rows="3"></textarea>
-        <span class="error" v-if="errors.description">{{ errors.description }}</span>
 
         <label>Category</label>
         <select v-model="form.category" required>
             <option disabled value="">-- Select Category --</option>
-            <option v-for="cat in categories" :value="cat._id" :key="cat._id">{{ cat.name }}</option>
+            <option v-for="cat in categories" :value="cat._id">{{ cat.name }}</option>
         </select>
         <span class="error" v-if="errors.category">{{ errors.category }}</span>
 
-        <label>SKU (Leave blank for auto-generation)</label>
-        <input type="text" v-model="form.sku" placeholder="Enter SKU or leave blank for auto-generation" />
-        <span class="error" v-if="errors.sku">{{ errors.sku }}</span>
-
         <button type="submit">{{ form._id ? 'Update' : 'Add' }} Product</button>
-        <button type="button" v-if="form._id" @click="resetForm"
-            style="background:#aaa;margin-left:10px;">Cancel</button>
-        <div v-if="formError" class="error">{{ formError }}</div>
+        <button type="button" v-if="form._id" @click="resetForm" style="background:#aaa;">Cancel</button>
+
+        <div class="error" v-if="formError">{{ formError }}</div>
     </form>
 
-    <!-- Search and Pagination Controls -->
-    <div style="margin: 24px 0 12px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
-        <input
-            type="text"
-            v-model="search"
-            placeholder="Search products..."
-            style="max-width: 260px;"
-        />
+    <!-- SEARCH + PAGINATION -->
+    <div style="margin: 24px 0 12px; display: flex; flex-wrap: wrap; gap: 16px;">
+        <input type="text" v-model="search" placeholder="Search products..." style="max-width:260px;" />
         <div style="margin-left:auto;">
             <button :disabled="page === 1" @click="page--">Prev</button>
-            <span style="margin:0 8px;">Page {{ page }} / {{ totalPages }}</span>
+            <span style="margin: 0 8px;">Page {{ page }} / {{ totalPages }}</span>
             <button :disabled="page === totalPages" @click="page++">Next</button>
         </div>
     </div>
 
+    <!-- PRODUCT TABLE -->
     <table v-if="pagedProducts.length">
         <thead>
             <tr>
@@ -280,174 +164,122 @@ input, select {
     <div v-else style="margin-top:32px;color:#888;">No products found.</div>
 </main>
 
-   <script src="assets/js/script.js"></script>
+<script src="config.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+<script>
+const API_BASE = window.BASE_URL;
 
+new Vue({
+    el: '#app',
+    data: {
+        products: [],
+        categories: [],
+        form: { _id: '', name: '', description: '', category: '' },
+        search: '',
+        page: 1,
+        perPage: 10,
+        errors: {},
+        formError: ''
+    },
+    computed: {
+        filteredProducts() {
+            const s = this.search.trim().toLowerCase();
+            if (!s) return this.products;
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="config.js"></script>
+            return this.products.filter(p => {
+                const catName = this.getCategoryName(p.category).toLowerCase();
+                return (
+                    (p.name || '').toLowerCase().includes(s) ||
+                    (p.description || '').toLowerCase().includes(s) ||
+                    catName.includes(s)
+                );
+            });
+        },
+        totalPages() {
+            return Math.max(1, Math.ceil(this.filteredProducts.length / this.perPage));
+        },
+        pagedProducts() {
+            const start = (this.page - 1) * this.perPage;
+            return this.filteredProducts.slice(start, start + this.perPage);
+        }
+    },
+    watch: {
+        search() { this.page = 1; },
+        filteredProducts() {
+            if (this.page > this.totalPages) this.page = this.totalPages;
+        }
+    },
+    mounted() {
+        this.fetchProducts();
+        this.fetchCategories();
+    },
+    methods: {
+        async fetchProducts() {
+            try {
+                const res = await axios.get(`${API_BASE}/products`);
+                this.products = res.data;
+            } catch (err) { console.error(err); }
+        },
+        async fetchCategories() {
+            try {
+                const res = await axios.get(`${API_BASE}/category`);
+                this.categories = res.data;
+            } catch (err) { console.error(err); }
+        },
+        getCategoryName(cat) {
+            if (!cat) return '';
+            const id = typeof cat === 'object' ? cat._id : cat;
+            const found = this.categories.find(c => c._id === id);
+            return found ? found.name : '';
+        },
+        validateForm() {
+            this.errors = {};
+            if (!this.form.name.trim()) this.errors.name = "Name is required";
+            if (!this.form.category) this.errors.category = "Category is required";
+            return Object.keys(this.errors).length === 0;
+        },
+        async submitForm() {
+            if (!this.validateForm()) return;
 
-
-    <script>
-        const API_BASE = window.BASE_URL;
-        new Vue({
-            el: '#app',
-            data: {
-                products: [],
-                categories: [],
-                form: {
-                    _id: '',
-                    name: '',
-                    description: '',
-                    category: '',
-                    sku: ''
-                },
-                errors: {},
-                formError: '',
-                search: '',
-                page: 1,
-                perPage: 10
-            },
-            computed: {
-                filteredProducts() {
-                    if (!this.search.trim()) return this.products;
-                    const s = this.search.trim().toLowerCase();
-                    return this.products.filter(p =>
-                        (p.name && p.name.toLowerCase().includes(s)) ||
-                        (p.description && p.description.toLowerCase().includes(s)) ||
-                        (this.getCategoryName(p.category).toLowerCase().includes(s))
-                    );
-                },
-                totalPages() {
-                    return Math.max(1, Math.ceil(this.filteredProducts.length / this.perPage));
-                },
-                pagedProducts() {
-                    const start = (this.page - 1) * this.perPage;
-                    return this.filteredProducts.slice(start, start + this.perPage);
+            try {
+                if (this.form._id) {
+                    await axios.put(`${API_BASE}/products/${this.form._id}`, this.form);
+                } else {
+                    await axios.post(`${API_BASE}/products`, this.form);
                 }
-            },
-            watch: {
-                search() {
-                    this.page = 1;
-                },
-                filteredProducts() {
-                    if (this.page > this.totalPages) this.page = this.totalPages;
-                }
-            },
-            mounted() {
+                this.resetForm();
                 this.fetchProducts();
-                this.fetchCategories();
-            },
-            methods: {
-                async fetchProducts() {
-                    try {
-                        const res = await axios.get(`${API_BASE}/products`);
-                        this.products = res.data;
-                    } catch (err) {
-                        console.error('Error fetching products:', err);
-                    }
-                },
-                async fetchCategories() {
-                    try {
-                        const res = await axios.get(`${API_BASE}/category`);
-                        this.categories = res.data;
-                    } catch (err) {
-                        console.error('Error fetching categories:', err);
-                    }
-                },
-                getCategoryName(catId) {
-                    const cat = this.categories.find(c => c._id === catId || (typeof catId === 'object' && c._id === catId?._id));
-                    return cat ? cat.name : '';
-                },
-                validateForm() {
-                    this.errors = {};
-                    let valid = true;
-                    if (!this.form.name.trim()) {
-                        this.errors.name = "Name is required";
-                        valid = false;
-                    }
-                    if (!this.form.category) {
-                        this.errors.category = "Category is required";
-                        valid = false;
-                    }
-                    // Validate SKU format if provided
-                    if (this.form.sku && !/^[A-Za-z0-9-_]{3,}$/.test(this.form.sku)) {
-                        this.errors.sku = "SKU must be at least 3 characters and contain only letters, numbers, hyphens and underscores";
-                        valid = false;
-                    }
-                    return valid;
-                },
-                generateSKU() {
-                    const name = this.form.name.trim();
-                    if (!name) return '';
-                    
-                    // Create base SKU from product name
-                    const baseSkuFromName = name
-                        .replace(/[^A-Za-z0-9]/g, '-') // Replace non-alphanumeric with hyphens
-                        .replace(/-+/g, '-') // Replace multiple hyphens with single
-                        .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
-                        .toUpperCase()
-                        .slice(0, 20); // Limit length
-                        
-                    // Add random suffix for uniqueness
-                    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-                    return `${baseSkuFromName}-${randomSuffix}`;
-                },
-                async submitForm() {
-                    if (!this.validateForm()) return;
-                    this.formError = '';
-                    try {
-                        if (this.form._id) {
-                            // Update
-                            await axios.put(`${API_BASE}/products/${this.form._id}`, {
-                                name: this.form.name,
-                                description: this.form.description,
-                                category: this.form.category,
-                                sku: this.form.sku || this.generateSKU()
-                            });
-                        } else {
-                            // Create
-                            await axios.post(`${API_BASE}/products`, {
-                                name: this.form.name,
-                                description: this.form.description,
-                                category: this.form.category,
-                                sku: this.form.sku || this.generateSKU()
-                            });
-                        }
-                        this.resetForm();
-                        this.fetchProducts();
-                    } catch (err) {
-                        this.formError = err.response?.data?.message || 'Submit failed';
-                    }
-                },
-                editProduct(prod) {
-                    this.form = {
-                        _id: prod._id,
-                        name: prod.name,
-                        description: prod.description,
-                        category: typeof prod.category === 'object' ? prod.category._id : prod.category
-                    };
-                    this.formError = '';
-                    this.errors = {};
-                },
-                async deleteProduct(id) {
-                    if (!confirm('Are you sure you want to delete this product?')) return;
-                    try {
-                        await axios.delete(`${API_BASE}/products/${id}`);
-                        this.fetchProducts();
-                    } catch (err) {
-                        alert('Delete failed');
-                    }
-                },
-                resetForm() {
-                    this.form = { _id: '', name: '', description: '', category: '', sku: '' };
-                    this.formError = '';
-                    this.errors = {};
-                }
+            } catch (err) {
+                this.formError = err.response?.data?.message || "Submit failed";
             }
-        });
-    </script>
-</body>
+        },
+        editProduct(prod) {
+            this.form = {
+                _id: prod._id,
+                name: prod.name,
+                description: prod.description,
+                category: typeof prod.category === 'object' ? prod.category._id : prod.category
+            };
+            this.errors = {};
+            this.formError = '';
+        },
+        async deleteProduct(id) {
+            if (!confirm("Are you sure?")) return;
+            try {
+                await axios.delete(`${API_BASE}/products/${id}`);
+                this.fetchProducts();
+            } catch (err) {
+                alert("Delete failed");
+            }
+        },
+        resetForm() {
+            this.form = { _id: '', name: '', description: '', category: '' };
+            this.errors = {};
+            this.formError = '';
+        }
+    }
+});
+</script>
 
+</body>
 </html>
