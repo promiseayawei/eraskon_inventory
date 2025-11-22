@@ -7,7 +7,7 @@
   <title>Eraskon Inventory Management</title>
 
   <!-- Boxicons CSS -->
-   <link href="assets/css/style-store.css" rel="stylesheet" />
+  <link href="assets/css/style-store.css" rel="stylesheet" />
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -15,7 +15,382 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-   <script src="assets/js/metaManager.js"></script>
+  <script src="assets/js/metaManager.js"></script>
+  <style>
+    /* Drawer Panel Styling */
+    .drawer-panel {
+      position: fixed;
+      right: 0;
+      top: 80px;
+      width: 350px;
+      max-height: calc(100vh - 100px);
+      background: white;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+      padding: 20px;
+      z-index: 1300;
+      overflow-y: auto;
+      border-radius: 12px 0 0 12px;
+    }
+
+    .dark .drawer-panel {
+      background: #1f2937;
+      color: #f3f4f6;
+    }
+
+    /* Hamburger Toggle Button */
+    #drawer-toggle {
+      background: #2563eb;
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    #drawer-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.6);
+    }
+
+    #drawer-toggle.open {
+      background: #dc2626;
+    }
+
+    #drawer-toggle i {
+      font-size: 20px;
+    }
+
+    /* Drawer FAB Buttons */
+    .drawer-fab-btn {
+      padding: 10px 20px;
+      margin: 8px 0;
+      border-radius: 25px;
+      border: none;
+      background: white;
+      color: #2563eb;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .drawer-fab-btn:hover {
+      background: #2563eb;
+      color: white;
+      transform: translateX(-5px);
+    }
+
+    .drawer-fab-btn i {
+      font-size: 16px;
+    }
+
+    /* Animation for drawer buttons */
+    .drawer-btns-enter-active, .drawer-btns-leave-active {
+      transition: all 0.3s ease;
+    }
+
+    .drawer-btns-enter, .drawer-btns-leave-to {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+
+    /* Invoice Drawer Specific */
+    .invoice-header {
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .dark .invoice-header {
+      border-bottom-color: #374151;
+    }
+
+    .cart-count {
+      background: #2563eb;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .invoice-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 20px 0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .invoice-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 8px;
+      background: #f9fafb;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .dark .invoice-item {
+      background: #374151;
+    }
+
+    .invoice-item:hover {
+      background: #e5e7eb;
+      transform: translateX(-4px);
+    }
+
+    .dark .invoice-item:hover {
+      background: #4b5563;
+    }
+
+    .invoice-item .variant-size {
+      color: #6b7280;
+      font-size: 0.9em;
+      margin-left: 4px;
+    }
+
+    .invoice-item .qty {
+      color: #2563eb;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .invoice-item .item-total {
+      color: #059669;
+      font-weight: 700;
+      margin-left: 12px;
+    }
+
+    .invoice-totals {
+      border-top: 2px solid #e5e7eb;
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .dark .invoice-totals {
+      border-top-color: #374151;
+    }
+
+    .invoice-totals > div {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 15px;
+    }
+
+    .invoice-totals .discount {
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    .invoice-totals .total-row {
+      border-top: 2px solid #2563eb;
+      padding-top: 12px;
+      margin-top: 8px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .invoice-totals .total {
+      color: #2563eb;
+    }
+
+    .invoice-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .action-btn.success {
+      background: #10b981;
+      color: white;
+    }
+
+    .action-btn.success:hover {
+      background: #059669;
+    }
+
+    .remove-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .remove-btn:hover {
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+
+    /* Customer Search Styling */
+    .customer-search-results {
+      border-radius: 8px;
+      margin-top: 4px;
+    }
+
+    .search-result-item {
+      transition: all 0.2s ease;
+    }
+
+    .search-result-item:hover {
+      background: #e5e7eb !important;
+    }
+
+    .dark .search-result-item:hover {
+      background: #374151 !important;
+    }
+
+    .selected-result {
+      background: #dbeafe !important;
+      font-weight: 600;
+    }
+
+    .dark .selected-result {
+      background: #1e40af !important;
+    }
+
+    /* Success Message Toast */
+    .success-toast {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+      z-index: 9999;
+      animation: slideInRight 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .success-toast i {
+      font-size: 20px;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark .modal-content {
+      background: #1f2937;
+      color: #f3f4f6;
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #2563eb;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .dark .modal-content input {
+      background: #374151;
+      border-color: #4b5563;
+      color: #f3f4f6;
+    }
+
+    .modal-content button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .modal-content button:first-of-type {
+      background: #2563eb;
+      color: white;
+    }
+
+    .modal-content button:first-of-type:hover {
+      background: #1d4ed8;
+    }
+
+    .modal-content button:last-of-type {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    .modal-content button:last-of-type:hover {
+      background: #d1d5db;
+    }
+  </style>
   <script>
     setMeta({
       title: "Eraskon | Store",
@@ -27,293 +402,285 @@
   </script>
 </head>
 
-
 <body>
   <script src="components/uiComponents.js"></script>
   <script src="components/spinner.js"></script>
-
-  <!-- Load Auth Guard -->
   <script src="components/authGuard.js"></script>
-  <!-- Load Navbar -->
   <script src="components/navbar.js"></script>
-
-  <!-- Load Sidebar -->
   <script src="components/sidebar.js"></script>
 
- <main id="app" class="main-content">
-  <section class="product-page">
-    <h2 style="margin: 20px 0;">Products</h2>
-    <div class="search-box">
-      <input type="text" v-model="searchTerm" placeholder="Search products...">
-    </div>
-
-    <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
-      <button :class="{active: productView === 'card'}" @click="productView = 'card'"
-        style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer;">
-        Card View
-      </button>
-      <button :class="{active: productView === 'list'}" @click="productView = 'list'"
-        style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #f3f4f6; color: #2563eb; font-weight: 600; cursor: pointer;">
-        List View
-      </button>
-    </div>
-
-    <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
-      
-      <div v-if="productView === 'card'" class="product-grid" style="flex: 1;">
-        <div class="product-card" v-for="product in filteredProducts" :key="product.id">
-          <img :src="product.image" :alt="product.name" />
-          <div class="product-header">
-            <h3>{{ product.name }}</h3>
-            <p>{{ product.description }}</p>
-          </div>
-          <div class="variant-selector">
-            <label>Variant:</label>
-            <select v-model="product.selectedVariant">
-              <option v-for="variant in product.variants" :value="variant">
-                {{ variant.size }} - ₦{{ variant.price }} ({{ variant.stock }} available)
-              </option>
-            </select>
-          </div>
-          <div v-if="product.batchTracking && product.batches && product.batches.length">
-            <label>Select Batch:</label>
-            <select v-model="product.selectedBatch">
-              <option v-for="batch in product.batches" :value="batch">
-                {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
-              </option>
-            </select>
-          </div>
-          <div class="quantity-control">
-            <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
-            <input type="number" v-model.number="product.quantity" min="1" />
-            <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
-          </div>
-          <p>Stock: {{ product.selectedVariant.stock }}</p>
-          <button class="order-btn" @click="addToCart(product); drawer.invoice = true">Order</button>
-        </div>
+  <main id="app" class="main-content">
+    <section class="product-page">
+      <h2 style="margin: 20px 0;">Products</h2>
+      <div class="search-box">
+        <input type="text" v-model="searchTerm" placeholder="Search products...">
       </div>
 
-      <div v-else class="product-list-view" style="flex: 1;">
-        <table class="product-list-table">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Name & Description</th>
-              <th>Variant</th>
-              <th>Batch</th>
-              <th>Stock</th>
-              <th>Qty</th>
-              <th>Order</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="product in filteredProducts" :key="product.id">
-              <td data-label="Image:"><img :src="product.image" :alt="product.name"
-                  style="width:60px; height:60px; object-fit:cover; border-radius:8px;" /></td>
-              <td data-label="Name:">
-                <strong>{{ product.name }}</strong>
-                <div style="font-size:0.95em;">{{ product.description }}</div>
-              </td>
-              <td data-label="Variant:">
-                <select v-model="product.selectedVariant">
-                  <option v-for="variant in product.variants" :value="variant">
-                    {{ variant.size }} - ₦{{ variant.price }} ({{ variant.stock }} available)
-                  </option>
-                </select>
-              </td>
-              <td data-label="Batch:">
-                <div v-if="product.batchTracking && product.batches && product.batches.length">
-                  <select v-model="product.selectedBatch">
-                    <option v-for="batch in product.batches" :value="batch">
-                      {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
+      <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
+        <button :class="{active: productView === 'card'}" @click="productView = 'card'"
+          style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer;">
+          Card View
+        </button>
+        <button :class="{active: productView === 'list'}" @click="productView = 'list'"
+          style="padding: 6px 16px; border-radius: 6px; border: 1px solid #2563eb; background: #f3f4f6; color: #2563eb; font-weight: 600; cursor: pointer;">
+          List View
+        </button>
+      </div>
+
+      <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+        
+        <div v-if="productView === 'card'" class="product-grid" style="flex: 1;">
+          <div class="product-card" v-for="product in filteredProducts" :key="product.id">
+            <img :src="product.image" :alt="product.name" />
+            <div class="product-header">
+              <h3>{{ product.name }}</h3>
+              <p>{{ product.description }}</p>
+            </div>
+            <div class="variant-selector">
+              <label>Variant:</label>
+              <select v-model="product.selectedVariant">
+                <option v-for="variant in product.variants" :value="variant">
+                  {{ variant.size || variant.sku }} - ₦{{ variant.price }} ({{ variant.stock }} available)
+                </option>
+              </select>
+            </div>
+            <div v-if="product.batchTracking && product.batches && product.batches.length">
+              <label>Select Batch:</label>
+              <select v-model="product.selectedBatch">
+                <option v-for="batch in product.batches" :value="batch">
+                  {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
+                </option>
+              </select>
+            </div>
+            <div class="quantity-control">
+              <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
+              <input type="number" v-model.number="product.quantity" min="1" />
+              <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
+            </div>
+            <p>Stock: {{ product.selectedVariant.stock }}</p>
+            <button class="order-btn" @click="addToCart(product); drawer.invoice = true">Order</button>
+          </div>
+        </div>
+
+        <div v-else class="product-list-view" style="flex: 1;">
+          <table class="product-list-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name & Description</th>
+                <th>Variant</th>
+                <th>Batch</th>
+                <th>Stock</th>
+                <th>Qty</th>
+                <th>Order</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="product in filteredProducts" :key="product.id">
+                <td data-label="Image:"><img :src="product.image" :alt="product.name"
+                    style="width:60px; height:60px; object-fit:cover; border-radius:8px;" /></td>
+                <td data-label="Name:">
+                  <strong>{{ product.name }}</strong>
+                  <div style="font-size:0.95em;">{{ product.description }}</div>
+                </td>
+                <td data-label="Variant:">
+                  <select v-model="product.selectedVariant">
+                    <option v-for="variant in product.variants" :value="variant">
+                      {{ variant.size || variant.sku }} - ₦{{ variant.price }} ({{ variant.stock }} available)
                     </option>
                   </select>
-                </div>
-                <div v-else>-</div>
-              </td>
-              <td data-label="Stock:">{{ product.selectedVariant.stock }}</td>
-              <td data-label="Quantity:">
-                <div class="quantity-control" style="margin:0;">
-                  <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
-                  <input type="number" v-model.number="product.quantity" min="1" style="width:50px;" />
-                  <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
-                </div>
-              </td>
-              <td data-label="Action:">
-                <button class="order-btn" @click="addToCart(product); drawer.invoice = true">Order</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                </td>
+                <td data-label="Batch:">
+                  <div v-if="product.batchTracking && product.batches && product.batches.length">
+                    <select v-model="product.selectedBatch">
+                      <option v-for="batch in product.batches" :value="batch">
+                        {{ batch.batchNumber }} (Qty: {{ batch.quantity }})
+                      </option>
+                    </select>
+                  </div>
+                  <div v-else>-</div>
+                </td>
+                <td data-label="Stock:">{{ product.selectedVariant.stock }}</td>
+                <td data-label="Quantity:">
+                  <div class="quantity-control" style="margin:0;">
+                    <button @click="decreaseQty(product)"><i class="fas fa-minus"></i></button>
+                    <input type="number" v-model.number="product.quantity" min="1" style="width:50px;" />
+                    <button @click="increaseQty(product)"><i class="fas fa-plus"></i></button>
+                  </div>
+                </td>
+                <td data-label="Action:">
+                  <button class="order-btn" @click="addToCart(product); drawer.invoice = true">Order</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <div v-if="showAddCustomerModal" class="modal-overlay">
-        <div class="modal-content">
-          <h3>Add Customer</h3>
-          <input v-model="newCustomer.name" placeholder="Customer Name" required>
-          <input v-model="newCustomer.email" placeholder="Email">
-          <input v-model="newCustomer.phone" placeholder="Phone">
-          <input v-model="newCustomer.company" placeholder="Company">
-          <input v-model="newCustomer.taxId" placeholder="Tax ID">
-          <div style="margin-top: 1rem;">
-            <button @click="addCustomer">Save</button>
-            <button @click="showAddCustomerModal = false">Cancel</button>
+        <!-- Success Toast -->
+        <div v-if="showSuccessToast" class="success-toast animate__animated animate__fadeInRight">
+          <i class="fas fa-check-circle"></i>
+          <span>{{ successMessage }}</span>
+        </div>
+
+        <!-- Add Customer Modal -->
+        <div v-if="showAddCustomerModal" class="modal-overlay">
+          <div class="modal-content">
+            <h3>Add Customer</h3>
+            <input v-model="newCustomer.name" placeholder="Customer Name" required>
+            <input v-model="newCustomer.email" placeholder="Email">
+            <input v-model="newCustomer.phone" placeholder="Phone">
+            <input v-model="newCustomer.company" placeholder="Company">
+            <input v-model="newCustomer.taxId" placeholder="Tax ID">
+            <div style="margin-top: 1rem;">
+              <button @click="addCustomer">Save</button>
+              <button @click="showAddCustomerModal = false">Cancel</button>
+            </div>
           </div>
         </div>
-      </div>
 
-
-      <div id="drawer-toggle" @click="drawerMenuOpen = !drawerMenuOpen" :class="{ open: drawerMenuOpen }"
-        style="position: fixed; top: 100px; right: 24px; z-index: 1400; display: flex; flex-direction: column; align-items: flex-end;">
-        <div>
-          <i class="fa" :class="drawerMenuOpen ? 'fa-times' : 'fa-bars'"></i>
-        </div>
-        <transition-group name="drawer-btns" tag="div"
-          style="display: flex; flex-direction: column; align-items: flex-end; margin-top: 10px;">
-          <button v-if="drawerMenuOpen" key="invoice" @click.stop="openDrawer('invoice')" class="drawer-fab-btn">
-            <i class="fa fa-file-invoice"></i> Invoice
-          </button>
-          <button v-if="drawerMenuOpen" key="customer" @click.stop="openDrawer('customer')" class="drawer-fab-btn">
-            <i class="fa fa-user"></i> Customer Info
-          </button>
-          <button v-if="drawerMenuOpen" key="discount" @click.stop="openDrawer('discount')" class="drawer-fab-btn">
-            <i class="fa fa-percent"></i> Discount/Tax
-          </button>
-        </transition-group>
-      </div>
-
-      <div class="drawer-panel animate__animated animate__fadeInRight invoice-drawer"
-        v-if="drawer.invoice && cart.length">
-        <div class="invoice-header"
-          style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-          <h3 style="margin: 0;">Invoice Summary</h3>
-          <span class="cart-count">
-            {{ cart.length }}
-          </span>
-          <button @click="drawer.invoice = false" class="remove-btn" aria-label="Close Invoice"><i
-              class="fa fa-times"></i></button>
-        </div>
-        <ul class="invoice-list">
-          <li v-for="(item, index) in cart" :key="index" class="invoice-item">
-            <div>
-              <strong>{{ item.name }}</strong>
-              <span class="variant-size">({{ item.variant.size }})</span>
-              <span class="qty">x{{ item.quantity }}</span>
-              <span class="item-total">₦{{ item.variant.price * item.quantity }}</span>
-            </div>
-            <button @click="removeFromCart(index)" class="remove-btn" aria-label="Remove item">
-              <i class="fa fa-trash"></i>
+        <!-- Hamburger Menu Toggle -->
+        <div id="drawer-toggle" @click="drawerMenuOpen = !drawerMenuOpen" :class="{ open: drawerMenuOpen }"
+          style="position: fixed; top: 100px; right: 24px; z-index: 1400; display: flex; flex-direction: column; align-items: flex-end;">
+          <div>
+            <i class="fa" :class="drawerMenuOpen ? 'fa-times' : 'fa-bars'"></i>
+          </div>
+          <transition-group name="drawer-btns" tag="div"
+            style="display: flex; flex-direction: column; align-items: flex-end; margin-top: 10px;">
+            <button v-if="drawerMenuOpen" key="invoice" @click.stop="openDrawer('invoice')" class="drawer-fab-btn">
+              <i class="fa fa-file-invoice"></i> Invoice
             </button>
-          </li>
-        </ul>
-
-        <div style="margin-bottom: 1em;">
-          <label for="paymentMethod"><strong>Payment Method:</strong></label>
-          <select id="paymentMethod" v-model="paymentMethod" style="width: 100%; margin-top: 4px;">
-            <option v-for="pm in paymentMethods" :value="pm.value">{{ pm.label }}</option>
-          </select>
+            <button v-if="drawerMenuOpen" key="customer" @click.stop="openDrawer('customer')" class="drawer-fab-btn">
+              <i class="fa fa-user"></i> Customer Info
+            </button>
+            <button v-if="drawerMenuOpen" key="discount" @click.stop="openDrawer('discount')" class="drawer-fab-btn">
+              <i class="fa fa-percent"></i> Discount/Tax
+            </button>
+          </transition-group>
         </div>
 
-        <div class="invoice-totals">
-          <div><span>Subtotal:</span><span>₦{{ subtotal }}</span></div>
-          <div><span>Discount:</span><span class="discount">-₦{{ discountValue }}</span></div>
-          <div><span>Tax:</span><span>₦{{ taxValue }}</span></div>
-          <div class="total-row"><span>Total:</span><span class="total">₦{{ cartTotal }}</span></div>
-        </div>
-        <div class="invoice-actions">
-          <button @click="postOrder" class="action-btn success">Submit Order</button>
+        <!-- Invoice Drawer -->
+        <div class="drawer-panel animate__animated animate__fadeInRight invoice-drawer"
+          v-if="drawer.invoice && cart.length">
+          <div class="invoice-header">
+            <h3 style="margin: 0;">Invoice Summary</h3>
+            <span class="cart-count">{{ cart.length }}</span>
+            <button @click="drawer.invoice = false" class="remove-btn" aria-label="Close Invoice">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <ul class="invoice-list">
+            <li v-for="(item, index) in cart" :key="index" class="invoice-item">
+              <div>
+                <strong>{{ item.name }}</strong>
+                <span class="variant-size">({{ item.variant.size || item.variant.sku }})</span>
+                <span class="qty">x{{ item.quantity }}</span>
+                <span class="item-total">₦{{ (item.variant.price * item.quantity).toLocaleString() }}</span>
+              </div>
+              <button @click="removeFromCart(index)" class="remove-btn" aria-label="Remove item">
+                <i class="fa fa-trash"></i>
+              </button>
+            </li>
+          </ul>
 
-          <button @click="drawer.invoice = false" class="action-btn" style="margin-left:auto;">Close</button>
-        </div>
-      </div>
+          <div style="margin-bottom: 1em;">
+            <label for="paymentMethod"><strong>Payment Method:</strong></label>
+            <select id="paymentMethod" v-model="paymentMethod" style="width: 100%; margin-top: 4px;">
+              <option v-for="pm in paymentMethods" :value="pm.value">{{ pm.label }}</option>
+            </select>
+          </div>
 
-      <div class="drawer-panel animate__animated animate__fadeInRight customer-info-drawer" v-if="drawer.customer">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <h3>Customer Information</h3>
-          <button @click="drawer.customer = false" class="remove-btn" aria-label="Close Customer Info"><i
-              class="fa fa-times"></i></button>
-        </div>
-
-        <label for="customerSearch">Select Customer:</label>
-        <div style="position: relative;" ref="customerSearchContainer">
-          <input id="customerSearch" type="text" v-model="customerSearchQuery" @focus="showCustomerResults = true"
-            @keydown.esc="showCustomerResults = false" placeholder="Start typing to search or select customer..."
-            style="width: 100%; padding: 8px; box-sizing: border-box;" autocomplete="off" role="combobox"
-            aria-autocomplete="list" :aria-expanded="showCustomerResults" aria-haspopup="true" />
-
-          <div v-if="showCustomerResults" class="customer-search-results" style="
-              position: absolute;
-              width: 100%;
-              max-height: 300px;
-              overflow-y: auto;
-              border: 1px solid #ccc;
-              background: white;
-              z-index: 10;
-              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-              " role="listbox">
-            <div v-if="!customerSearchQuery && !customers.length" style="padding: 10px; color: #999;">
-              No customers available.
-            </div>
-
-            <div @click="selectCustomer('new')" class="search-result-item"
-              style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; background-color: #f5f5f5;"
-              role="option">
-              + Add New Customer
-            </div>
-
-            <div v-for="c in filteredCustomers" :key="c._id" @click="selectCustomer(c)" class="search-result-item"
-              :class="{ 'selected-result': selectedCustomerId === c._id }" style="padding: 10px; cursor: pointer;"
-              role="option" :aria-selected="selectedCustomerId === c._id">
-              {{ c.name }} ({{ c.email || c.phone || 'No contact' }})
-            </div>
-
-            <div v-if="customerSearchQuery && filteredCustomers.length === 0" style="padding: 10px; color: #999;">
-              No results found for "{{ customerSearchQuery }}".
-            </div>
+          <div class="invoice-totals">
+            <div><span>Subtotal:</span><span>₦{{ subtotal.toLocaleString() }}</span></div>
+            <div><span>Discount:</span><span class="discount">-₦{{ discountValue.toLocaleString() }}</span></div>
+            <div><span>Tax:</span><span>₦{{ taxValue.toLocaleString() }}</span></div>
+            <div class="total-row"><span>Total:</span><span class="total">₦{{ cartTotal.toLocaleString() }}</span></div>
+          </div>
+          <div class="invoice-actions">
+            <button @click="postOrder" class="action-btn success">Submit Order</button>
+            <button @click="drawer.invoice = false" class="action-btn">Close</button>
           </div>
         </div>
-        <div v-if="selectedCustomer">
-          <p><strong>Name:</strong> {{ selectedCustomer.name }}</p>
-          <p><strong>Email:</strong> {{ selectedCustomer.email }}</p>
-          <p><strong>Phone:</strong> {{ selectedCustomer.phone }}</p>
-          <p><strong>Company:</strong> {{ selectedCustomer.company }}</p>
-          <p><strong>Tax ID:</strong> {{ selectedCustomer.taxId }}</p>
+
+        <!-- Customer Info Drawer -->
+        <div class="drawer-panel animate__animated animate__fadeInRight customer-info-drawer" v-if="drawer.customer">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <h3 style="margin: 0;">Customer Information</h3>
+            <button @click="drawer.customer = false" class="remove-btn" aria-label="Close Customer Info">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+
+          <label for="customerSearch" style="display: block; margin-bottom: 8px; font-weight: 600;">Select Customer:</label>
+          <div style="position: relative;" ref="customerSearchContainer">
+            <input id="customerSearch" type="text" v-model="customerSearchQuery" @focus="showCustomerResults = true"
+              @keydown.esc="showCustomerResults = false" placeholder="Start typing to search..."
+              style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 6px;" 
+              autocomplete="off" />
+
+            <div v-if="showCustomerResults" class="customer-search-results">
+              <div @click="selectCustomer('new')" class="search-result-item"
+                style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; background-color: #f5f5f5; font-weight: 600;">
+                <i class="fa fa-plus"></i> Add New Customer
+              </div>
+
+              <div v-for="c in filteredCustomers" :key="c._id" @click="selectCustomer(c)" class="search-result-item"
+                :class="{ 'selected-result': selectedCustomerId === c._id }" 
+                style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee;">
+                {{ c.name }} <span style="color: #6b7280;">({{ c.email || c.phone || 'No contact' }})</span>
+              </div>
+
+              <div v-if="customerSearchQuery && filteredCustomers.length === 0" style="padding: 10px; color: #999;">
+                No results found for "{{ customerSearchQuery }}".
+              </div>
+            </div>
+          </div>
+
+          <div v-if="selectedCustomer" style="margin-top: 20px; padding: 15px; background: #f9fafb; border-radius: 8px;">
+            <p style="margin: 8px 0;"><strong>Name:</strong> {{ selectedCustomer.name }}</p>
+            <p style="margin: 8px 0;"><strong>Email:</strong> {{ selectedCustomer.email || 'N/A' }}</p>
+            <p style="margin: 8px 0;"><strong>Phone:</strong> {{ selectedCustomer.phone || 'N/A' }}</p>
+            <p style="margin: 8px 0;"><strong>Company:</strong> {{ selectedCustomer.company || 'N/A' }}</p>
+            <p style="margin: 8px 0;"><strong>Tax ID:</strong> {{ selectedCustomer.taxId || 'N/A' }}</p>
+          </div>
+
+          <button @click="drawer.customer = false" class="action-btn" style="margin-top: 20px; width: 100%;">Close</button>
         </div>
 
-        <button @click="drawer.customer = false" class="action-btn" style="margin-left:auto;">Close</button>
+        <!-- Discount & Tax Drawer -->
+        <div class="drawer-panel animate__animated animate__fadeInRight discount-tax-drawer" v-if="drawer.discount">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <h3 style="margin: 0;">Discount & Tax</h3>
+            <button @click="drawer.discount = false" class="remove-btn" aria-label="Close Discount/Tax">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Discount:</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="number" v-model.number="discountAmount" min="0" 
+                style="flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+              <select v-model="discountType" 
+                style="width: 110px; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                <option value="flat">₦ Flat</option>
+                <option value="percent">% Percent</option>
+              </select>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Tax (%):</label>
+            <input type="number" v-model.number="taxPercent" min="0" max="100" 
+              style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+          </div>
+
+          <button @click="drawer.discount = false" class="action-btn" style="width: 100%;">Close</button>
+        </div>
       </div>
-      <div class="drawer-panel animate__animated animate__fadeInRight discount-tax-drawer" v-if="drawer.discount">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <h3>Discount & Tax</h3>
-          <button @click="drawer.discount = false" class="remove-btn" aria-label="Close Discount/Tax"><i
-              class="fa fa-times"></i></button>
-        </div>
-        <div style="margin-bottom: 1em;">
-          <label>Discount:</label>
-          <input type="number" v-model.number="discountAmount" min="0" style="width:100px;">
-          <select v-model="discountType" style="width:110px;">
-            <option value="flat">₦ Flat</option>
-            <option value="percent">% Percent</option>
-          </select>
-        </div>
-        <div>
-          <label>Tax (%):</label>
-          <input type="number" v-model.number="taxPercent" min="0" max="100" style="width:100px;">
-        </div>
+    </section>
+  </main>
 
-        <button @click="drawer.discount = false" class="action-btn" style="margin-left:auto;">Close</button>
-      </div>
-    </div>
-  </section>
-
-</main>
-  <!-- JavaScript -->
-  <!-- JavaScript -->
   <script src="assets/js/script.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-
-
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -321,11 +688,9 @@
   <script>
     const API_BASE = window.BASE_URL;
 
-    // Example: Generate a unique order code like "Order121nd"
     function generateOrderCode() {
-      // You can use the current timestamp and a random number for uniqueness
       const randomPart = Math.floor(Math.random() * 1000);
-      const timePart = Date.now().toString().slice(-4); // last 4 digits of timestamp
+      const timePart = Date.now().toString().slice(-4);
       return `Order${timePart}${randomPart}`;
     }
 
@@ -377,6 +742,9 @@
       return result.trim();
     }
 
+    // Make numberToWords available globally
+    window.numberToWords = numberToWords;
+
     new Vue({
       el: '#app',
       data: {
@@ -384,7 +752,7 @@
         isDarkMode: localStorage.getItem("darkMode") === "true",
         searchTerm: '',
         cart: [],
-        products: [], // Will be populated from API
+        products: [],
         customers: [],
         selectedCustomerId: '',
         showAddCustomerModal: false,
@@ -395,19 +763,17 @@
           company: '',
           taxId: ''
         },
-        productView: 'card', // New data property for view mode
-        taxPercent: 0,         // Tax percentage (e.g. 7.5 for 7.5%)
-        discountAmount: 0,     // Discount amount (flat value)
-        discountType: 'flat',  // 'flat' or 'percent'
+        productView: 'card',
+        taxPercent: 0,
+        discountAmount: 0,
+        discountType: 'flat',
         drawer: {
           invoice: false,
           customer: false,
           discount: false
         },
-        // customer data for search
         customerSearchQuery: '',
         showCustomerResults: false,
-        selectedCustomerId: null, // Ensure this tracks the ID
         paymentMethod: 'cash',
         paymentMethods: [
           { value: 'cash', label: 'Cash' },
@@ -415,10 +781,11 @@
           { value: 'pos', label: 'POS' },
           { value: 'virtual_account', label: 'Virtual Account' }
         ],
+        showSuccessToast: false,
+        successMessage: ''
       },
       computed: {
         cartTotal() {
-          // Subtotal - discount - tax
           return Math.max(0, this.subtotal - this.discountValue + this.taxValue);
         },
         filteredProducts() {
@@ -429,25 +796,19 @@
           );
         },
         selectedCustomer() {
-          // This makes the selected customer readily available for display
           return this.customers.find(c => c._id === this.selectedCustomerId) || null;
         },
-
         filteredCustomers() {
           if (!this.customerSearchQuery) {
             return this.customers;
           }
-
           const query = this.customerSearchQuery.toLowerCase();
-
           return this.customers.filter(customer => {
-            // Filter by name, email, or phone
             return (customer.name && customer.name.toLowerCase().includes(query)) ||
               (customer.email && customer.email.toLowerCase().includes(query)) ||
               (customer.phone && customer.phone.includes(query));
           });
         },
-
         subtotal() {
           return this.cart.reduce((sum, item) => sum + (item.variant.price * item.quantity), 0);
         },
@@ -457,56 +818,39 @@
           } else if (this.discountType === 'flat') {
             return (this.subtotal - this.discountAmount < 0) ? this.subtotal : this.discountAmount;
           }
-          return 0; // Always return a number!
+          return 0;
         },
         taxValue() {
-          // Use a valid discount value
           const discount = typeof this.discountValue === 'number' ? this.discountValue : 0;
           return ((this.subtotal - discount) * this.taxPercent) / 100;
         }
-
-
       },
       methods: {
-        /**
-         * Toggles the application's dark mode and persists the preference in local storage.
-         */
+        showSuccessMessage(message) {
+          this.successMessage = message;
+          this.showSuccessToast = true;
+          setTimeout(() => {
+            this.showSuccessToast = false;
+          }, 4000);
+        },
         toggleDarkMode() {
           this.isDarkMode = !this.isDarkMode;
           localStorage.setItem("darkMode", this.isDarkMode);
         },
-
-        /**
-         * Increases the quantity of a product in the temporary selection state (before adding to cart).
-         * @param {object} product - The product object being prepared for cart addition.
-         */
         increaseQty(product) {
           const maxStock = product.selectedVariant?.stock || 0;
           if (product.quantity < maxStock) {
             product.quantity++;
           }
         },
-
-        /**
-         * Decreases the quantity of a product in the temporary selection state.
-         * Prevents quantity from dropping below 1.
-         * @param {object} product - The product object being prepared for cart addition.
-         */
         decreaseQty(product) {
           if (product.quantity > 1) {
             product.quantity--;
           }
         },
-
-        /**
-         * Adds the currently selected product/variant/batch to the cart.
-         * Handles existing item updates and stock validation.
-         * @param {object} product - The product object being added.
-         */
         addToCart(product) {
           const variant = product.selectedVariant;
 
-          // 1. Pre-flight checks and error handling
           if (!variant) {
             alert("Error: Product variant not selected.");
             return;
@@ -517,23 +861,20 @@
           }
 
           const existing = this.cart.find(i =>
-            i.id === variant._id && // Use variant ID for better matching
+            i.id === variant._id &&
             i.variant.sku === variant.sku &&
             (!product.batchTracking || (i.batchNumber === product.selectedBatch.batchNumber))
           );
 
           const maxQty = variant.stock;
 
-          // 2. Determine the warehouse ID for the item
           let warehouseId = null;
           if (product.batchTracking) {
             warehouseId = product.selectedBatch?.warehouse;
           } else if (variant.warehouses?.length) {
-            // Assumes the first warehouse in the list is the source
             warehouseId = variant.warehouses[0].warehouse;
           }
 
-          // 3. Update existing item or add new item
           if (existing) {
             const potentialQty = existing.quantity + product.quantity;
             if (potentialQty > maxQty) {
@@ -547,7 +888,6 @@
               return;
             }
             this.cart.push({
-              // Use variant ID consistently for cart items
               id: variant._id,
               name: product.name,
               variant: variant,
@@ -557,90 +897,11 @@
             });
           }
 
-          // 4. Reset product selection quantity for next add
           product.quantity = 1;
         },
-
-        /**
-         * Removes an item from the cart by its index.
-         * @param {number} index - The index of the item in the cart array.
-         */
         removeFromCart(index) {
           this.cart.splice(index, 1);
         },
-
-        /**
-         * Generates and downloads a plain text invoice, then opens a WhatsApp sharing link.
-         * NOTE: This is likely a legacy function; consider prioritizing generateInvoicePDF.
-         */
-        generateInvoice() {
-          if (!this.selectedCustomer) {
-            alert("Please select a customer before generating the invoice.");
-            return;
-          }
-
-          const customer = this.selectedCustomer;
-          const invoiceDate = new Date().toLocaleDateString();
-
-          // 1. Build the invoice content
-          const eraskonInfo = [
-            `===================================`,
-            `Eraskon Nigeria Limited`,
-            `EL-AL Court, Plot 35, Chief Yesufu Abiodun Oniru Road,`,
-            `VI, Lagos State, Nigeria.`,
-            `Email: info@eraskoenergy.com`,
-            `===================================`
-          ].join('\n');
-
-          const customerInfo = [
-            `Customer: ${customer.name}`,
-            `Date: ${invoiceDate}`,
-            `Email: ${customer.email || 'N/A'}`,
-            `Phone: ${customer.phone || 'N/A'}`,
-            `Tax ID: ${customer.taxId || 'N/A'}`
-          ].join('\n');
-
-          const lines = this.cart.map((item, idx) =>
-            `${idx + 1}. ${item.name} (${item.variant.sku}${item.batchNumber ? ` - Batch: ${item.batchNumber}` : ''}) | Qty: ${item.quantity} | Unit: ₦${item.variant.price.toLocaleString()} | Total: ₦${(item.variant.price * item.quantity).toLocaleString()}`
-          );
-
-          const content = [
-            `********** INVOICE **********`,
-            eraskonInfo,
-            `\n--------- CUSTOMER ---------`,
-            customerInfo,
-            `\n--------- ITEMS ---------`,
-            lines.join('\n'),
-            `-------------------------`,
-            `SUBTOTAL: ₦${this.subtotal.toLocaleString()}`,
-            `DISCOUNT: ₦${this.discountAmount.toLocaleString() || '0.00'}`,
-            `TAX (${this.taxPercent}%): ₦${this.taxValue.toLocaleString() || '0.00'}`,
-            `TOTAL: ₦${this.cartTotal.toLocaleString()}`,
-            `****************************`
-          ].join('\n\n');
-
-          // 2. Download invoice as .txt (Improved filename)
-          const filename = `invoice-${customer.name.replace(/\s/g, '_')}-${Date.now()}.txt`;
-          const blob = new Blob([content], { type: 'text/plain' });
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = filename;
-          a.click();
-          URL.revokeObjectURL(a.href); // Clean up the URL object
-
-          // 3. Share invoice to WhatsApp
-          const whatsappMsg = encodeURIComponent(`*Order Confirmation*:\n\n${content}`);
-          const whatsappUrl = `https://wa.me/?text=${whatsappMsg}`;
-          window.open(whatsappUrl, '_blank');
-
-          // 4. Clear cart
-          this.cart = [];
-        },
-
-        /**
-         * Generates a professional PDF invoice using jsPDF and opens it in a new window.
-         * Uses the window.jsPDF and window.numberToWords global dependencies.
-         */
         async generateInvoicePDF() {
           if (!this.selectedCustomer) {
             alert("Please select a customer before generating the invoice.");
@@ -651,32 +912,32 @@
             return;
           }
 
-          // --- Data Setup ---
-          const eraskonLogo = 'data:image/png;base64,...'; // your actual base64 logo string
+          const eraskonLogo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
           const { jsPDF } = window.jspdf;
           const doc = new jsPDF();
           const customer = this.selectedCustomer;
           const date = new Date().toLocaleDateString('en-GB');
-          // Generate a more robust/sequential invoice number if possible, or use a placeholder
           const invoiceNo = `ENL/INV/${new Date().getFullYear().toString().slice(2)}/${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
-          const total = parseFloat(this.cartTotal); // Ensure numeric
-          const amountInWords = window.numberToWords(total) || 'Zero Naira Only';
+          const total = parseFloat(this.cartTotal);
+          const amountInWords = window.numberToWords ? window.numberToWords(total) : 'Amount in words not available';
 
           const tableBody = this.cart.map((item, index) => [
-            index + 1, // Added index as first column for better clarity
+            index + 1,
             item.quantity,
-            `${item.name} (${item.variant.sku}${item.batchNumber ? ` - Batch: ${item.batchNumber}` : ''})`,
-            `₦${(item.variant.price * item.quantity).toLocaleString()}`
+            item.name + ' (' + item.variant.sku + (item.batchNumber ? ' - Batch: ' + item.batchNumber : '') + ')',
+            '₦' + (item.variant.price * item.quantity).toLocaleString()
           ]);
 
           const img = new Image();
           img.src = eraskonLogo;
           img.crossOrigin = "anonymous";
 
-          // Use a promise to wait for the image to load cleanly
           const renderPdf = () => {
-            // --- Header/Branding ---
-            doc.addImage(img, 'PNG', 80, 10, 50, 20);
+            try {
+              doc.addImage(img, 'PNG', 80, 10, 50, 20);
+            } catch (e) {
+              console.warn("Could not add logo image:", e);
+            }
 
             doc.setFontSize(10);
             doc.text("Head Office: El-Al Court, Plot 35 Chief Yesufu Abiodun Oniru Way, Victoria Island, Lagos.", 14, 35);
@@ -685,14 +946,12 @@
             doc.setFontSize(14);
             doc.text("INVOICE", 105, 50, { align: 'center' });
 
-            // --- Customer Info ---
             doc.setFontSize(10);
-            doc.text(`Name: ${customer.name}`, 14, 60);
-            doc.text(`Email: ${customer.email || 'N/A'}`, 14, 66);
-            doc.text(`Date: ${date}`, 150, 60);
-            doc.text(`Invoice No: ${invoiceNo}`, 150, 66);
+            doc.text("Name: " + customer.name, 14, 60);
+            doc.text("Email: " + (customer.email || 'N/A'), 14, 66);
+            doc.text("Date: " + date, 150, 60);
+            doc.text("Invoice No: " + invoiceNo, 150, 66);
 
-            // --- Items Table ---
             doc.autoTable({
               startY: 75,
               head: [["S/N", "QTY", "DESCRIPTION OF PRODUCTS", "TOTAL"]],
@@ -705,59 +964,47 @@
 
             const finalY = doc.lastAutoTable.finalY;
 
-            // --- Summary Table ---
             doc.autoTable({
               startY: finalY + 10,
               body: [
-                ["SUBTOTAL", `₦${this.subtotal.toLocaleString()}`],
-                ["DISCOUNT", `₦${this.discountAmount.toLocaleString() || '0.00'}`],
-                ["TAX", `₦${this.taxValue.toLocaleString() || '0.00'}`],
-                ["NET TOTAL", `₦${total.toLocaleString()}`]
+                ["SUBTOTAL", "₦" + this.subtotal.toLocaleString()],
+                ["DISCOUNT", "₦" + (this.discountValue || 0).toLocaleString()],
+                ["TAX", "₦" + (this.taxValue || 0).toLocaleString()],
+                ["NET TOTAL", "₦" + total.toLocaleString()]
               ],
               styles: { fontSize: 10, cellPadding: 2, lineWidth: 0.1 },
-              tableLineColor: 180, // Light grey border
+              tableLineColor: 180,
               margin: { left: 120 }
             });
 
-            // --- Totals and Payment ---
             doc.setFontSize(11);
-            doc.text(`GRAND TOTAL: ₦${total.toLocaleString()}`, 14, finalY + 45);
+            doc.text("GRAND TOTAL: ₦" + total.toLocaleString(), 14, finalY + 45);
 
             doc.setFontSize(10);
-            doc.text(`Amount in words: ${amountInWords}`, 14, finalY + 55);
+            doc.text("Amount in words: " + amountInWords, 14, finalY + 55);
 
             doc.text("Payments to be made to:", 14, finalY + 65);
-            doc.text("Eraskon Nigeria Limited\nZenith Bank Plc: 1016862835\nFCMB Plc: [ACCOUNT NUMBER]", 14, finalY + 70); // Added placeholder
+            doc.text("Eraskon Nigeria Limited", 14, finalY + 70);
+            doc.text("Zenith Bank Plc: 1016862835", 14, finalY + 75);
 
-            // --- Signatures ---
             doc.text("_______________________________", 14, finalY + 95);
-            doc.text("Client’s Sign", 25, finalY + 100);
+            doc.text("Client's Sign", 25, finalY + 100);
             doc.text("_______________________________", 130, finalY + 95);
-            doc.text("Manager’s Sign", 145, finalY + 100);
+            doc.text("Manager's Sign", 145, finalY + 100);
 
-            // --- Output PDF ---
-            // Open in a new tab for a better user experience than an iframe
-            doc.output('dataurlnewwindow', { filename: `Invoice-${invoiceNo}.pdf` });
+            doc.output('dataurlnewwindow', { filename: 'Invoice-' + invoiceNo + '.pdf' });
           };
 
-          // Bind the render logic to the image load event
-          img.onload = renderPdf.bind(this);
+          img.onload = renderPdf;
           img.onerror = () => {
-            // Fallback if image fails to load
             console.warn("Failed to load logo image. Generating PDF without logo.");
             renderPdf();
           };
 
-          // If the image is already loaded/cached (e.g., base64), call immediately
           if (img.complete) {
             renderPdf();
           }
         },
-
-        /**
-         * Fetches all product variants and transforms them into a unified product model
-         * suitable for the POS interface, including initial variant and batch selection.
-         */
         async fetchProducts() {
           try {
             const response = await axios.get(`${API_BASE}/product-variant`);
@@ -765,8 +1012,9 @@
             if (response.data && Array.isArray(response.data)) {
               this.products = response.data.map(pv => {
                 const variant = {
-                  _id: pv._id, // IMPORTANT: Use product variant ID as the ID for cart item
+                  _id: pv._id,
                   sku: pv.sku,
+                  size: pv.size || pv.sku || 'Standard', // Add size field
                   price: pv.price,
                   costPrice: pv.costPrice || 0,
                   stock: pv.totalStock,
@@ -776,17 +1024,16 @@
                 };
 
                 return {
-                  id: pv._id, // Retain for linking, but cart uses variant._id
+                  id: pv._id,
                   name: pv.name,
                   image: pv.image,
-                  quantity: 1, // Default quantity for adding to cart
+                  quantity: 1,
                   description: pv.description,
                   batchTracking: pv.batchTracking,
-                  batches: pv.batches?.filter(b => b.stock > 0) || [], // Only show batches with stock
+                  batches: pv.batches?.filter(b => b.stock > 0) || [],
                   warehouses: pv.warehouses || [],
-                  variants: [variant], // Simpler structure since the response is already a variant
+                  variants: [variant],
                   selectedVariant: variant,
-                  // Pre-select the first available batch (if tracking is on and batches exist)
                   selectedBatch: (pv.batchTracking && pv.batches?.length > 0) ? pv.batches.find(b => b.stock > 0) || null : null
                 };
               });
@@ -799,34 +1046,17 @@
             alert("Error loading products. Please check the console for details.");
           }
         },
-
-        /**
-         * Fetches the list of all customers.
-         */
         async fetchCustomers() {
           try {
             const res = await axios.get(`${API_BASE}/customer`);
-            // Safely assign customers, defaulting to an empty array
             this.customers = Array.isArray(res.data) ? res.data : (res.data.customers || []);
-            // console.log("Loaded customers:", this.customers); // Clean up unnecessary console logs
           } catch (err) {
             console.error("Failed to load customers:", err);
-            // Optionally, show a gentle toast or alert here
           }
         },
-
-        /**
-         * Handles logic after a customer is selected.
-         * Currently a placeholder, but good for future logic (e.g., loading customer-specific pricing).
-         */
         onCustomerSelect() {
-          // Find and set the selected customer object for quick access
           this.selectedCustomer = this.customers.find(c => c._id === this.selectedCustomerId) || null;
         },
-
-        /**
-         * Creates a new customer and automatically selects them for the current order.
-         */
         async addCustomer() {
           if (!this.newCustomer.name) {
             alert("Customer name is required.");
@@ -835,26 +1065,30 @@
           try {
             const res = await axios.post(`${API_BASE}/customer`, this.newCustomer);
             const added = res.data.customer || res.data;
-            this.customers.push(added); // Add to local list
-            this.selectedCustomerId = added._id; // Select the new customer
+            this.customers.push(added);
+            this.selectedCustomerId = added._id;
             this.showAddCustomerModal = false;
-            // Reset the form model
             this.newCustomer = { name: '', email: '', phone: '', company: '', taxId: '' };
-            this.onCustomerSelect(); // Update the selectedCustomer object
+            this.onCustomerSelect();
+            this.showSuccessMessage(`Customer "${added.name}" added successfully!`);
           } catch (err) {
             console.error("Failed to add customer:", err);
             alert("Failed to add customer. Please check the input details.");
           }
         },
-
-        /**
-         * Finalizes the sale by posting the order and updating stock via stock movements.
-         */
         async postOrder() {
           if (!this.selectedCustomer || this.cart.length === 0) {
             alert("Please select a valid customer and add items to the cart.");
             return;
           }
+
+          // Validate customer has required fields for email
+          if (!this.selectedCustomer.name) {
+            alert("Customer must have a name to complete the order.");
+            return;
+          }
+
+          let payload = null; // Declare at function scope for error logging
 
           try {
             const token = localStorage.getItem('token');
@@ -866,148 +1100,196 @@
               return;
             }
 
-            // Clean up discount/tax values to ensure they are safe numbers
-            const taxValue = this.taxValue || 0;
-            const discountAmount = this.discountAmount || 0;
+            // Ensure all values are properly sanitized
+            const taxValue = Number(this.taxValue) || 0;
+            const discountAmount = Number(this.discountAmount) || 0;
+            const discountValue = Number(this.discountValue) || 0;
+            const subtotal = Number(this.subtotal) || 0;
+            const cartTotal = Number(this.cartTotal) || 0;
 
-            const payload = {
-              items: this.cart.map(item => ({
-                ProductVariant: item.id, // ID of the product variant
-                productVariantName: item.name,
-                qty: item.quantity,
-                unitPrice: item.variant.price,
-                costPrice: item.variant.costPrice || 0,
-                // Note: image is usually not needed on item level payload
-              })),
-              subTotal: this.subtotal,
+            // Get warehouse ID - try multiple sources
+            let warehouseId = null;
+            if (user.warehouse) {
+              warehouseId = user.warehouse._id || user.warehouse;
+            }
+            // If still no warehouse, try to get from first cart item
+            if (!warehouseId && this.cart.length > 0 && this.cart[0].warehouse) {
+              warehouseId = this.cart[0].warehouse;
+            }
+
+            // Build the payload with clean data - matching backend expectations
+            payload = {
+              items: this.cart.map(function(item) {
+                const itemTotal = Number(item.variant.price) * Number(item.quantity);
+                return {
+                  ProductVariant: item.id,
+                  productVariantName: String(item.name),
+                  name: String(item.name), // Add name field for email template
+                  qty: Number(item.quantity),
+                  unitPrice: Number(item.variant.price),
+                  costPrice: Number(item.variant.costPrice) || 0,
+                  amount: itemTotal // Add amount field for email template
+                };
+              }),
+              subTotal: subtotal,
               discounts: [
                 {
-                  type: this.discountType, // e.g., 'percent', 'flat'
-                  value: this.discountValue, // Original value (e.g., 10 or 10%)
-                  amount: discountAmount // Calculated money value
+                  // FIX: Added 'name' property to prevent server-side template rendering errors
+                  name: 'Discount (' + String(this.discountType) + ')', 
+                  type: String(this.discountType),
+                  value: discountValue,
+                  amount: discountAmount
                 }
               ],
-              taxRate: this.taxPercent,
+              taxRate: Number(this.taxPercent) || 0,
               tax: taxValue,
-              total: this.cartTotal,
-              createdAt: new Date(),
-              customerId: this.selectedCustomerId,
-              customer: this.selectedCustomer, // Full customer object
-              paymentMethod: this.paymentMethod,
-
-              // User/Order context information
-              user: userId,
-              userFirstname: user.firstname || '',
-              userRole: user.role || '',
-              userWarehouse: user.warehouse?.name || user.warehouse?._id || ''
+              delivery: 0, // Add delivery field (default to 0)
+              total: cartTotal,
+              createdAt: new Date().toISOString(),
+              customerId: String(this.selectedCustomerId),
+              customer: {
+                _id: this.selectedCustomer._id,
+                name: String(this.selectedCustomer.name || ''),
+                email: String(this.selectedCustomer.email || ''),
+                phone: String(this.selectedCustomer.phone || ''),
+                company: String(this.selectedCustomer.company || ''),
+                taxId: String(this.selectedCustomer.taxId || '')
+              },
+              paymentMethod: String(this.paymentMethod),
+              user: String(userId),
+              userFirstname: String(user.firstname || ''),
+              userRole: String(user.role || ''),
+              userWarehouse: String(user.warehouse?.name || user.warehouse?._id || '')
             };
 
-            // 1. Submit the order
-            const orderRes = await axios.post(`${API_BASE}/order`, payload, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            const savedOrder = orderRes.data;
-            // console.log("Order submitted successfully:", savedOrder);
+            // Only add warehouse if we have a valid ID
+            if (warehouseId) {
+              payload.warehouse = String(warehouseId);
+            }
 
-            // 2. For each item, deduct stock by posting to stock-movement
-            for (const item of this.cart) {
-              // Ensure the item has a warehouse assigned before attempting stock movement
+            console.log('Order Payload:', JSON.stringify(payload, null, 2));
+
+            const orderRes = await axios.post(API_BASE + '/order', payload, {
+              headers: { 
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            const savedOrder = orderRes.data;
+            console.log('Order Response:', savedOrder);
+
+            // Process stock movements
+            for (let i = 0; i < this.cart.length; i++) {
+              const item = this.cart[i];
               if (!item.warehouse) {
-                console.warn(`Skipping stock movement for ${item.name}: Warehouse ID is missing.`);
+                console.warn('Skipping stock movement for ' + item.name + ': Warehouse ID is missing.');
                 continue;
               }
 
               const stockMovement = {
-                productVariantId: item.id,
+                productVariantId: String(item.id),
                 type: "out",
-                quantity: item.quantity,
-                warehouse: item.warehouse, // Source warehouse (from cart item)
-                reference: `Order#${savedOrder.orderCode}`,
-                reason: "Sale/Order Fulfillment",
-                batchNumber: item.batchNumber // Only if batchTracking is true
+                quantity: Number(item.quantity),
+                warehouse: String(item.warehouse),
+                reference: 'Order#' + (savedOrder.orderCode || savedOrder._id),
+                reason: "Sale/Order Fulfillment"
               };
 
-              await axios.post(`${API_BASE}/stock-movement`, stockMovement, {
-                headers: { Authorization: `Bearer ${token}` }
+              // Only add batchNumber if it exists
+              if (item.batchNumber) {
+                stockMovement.batchNumber = String(item.batchNumber);
+              }
+
+              console.log('Stock Movement:', stockMovement);
+
+              await axios.post(API_BASE + '/stock-movement', stockMovement, {
+                headers: { 
+                  'Authorization': 'Bearer ' + token,
+                  'Content-Type': 'application/json'
+                }
               });
-              // console.log("Stock movement posted for item:", stockMovement);
             }
 
-            // 3. Finalize and clean up
-            alert(`Order ${savedOrder.orderCode} submitted and stock updated successfully!`);
-            this.cart = []; // Clear the cart
-            this.fetchProducts(); // Refresh product stock levels after sale
+            this.showSuccessMessage('Order ' + (savedOrder.orderCode || 'created') + ' submitted successfully!');
+            this.cart = [];
+            this.drawer.invoice = false;
+            this.fetchProducts();
           } catch (err) {
-            let msg = "Error submitting order or updating stock.";
+            console.error("Full error object:", err);
+            
+            let msg = "Error submitting order";
+            let detailedError = "";
+            
             if (err.response) {
-              msg += `\nStatus: ${err.response.status}`;
-              msg += `\nMessage: ${err.response.data.message || JSON.stringify(err.response.data)}`;
+              console.error("Response error:", err.response);
+              
+              // Extract the actual error message from the response
+              if (err.response.data) {
+                if (err.response.data.message) {
+                  detailedError = err.response.data.message;
+                } else if (typeof err.response.data === 'string') {
+                  detailedError = err.response.data;
+                } else if (err.response.data.errors) {
+                  // Handle validation errors
+                  detailedError = JSON.stringify(err.response.data.errors, null, 2);
+                } else {
+                  detailedError = JSON.stringify(err.response.data, null, 2);
+                }
+              }
+              
+              msg += '\nStatus: ' + err.response.status;
+              msg += '\nError: ' + detailedError;
+            } else if (err.request) {
+              console.error("Request error:", err.request);
+              msg += '\nNo response received from server. Please check your connection.';
             } else if (err.message) {
-              msg += `\n${err.message}`;
+              console.error("Error message:", err.message);
+              msg += '\n' + err.message;
             }
-            console.error("Order/stock post failed:", err);
+            
+            // Show a user-friendly alert
             alert(msg);
+            
+            // Also log to console for debugging
+            console.error("Detailed error for debugging:", {
+              message: msg,
+              response: err.response?.data,
+              status: err.response?.status,
+              sentPayload: payload
+            });
           }
         },
-
-        /**
-         * Manages the state of the various side drawers/panels.
-         * @param {string} type - The drawer to open ('invoice', 'customer', 'discount').
-         */
+        
         openDrawer(type) {
-          // Close all drawers first
           Object.keys(this.drawer).forEach(key => {
             this.drawer[key] = false;
           });
-          // Open the selected drawer
           this.drawer[type] = true;
           this.drawerMenuOpen = false;
         },
-        /**
-   * Updates the search query model and ensures results are displayed.
-   * @param {string} value - The current value of the search input.
-   */
         updateSearchQuery(value) {
           this.customerSearchQuery = value;
           this.showCustomerResults = true;
 
-          // FIX: If the user manually clears the input AND a customer was previously selected,
-          // we must clear the selection to stop the name from popping back in.
           if (value === '' && this.selectedCustomerId) {
             this.selectedCustomerId = null;
-            // Optionally, you might want to reset the selectedCustomer computed property too,
-            // but setting the ID to null should be enough if the computed property is correct.
           }
         },
-        /**
-         * Handles customer selection from the list or the 'add new' action.
-         * @param {object|string} customer - The selected customer object or the string 'new'.
-         */
         selectCustomer(customer) {
           if (customer === 'new') {
             this.showAddCustomerModal = true;
-            this.customerSearchQuery = ''; // Clear search when opening modal
+            this.customerSearchQuery = '';
           } else {
             this.selectedCustomerId = customer._id;
-            // When a customer is selected, update the input text to show their name
             this.customerSearchQuery = customer.name;
-            // Manually trigger any existing selection logic
             this.onCustomerSelect();
           }
-          // Always hide the results panel after a selection is made
           this.showCustomerResults = false;
         },
-
-        /**
-         * Listens for clicks outside the component to close the dropdown.
-         * NOTE: This should be added to your component's mounted/beforeUnmount hooks.
-         * @param {Event} event - The click event.
-         */
         handleClickOutside(event) {
-          // Check if the click happened outside of the search/results container
           if (this.$refs.customerSearchContainer && !this.$refs.customerSearchContainer.contains(event.target)) {
             this.showCustomerResults = false;
-            // If no customer is selected, clear the search box content (better UX)
             if (!this.selectedCustomerId) {
               this.customerSearchQuery = '';
             }
@@ -1020,11 +1302,8 @@
         }
       },
       mounted() {
-        // Global click handler to close customer results when clicking outside
         document.addEventListener('click', this.handleClickOutside);
 
-        // Attach dark mode toggle only if the element exists. Store the handler
-        // reference so it can be removed when the component is destroyed.
         const darkBtn = document.getElementById("darkLight");
         if (darkBtn) {
           this._darkLightHandler = () => { this.toggleDarkMode(); };
@@ -1032,11 +1311,10 @@
         }
 
         document.body.classList.toggle('dark', this.isDarkMode);
-        this.fetchProducts(); // Load from API
-        this.fetchCustomers(); // Load customers for selection
+        this.fetchProducts();
+        this.fetchCustomers();
       },
       beforeDestroy() {
-        // Vue 2 lifecycle hook for cleanup
         document.removeEventListener('click', this.handleClickOutside);
         const darkBtn = document.getElementById("darkLight");
         if (darkBtn && this._darkLightHandler) {
