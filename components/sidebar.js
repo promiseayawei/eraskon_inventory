@@ -28,7 +28,7 @@ const CONFIG = {
         operations: { 
             'sale.html': { roles: ['admin', 'sales'], icon: 'bx-cart', label: 'Sales' },
             'shipping.html': { roles: ['admin', 'sales', 'warehouse'], icon: 'bx-send', label: 'Shipping' },
-            'inventory-check.html': { roles: ['admin', 'inventory', 'warehouse'], icon: 'bx-clipboard', label: 'Inventory Check' }
+            // 'inventory-check.html': { roles: ['admin', 'inventory', 'warehouse'], icon: 'bx-clipboard', label: 'Inventory Check' }
         }
     }
 };
