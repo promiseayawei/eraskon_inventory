@@ -1,105 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
+  <base href="/">
   <title>Eraskon | Login & Activation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="components/spinner.js"></script>
-  <link rel="stylesheet" href="assets/css/style_auth.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-
-<script src="assets/js/metaManager.js"></script>
-  <script>
-    setMeta({
-      title: "Eraskon | login & Activation",
-      desc: "Access the Eraskon Inventory portal to login or activate your account.",
-      image: "assets/images/eraskon_logo.webp",
-      favicon: "assets/images/eraskon_logo.webp",
-      keywords: "Inventory, Warehouse, Stock, Sales, Login, Activation"
-    });
-  </script>
+  
   <style>
-    body {
+    * {
       margin: 0;
-      font-family: Arial, sans-serif;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       min-height: 100vh;
       display: flex;
-      flex-direction: column
+      flex-direction: column;
+      background: linear-gradient(135deg, #0e1652 0%, #1a2477 100%);
     }
 
     .container {
       flex: 1;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      border-radius: 15px;
       padding: 20px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, .2);
-      margin: 3em auto 1em;
-      max-width: 720px;
+      margin: 2em auto;
+      max-width: 900px;
       width: 100%;
     }
 
     .logo-header {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 1em;
       margin-top: 2em;
-      color: #f3f0f0;
+      color: #fff;
       text-align: center;
-      padding: 0 10px;
+      padding: 0 20px;
     }
 
     .logo-header img {
       height: 4em;
       width: 4em;
-      max-width: 100%;
-      height: auto;
+      border-radius: 50%;
+      background: white;
+      padding: 5px;
     }
 
     .logo-header h1 {
       font-size: 2em;
       margin: 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .auth-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      overflow: hidden;
+      width: 100%;
+      max-width: 850px;
+      display: flex;
+      position: relative;
+    }
+
+    .cover {
+      flex: 1;
+      background: linear-gradient(135deg, #0e1652 0%, #1a2477 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: white;
+      min-height: 500px;
+    }
+
+    .cover-content {
+      text-align: center;
+    }
+
+    .cover-content h2 {
+      font-size: 2em;
+      margin-bottom: 0.5em;
+    }
+
+    .cover-content p {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    .forms-section {
+      flex: 1;
+      padding: 40px;
+      min-width: 400px;
+    }
+
+    .form-wrapper {
+      display: none;
+    }
+
+    .form-wrapper.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .title {
+      font-size: 1.8em;
+      font-weight: 700;
+      color: #0e1652;
+      margin-bottom: 0.5em;
+    }
+
+    .subtitle {
+      font-size: 0.95em;
+      color: #666;
+      margin-bottom: 2em;
+      line-height: 1.5;
     }
 
     .message-box {
       display: none;
-      margin-bottom: 0.8em;
-      padding: 1em 1.5em;
+      padding: 12px 16px;
       border-radius: 8px;
-      max-width: 400px;
-      font-weight: 600;
-      text-align: center
+      margin-bottom: 1.5em;
+      font-size: 0.9em;
+      font-weight: 500;
     }
 
     .message-box.success {
       background: #d4edda;
       color: #155724;
-      border: 1px solid #c3e6cb
+      border: 1px solid #c3e6cb;
     }
 
     .message-box.error {
       background: #f8d7da;
       color: #721c24;
-      border: 1px solid #f5c6cb
-    }
-
-    /* Combined form styling for consistency and alignment */
-    .login-form,
-    .signup-form,
-    .forgot-password-form,
-    .complete-reset-form {
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 0 20px;
-      box-sizing: border-box;
+      border: 1px solid #f5c6cb;
     }
 
     .input-box {
-      margin: 1.2em 0;
+      margin-bottom: 1.5em;
       position: relative;
     }
 
@@ -109,75 +160,114 @@
       top: 50%;
       transform: translateY(-50%);
       color: #999;
-      z-index: 2;
       font-size: 1.1em;
     }
 
     .input-box input {
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      padding: 12px 12px 12px 40px;
-      outline: none;
-      font-size: 1em;
-      height: 48px;
       width: 100%;
-      box-sizing: border-box;
-      transition: border-color .3s, box-shadow .3s;
-      background-color: #f9f9f9;
+      padding: 14px 14px 14px 45px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1em;
+      transition: all 0.3s;
+      background: #f9f9f9;
     }
 
     .input-box input:focus {
-      border-color: #0056b3;
-      box-shadow: 0 0 0 2px rgba(0, 86, 179, .2);
-      background-color: #fff;
+      outline: none;
+      border-color: #0e1652;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(14, 22, 82, 0.1);
     }
 
-    .button.input-box {
-      margin-top: 2em;
-    }
-
-    .button input[type="submit"] {
-      background-color: #007bff;
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #0e1652 0%, #1a2477 100%);
       color: white;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 12px 20px;
-      height: 50px;
       border: none;
       border-radius: 10px;
-      transition: background-color 0.3s;
-      width: 100%;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 1em;
     }
 
-    .button input[type="submit"]:hover {
-      background-color: #0056b3;
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(14, 22, 82, 0.4);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .link-text {
+      text-align: center;
+      margin-top: 1.5em;
+      font-size: 0.9em;
+      color: #666;
+    }
+
+    .link-text a {
+      color: #0e1652;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .link-text a:hover {
+      text-decoration: underline;
     }
 
     footer {
       text-align: center;
-      padding: 1em 0;
-      font-size: .9em;
-      color: #f1f1f1
+      padding: 2em;
+      color: white;
+      font-size: 0.9em;
     }
 
-    .reset-intro-text {
-      font-size: 15px;
-      color: #555;
-      margin: 1em auto 2em;
-      padding: 0 10px;
-      line-height: 1.4;
-      text-align: center;
-      max-width: 360px;
+    .spinner-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
     }
 
-    /* --- MOBILE-FRIENDLY IMPROVEMENTS --- */
-    @media (max-width: 600px) {
+    .spinner-overlay.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0e1652;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
       .logo-header {
-        margin-top: 1.5em;
-        flex-direction: row;
-        align-items: center;
-        width: 100%;
-        justify-content: center;
+        margin-top: 1em;
       }
 
       .logo-header img {
@@ -186,162 +276,160 @@
       }
 
       .logo-header h1 {
-        font-size: 1.2em;
-        white-space: normal;
-        line-height: 1.2;
-        max-width: 70%;
+        font-size: 1.3em;
       }
 
-      .container {
-        width: calc(100% - 20px);
-        margin: 1em 10px;
-        padding: 10px;
-        overflow: hidden;
+      .auth-container {
+        flex-direction: column;
       }
 
       .cover {
-          display: none !important; 
-      }
-      
-      .forms {
-        width: 100%;
+        display: none;
       }
 
-      .form-content {
-        display: flex;
-        width: 100%;
-        transition: transform 0.6s ease-in-out;
-        min-height: 450px; 
-        padding: 10px 0;
+      .forms-section {
+        min-width: 100%;
+        padding: 30px 20px;
       }
 
-      .login-form,
-      .signup-form,
-      .forgot-password-form,
-      .complete-reset-form { /* Added complete-reset-form */
-        min-width: 100%; 
-        max-width: none;
-        padding: 0 10px;
-        box-sizing: border-box;
-      }
-
-      #flip:checked~.forms .form-content {
-        transform: translateX(-100%);
-      }
-      
-      .message-box {
-        max-width: 100%;
-        margin-left: 0;
-        margin-right: 0;
+      .container {
+        margin: 1em auto;
       }
     }
   </style>
 </head>
-
 <body>
-  <script src="components/uiComponents.js"></script>
+  <!-- Spinner Overlay -->
+  <div id="spinnerOverlay" class="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="logo-header">
+    <img src="assets/images/eraskon_logo.webp" alt="Eraskon Logo" onerror="this.src='https://via.placeholder.com/80/0e1652/ffffff?text=E'">
+    <h1>Eraskon Inventory Management</h1>
+  </div>
+
+  <div class="container">
+    <div class="auth-container">
+      <div class="cover" id="coverElement">
+        <div class="cover-content">
+          <h2>Welcome Back!</h2>
+          <p>Manage your inventory with ease and efficiency</p>
+        </div>
+      </div>
+
+      <div class="forms-section">
+        <!-- Login Form -->
+        <div class="form-wrapper active login-form" id="loginFormContainer">
+          <div class="title">Login</div>
+          <div class="subtitle">Enter your credentials to access your account</div>
+          <div id="loginMessageBox" class="message-box"></div>
+          <form id="loginForm">
+            <div class="input-box">
+              <i class="fas fa-envelope"></i>
+              <input type="email" placeholder="Email address" required autocomplete="email">
+            </div>
+            <div class="input-box">
+              <i class="fas fa-lock"></i>
+              <input type="password" placeholder="Password" required autocomplete="current-password">
+            </div>
+            <input type="submit" class="btn-submit" value="Login">
+            <div class="link-text">
+              <a class="forgot-password-link">Forgot password?</a>
+            </div>
+            <div class="link-text">
+              Don't have credentials? <a class="show-signup-link">Activate Account</a>
+            </div>
+          </form>
+        </div>
+
+        <!-- Signup/Activation Form -->
+        <div class="form-wrapper signup-form" id="signupFormContainer">
+          <div class="title">Activate Account</div>
+          <div class="subtitle">Enter your details to activate your account</div>
+          <div id="signupMessageBox" class="message-box"></div>
+          <form id="signupForm">
+            <div class="input-box">
+              <i class="fas fa-envelope"></i>
+              <input type="email" placeholder="Email address" required autocomplete="email">
+            </div>
+            <div class="input-box">
+              <i class="fas fa-user"></i>
+              <input type="text" placeholder="First name" required autocomplete="given-name">
+            </div>
+            <div class="input-box">
+              <i class="fas fa-user"></i>
+              <input type="text" placeholder="Last name" required autocomplete="family-name">
+            </div>
+            <div class="input-box">
+              <i class="fas fa-lock"></i>
+              <input type="password" placeholder="Create password" required autocomplete="new-password">
+            </div>
+            <div class="input-box">
+              <i class="fas fa-lock"></i>
+              <input type="password" placeholder="Confirm password" required autocomplete="new-password">
+            </div>
+            <input type="submit" class="btn-submit" value="Activate Account">
+            <div class="link-text">
+              Already have an account? <a class="show-login-link">Login</a>
+            </div>
+          </form>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div class="form-wrapper forgot-password-form" id="forgotFormContainer">
+          <div class="title">Forgot Password</div>
+          <div class="subtitle">Enter your email to receive a password reset link</div>
+          <div id="forgotMessageBox" class="message-box"></div>
+          <form id="forgotPasswordForm">
+            <div class="input-box">
+              <i class="fas fa-envelope"></i>
+              <input type="email" id="forgotEmail" placeholder="Email address" required autocomplete="email">
+            </div>
+            <input type="submit" class="btn-submit" value="Send Reset Link">
+            <div class="link-text">
+              <a class="back-to-login-link">Back to Login</a>
+            </div>
+          </form>
+        </div>
+
+        <!-- Complete Password Reset Form -->
+        <div class="form-wrapper complete-reset-form" id="completeResetFormContainer">
+          <div class="title">Reset Password</div>
+          <div class="subtitle">Enter your new password</div>
+          <div id="completeResetMessageBox" class="message-box"></div>
+          <form id="completeResetForm">
+            <div class="input-box">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="newPwd" placeholder="New password" required minlength="6" autocomplete="new-password">
+            </div>
+            <div class="input-box">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="confirmNewPwd" placeholder="Confirm password" required minlength="6" autocomplete="new-password">
+            </div>
+            <input type="submit" class="btn-submit" value="Reset Password">
+            <div class="link-text">
+              <a href="/" class="back-to-login-link">Back to Login</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2024 Eraskon. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts -->
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="assets/js/utils.js"></script>
-
-  <div class="logo-header animated delay-1">
-    <img src="assets/images/eraskon_logo.webp" alt="Eraskon Logo">
-    <h1>Eraskon Inventory Management Solution</h1>
-  </div>
-
-  <div class="container animated delay-2">
-    <input type="checkbox" id="flip">
-    
-    <div class="cover">
-      <div class="front">
-        <img src="assets/images/erasko_gold.png" alt="">
-        <div class="text"><span class="text-1">Eraskon <br> Inventory</span><span class="text-2">Ready Let's go</span>
-        </div>
-      </div>
-      <div class="back">
-        <img class="backImg" src="assets/images/eraskon image2.jpeg" alt="">
-        <div class="text"><span class="text-1">Inventory Systems<br> Automation</span><span class="text-2">Let's get
-            started</span></div>
-      </div>
-    </div>
-
-    <div class="forms animated delay-3">
-      <div class="form-content">
-        
-        <div class="login-form">
-          <div id="loginMessageBox" class="message-box"></div>
-          <div class="title">Login</div>
-          <form id="loginForm">
-            <div class="input-boxes">
-              <div class="input-box"><i class="fas fa-envelope"></i><input type="text" placeholder="Enter your email"
-                  required autocomplete="email"></div>
-              <div class="input-box"><i class="fas fa-lock"></i><input type="password" placeholder="Enter your password"
-                  required autocomplete="current-password"></div>
-              
-              <div class="text"><a href="#" class="forgot-password-link">Forgot password?</a></div>
-              
-              <div class="button input-box"><input type="submit" value="Submit"></div>
-              <div class="text sign-up-text">Don't have login credentials? <label for="flip">Activate Account</label>
-              </div>
-            </div>
-          </form>
-        </div>
-        
-        <div class="forgot-password-form" style="display: none;">
-          <div id="forgotMessageBox" class="message-box"></div>
-          <div class="title">Forgot Password</div>
-          <form id="forgotPasswordForm">
-            <p class="reset-intro-text">Enter your email address to receive a password reset link.</p>
-            <div class="input-boxes">
-              <div class="input-box"><i class="fas fa-envelope"></i><input type="email" id="forgotEmail" placeholder="Enter your email" required autocomplete="email"></div>
-              <div class="button input-box"><input type="submit" value="Send Reset Link"></div>
-              <div class="text sign-up-text"><a href="#" class="back-to-login-link">Back to Login</a></div>
-            </div>
-          </form>
-        </div>
-
-        <div class="complete-reset-form" style="display: none;">
-            <div id="completeResetMessageBox" class="message-box"></div>
-            <div class="title">Set New Password</div>
-            <form id="completeResetForm">
-                <p class="reset-intro-text">Enter your new password below to complete the reset process.</p>
-                <div class="input-boxes">
-                    <div class="input-box"><i class="fas fa-lock"></i><input type="password" id="newPwd" placeholder="New Password" required autocomplete="new-password"></div>
-                    <div class="input-box"><i class="fas fa-lock"></i><input type="password" id="confirmNewPwd" placeholder="Confirm New Password" required autocomplete="new-password"></div>
-                    <div class="button input-box"><input type="submit" value="Reset Password"></div>
-                    <div class="text sign-up-text"><a href="/" class="back-to-login-link">Go to Login</a></div>
-                </div>
-            </form>
-        </div>
-        
-        <div class="signup-form">
-          <div id="signupMessageBox" class="message-box"></div>
-          <div class="title">Signup Account</div>
-          <form id="signupForm">
-            <div class="input-boxes">
-              <div class="input-box"><i class="fas fa-envelope"></i><input type="text" placeholder="Enter your email"
-                  required autocomplete="email"></div>
-              <div class="input-box"><i class="fas fa-user"></i><input type="text" placeholder="First name" required
-                  autocomplete="given-name"></div>
-              <div class="input-box"><i class="fas fa-user"></i><input type="text" placeholder="Last name" required
-                  autocomplete="family-name"></div>
-              <div class="input-box"><i class="fas fa-lock"></i><input type="password" placeholder="Enter your password"
-                  required autocomplete="new-password"></div>
-              <div class="input-box"><i class="fas fa-lock"></i><input type="password"
-                  placeholder="Confirm your password" required autocomplete="new-password"></div>
-              <div class="button input-box"><input type="submit" value="Submit"></div>
-              <div class="text sign-up-text">Already have an account? <label for="flip">Login now</label></div>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <footer class="forms animated delay-4">&copy; 2025 Eraskon Inventory. All rights reserved || Developed by <a
-      href="https://github.com/ayaweisoft">Ayaweisoft</a></footer>
-
+  
   <script>
+    // Spinner functions
+    window.showSpinner = () => document.getElementById('spinnerOverlay').classList.add('active');
+    window.hideSpinner = () => document.getElementById('spinnerOverlay').classList.remove('active');
+
     // Constants and DOM element fetching
     const API_BASE = window.BASE_URL;
     const loginForm = document.getElementById("loginForm");
@@ -349,10 +437,11 @@
     const forgotPasswordForm = document.getElementById("forgotPasswordForm");
     const completeResetForm = document.getElementById("completeResetForm");
 
-    const loginFormContainer = document.querySelector(".login-form");
-    const forgotFormContainer = document.querySelector(".forgot-password-form");
-    const completeResetFormContainer = document.querySelector(".complete-reset-form");
-    const coverElement = document.querySelector('.cover');
+    const loginFormContainer = document.getElementById("loginFormContainer");
+    const signupFormContainer = document.getElementById("signupFormContainer");
+    const forgotFormContainer = document.getElementById("forgotFormContainer");
+    const completeResetFormContainer = document.getElementById("completeResetFormContainer");
+    const coverElement = document.getElementById('coverElement');
 
     // --- Utility Functions ---
     const setFormState = (f, l) => { 
@@ -360,7 +449,7 @@
       s.disabled = l; 
       if (!f.dataset.originalValue) f.dataset.originalValue = s.value;
       s.value = l ? "Loading..." : f.dataset.originalValue; 
-      l ? window.showSpinner && showSpinner() : window.hideSpinner && hideSpinner() 
+      l ? showSpinner() : hideSpinner();
     };
     
     const showMessage = (id, m, t = "success") => { 
@@ -368,163 +457,199 @@
       b.textContent = m; 
       b.className = `message-box ${t}`; 
       b.style.display = "block"; 
-      setTimeout(() => b.style.display = "none", 5e3) 
+      setTimeout(() => b.style.display = "none", 5e3);
     };
 
-    const toggleForgotForm = (showForgot = true) => {
-        loginFormContainer.style.display = showForgot ? "none" : "block";
-        forgotFormContainer.style.display = showForgot ? "block" : "none";
-        document.getElementById('flip').checked = false; // Ensure signup is hidden
-        completeResetFormContainer.style.display = 'none'; // Ensure reset form is hidden
+    const showForm = (formName) => {
+      const forms = [loginFormContainer, signupFormContainer, forgotFormContainer, completeResetFormContainer];
+      forms.forEach(f => f.classList.remove('active'));
+      
+      const formMap = {
+        'login': loginFormContainer,
+        'signup': signupFormContainer,
+        'forgot': forgotFormContainer,
+        'reset': completeResetFormContainer
+      };
+      
+      formMap[formName]?.classList.add('active');
     };
 
     // Function to extract token from URL (e.g., /reset-password/TOKEN_HERE)
     const getTokenFromUrl = () => {
-        const path = window.location.pathname;
-        const parts = path.split('/');
-        // Check for /reset-password/ and a token segment
-        if (parts[1] === 'reset-password' && parts.length === 3 && parts[2].length > 10) {
-            return parts[2];
-        }
-        return null;
+      const path = window.location.pathname;
+      const parts = path.split('/');
+      // Check for /reset-password/ and a token segment
+      if (parts[1] === 'reset-password' && parts.length === 3 && parts[2].length > 10) {
+        return parts[2];
+      }
+      return null;
     };
-
 
     // --- 0. Initial Page Load Check for Reset Token ---
     const resetToken = getTokenFromUrl();
 
     if (resetToken) {
-        // We are on the reset page. Hide all non-reset elements.
-        coverElement.style.display = 'none';
-        loginFormContainer.style.display = 'none';
-        forgotFormContainer.style.display = 'none';
-        document.querySelector('.signup-form').style.display = 'none';
-        document.getElementById('flip').style.display = 'none'; // Hide checkbox
-
-        // Show the complete reset form
-        completeResetFormContainer.style.display = 'block';
-        
-        // Ensure the form content container is not horizontally aligned for the flip effect
-        document.querySelector('.forms .form-content').style.transform = 'none';
-        document.querySelector('.forms .form-content').style.display = 'block';
-
+      // We are on the reset page. Show only the reset form.
+      coverElement.style.display = 'none';
+      showForm('reset');
     } else {
-        // Normal login page load. Ensure login is visible by default.
-        loginFormContainer.style.display = 'block';
+      // Normal login page load
+      showForm('login');
     }
 
-    // --- 1. Login Form Submission (Unchanged) ---
+    // --- 1. Login Form Submission ---
     loginForm.addEventListener("submit", e => {
       e.preventDefault(); 
       setFormState(loginForm, 1); 
       const [email, pwd] = [...e.target.querySelectorAll("input")].map(i => i.value);
-      axios.post(`${API_BASE}/auth/login`, { email, password: pwd }).then(r => {
-        setFormState(loginForm, 0); 
-        const { token, user } = r.data; 
-        Object.entries({ token, email: user.email, role: user.role, name: `${user.firstName} ${user.lastName}`, firstName: user.firstName, lastName: user.lastName, userId: user._id, warehouse: user.warehouse?.name || user.warehouse || "" }).forEach(([k, v]) => localStorage.setItem(k, v)); 
-        showMessage("loginMessageBox", "Login successful!", "success");
-        const m = { admin: "stats.html", inventory: "stock-movement.html", sales: "store.html", warehouse: "warehouse.html", finance: "approve.html", chairman: "chairman.html" }; 
-        setTimeout(() => location.href = m[user.role] || "welcome.html", 1500);
-      }).catch(e => { 
-        setFormState(loginForm, 0); 
-        showMessage("loginMessageBox", e.response?.data?.error || "Login failed.", "error") 
-      });
+      
+      axios.post(`${API_BASE}/auth/login`, { email, password: pwd })
+        .then(r => {
+          setFormState(loginForm, 0); 
+          const { token, user } = r.data; 
+          
+          // Store user data in localStorage
+          Object.entries({ 
+            token, 
+            email: user.email, 
+            role: user.role, 
+            name: `${user.firstName} ${user.lastName}`, 
+            firstName: user.firstName, 
+            lastName: user.lastName, 
+            userId: user._id, 
+            warehouse: user.warehouse?.name || user.warehouse || "",
+            user: JSON.stringify(user)
+          }).forEach(([k, v]) => localStorage.setItem(k, v)); 
+          
+          showMessage("loginMessageBox", "Login successful!", "success");
+          
+          // Role-based redirect
+          const redirectMap = { 
+            admin: "stats.html", 
+            inventory: "stock-movement.html", 
+            sales: "store.html", 
+            warehouse: "warehouse.html", 
+            finance: "approve.html", 
+            chairman: "chairman.html" 
+          }; 
+          
+          setTimeout(() => location.href = redirectMap[user.role] || "welcome.html", 1500);
+        })
+        .catch(e => { 
+          setFormState(loginForm, 0); 
+          showMessage("loginMessageBox", e.response?.data?.error || "Login failed.", "error");
+        });
     });
 
-    // 2. Signup Form Submission (Unchanged)
+    // --- 2. Signup Form Submission ---
     signupForm.addEventListener("submit", e => {
       e.preventDefault(); 
       setFormState(signupForm, 1); 
       const [email, firstName, lastName, password, confirmPassword] = [...e.target.querySelectorAll("input")].map(i => i.value);
       
-      if (password !== confirmPassword) return setFormState(signupForm, 0), showMessage("signupMessageBox", "Passwords do not match", "error");
+      if (password !== confirmPassword) {
+        setFormState(signupForm, 0);
+        return showMessage("signupMessageBox", "Passwords do not match", "error");
+      }
       
-      axios.post(`${API_BASE}/auth/register`, { email, firstName, lastName, password }).then(r => { 
-        setFormState(signupForm, 0); 
-        showMessage("signupMessageBox", r.data.message || "Account activated! Please log in.", "success") 
-      }).catch(e => { 
-        setFormState(signupForm, 0); 
-        showMessage("signupMessageBox", e.response?.data?.error || "Activation failed. Check if account already exists.", "error") 
+      axios.post(`${API_BASE}/auth/register`, { email, firstName, lastName, password })
+        .then(r => { 
+          setFormState(signupForm, 0); 
+          showMessage("signupMessageBox", r.data.message || "Account activated! Please log in.", "success");
+          setTimeout(() => showForm('login'), 2000);
+        })
+        .catch(e => { 
+          setFormState(signupForm, 0); 
+          showMessage("signupMessageBox", e.response?.data?.error || "Activation failed. Check if account already exists.", "error");
+        });
+    });
+
+    // --- 3. Forgot Password Toggle & Submission ---
+    document.querySelector(".forgot-password-link").addEventListener("click", e => {
+      e.preventDefault(); 
+      showForm('forgot');
+      coverElement.style.display = 'none';
+    });
+
+    document.querySelectorAll(".back-to-login-link").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault(); 
+        showForm('login');
+        coverElement.style.display = 'block';
+        document.getElementById("forgotEmail").value = "";
       });
     });
 
-    // 3. Forgot Password Toggle & Submission (Unchanged)
-    document.querySelector(".forgot-password-link").addEventListener("click", e => {
-        e.preventDefault(); 
-        toggleForgotForm(true);
-        document.getElementById("loginMessageBox").style.display = "none";
-        coverElement.style.display = 'none'; // Hide cover when showing forgot form
+    document.querySelector(".show-signup-link").addEventListener("click", e => {
+      e.preventDefault();
+      showForm('signup');
+      coverElement.style.display = 'none';
     });
 
-    document.querySelector(".back-to-login-link").addEventListener("click", e => {
-        e.preventDefault(); 
-        toggleForgotForm(false);
-        document.getElementById("forgotEmail").value = ""; 
-        document.getElementById("forgotMessageBox").style.display = "none"; 
-        coverElement.style.display = 'block'; // Show cover when going back to login
+    document.querySelectorAll(".show-login-link").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        showForm('login');
+        coverElement.style.display = 'block';
+      });
     });
 
     forgotPasswordForm.addEventListener("submit", e => {
-        e.preventDefault(); 
-        setFormState(forgotPasswordForm, 1);
-        const email = document.getElementById("forgotEmail").value;
-        forgotPasswordForm.querySelector('input[type="submit"]').dataset.originalValue = "Send Reset Link";
+      e.preventDefault(); 
+      setFormState(forgotPasswordForm, 1);
+      const email = document.getElementById("forgotEmail").value;
 
-        axios.post(`${API_BASE}/auth/forgot-password`, { email })
-            .then(r => {
-                setFormState(forgotPasswordForm, 0); 
-                showMessage("forgotMessageBox", r.data.message || "Password reset link sent!", "success"); 
-                document.getElementById("forgotEmail").value = "";
-            })
-            .catch(err => {
-                setFormState(forgotPasswordForm, 0); 
-                const genericMsg = "If an account with that email exists, a password reset link has been sent.";
-                showMessage("forgotMessageBox", genericMsg, "success"); 
-            });
+      axios.post(`${API_BASE}/auth/forgot-password`, { email })
+        .then(r => {
+          setFormState(forgotPasswordForm, 0); 
+          showMessage("forgotMessageBox", r.data.message || "Password reset link sent!", "success"); 
+          document.getElementById("forgotEmail").value = "";
+        })
+        .catch(err => {
+          setFormState(forgotPasswordForm, 0); 
+          const genericMsg = "If an account with that email exists, a password reset link has been sent.";
+          showMessage("forgotMessageBox", genericMsg, "success");
+        });
     });
 
-    // 4. NEW: Complete Password Reset Submission Handler
+    // --- 4. Complete Password Reset Submission ---
     completeResetForm.addEventListener("submit", e => {
-        e.preventDefault(); 
-        setFormState(completeResetForm, 1);
+      e.preventDefault(); 
+      setFormState(completeResetForm, 1);
 
-        const newPassword = document.getElementById('newPwd').value;
-        const confirmNewPassword = document.getElementById('confirmNewPwd').value;
+      const newPassword = document.getElementById('newPwd').value;
+      const confirmNewPassword = document.getElementById('confirmNewPwd').value;
 
-        if (newPassword !== confirmNewPassword) {
-            setFormState(completeResetForm, 0); 
-            return showMessage("completeResetMessageBox", "Passwords do not match.", "error");
-        }
+      if (newPassword !== confirmPassword) {
+        setFormState(completeResetForm, 0); 
+        return showMessage("completeResetMessageBox", "Passwords do not match.", "error");
+      }
 
-        const submissionData = {
-            token: resetToken, // Use the token extracted on page load
-            newPassword: newPassword
-        };
-        
-        // Use the updated, clean endpoint
-        axios.post(`${API_BASE}/auth/complete-password-reset`, submissionData)
-            .then(r => {
-                setFormState(completeResetForm, 0); 
-                showMessage("completeResetMessageBox", r.data.message || "Password updated! Redirecting to login...", "success"); 
-                // Redirect user back to the main login page after a few seconds
-                setTimeout(() => {
-                    window.location.href = '/'; 
-                }, 3000);
-            })
-            .catch(err => {
-                setFormState(completeResetForm, 0); 
-                showMessage("completeResetMessageBox", err.response?.data?.error || "Reset failed. Link may be expired or invalid.", "error"); 
-            });
+      const submissionData = {
+        token: resetToken,
+        newPassword: newPassword
+      };
+      
+      axios.post(`${API_BASE}/auth/complete-password-reset`, submissionData)
+        .then(r => {
+          setFormState(completeResetForm, 0); 
+          showMessage("completeResetMessageBox", r.data.message || "Password updated! Redirecting to login...", "success"); 
+          setTimeout(() => {
+            window.location.href = '/'; 
+          }, 3000);
+        })
+        .catch(err => {
+          setFormState(completeResetForm, 0); 
+          showMessage("completeResetMessageBox", err.response?.data?.error || "Reset failed. Link may be expired or invalid.", "error");
+        });
     });
 
+    // Hide spinner on page load
     window.addEventListener("load", () => {
-        // Only hide spinner if the page is not displaying the reset form (where loading might be longer)
-        if (!resetToken) { 
-            window.hideSpinner && hideSpinner();
-        }
+      if (!resetToken) { 
+        hideSpinner();
+      }
     });
   </script>
-
 </body>
-
 </html>

@@ -111,13 +111,10 @@ document.write(`
       padding: 12px 0;
     }
     
-    /* FIX: Ensure the main menu list stretches vertically */
     .menu_items {
       list-style: none;
       padding: 0;
       margin: 0;
-      display: flex;
-      flex-direction: column;
     }
     
     .nav_link {
@@ -172,34 +169,25 @@ document.write(`
       display: flex;
       align-items: center;
       min-height: 70px;
+      gap: 12px;
       font-size: 18px;
       font-weight: 700;
       color: #1e293b;
       position: relative; 
     }
-
-    /* FIX: Container for logo and text */
-    .sidebar-logo-text-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-grow: 1; /* Allows the container to take available space */
-      min-width: 0;
-    }
     
     .sidebar-header i.bx-store-alt { 
       font-size: 28px;
       color: #3b82f6;
-      min-width: 28px; /* Ensure icon has fixed width */
     }
     
-    /* FIX: Logo text transition and handling */
-    .sidebar-logo-text {
-      white-space: nowrap;
-      transition: all 0.3s;
+    .sidebar.close .sidebar-logo-text {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
     }
-
-    /* FIX: Toggle Button - Only visible on desktop */
+    
+    /* Toggle Button - Only visible on desktop */
     #sidebarToggle {
       position: absolute;
       right: 10px;
@@ -218,23 +206,13 @@ document.write(`
       margin: 0 auto;
     }
     
-    /* FIX: Collapsed State Header */
     .sidebar.close .sidebar-header {
       justify-content: center;
       padding: 20px 10px;
     }
     
-    /* FIX: Collapsed Logo Text */
-    .sidebar.close .sidebar-logo-text {
-      opacity: 0;
-      width: 0;
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    .sidebar.close .sidebar-logo-text-container {
-      flex-grow: 0;
-      justify-content: center;
+    .sidebar.close .sidebar-header i.bx-store-alt {
+      display: none; 
     }
     
     /* Hide toggle button on mobile */
@@ -258,7 +236,8 @@ document.write(`
     }
     
     /* Collapsed State */
-    .sidebar.close .navlink { 
+    .sidebar.close .navlink, 
+    .sidebar.close .sidebar-logo-text { 
       opacity: 0; 
       width: 0; 
       pointer-events: none; 
@@ -270,7 +249,8 @@ document.write(`
     
     /* On mobile, always show text even with close class */
     @media (max-width: 768px) {
-      .sidebar.close .navlink {
+      .sidebar.close .navlink,
+      .sidebar.close .sidebar-logo-text {
         opacity: 1;
         width: auto;
         pointer-events: auto;
@@ -280,17 +260,13 @@ document.write(`
         display: block;
       }
       
-      /* FIX: Re-enable logo text and container on mobile close */
-      .sidebar.close .sidebar-logo-text,
-      .sidebar.close .sidebar-logo-text-container {
-        opacity: 1;
-        width: auto;
-        pointer-events: auto;
-      }
-
       .sidebar.close .sidebar-header {
         justify-content: flex-start;
         padding: 16px 20px;
+      }
+      
+      .sidebar.close .sidebar-header i.bx-store-alt {
+        display: block;
       }
     }
     
@@ -301,7 +277,6 @@ document.write(`
       padding: 16px 20px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      flex-shrink: 0; /* Prevents shrinking */
     }
     
     .user_info-animated div {
@@ -365,7 +340,6 @@ document.write(`
       padding: 16px 20px;
       border-top: 1px solid #e5e7eb; 
       margin-top: auto; 
-      flex-shrink: 0; /* Prevents shrinking */
     }
     
     .sidebar.close .sidebar-actions {
@@ -436,10 +410,8 @@ document.write(`
   
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-logo-text-container">
-          <i class='bx bx-store-alt'></i>
-          <span class="sidebar-logo-text">Inventory Management</span>
-      </div>
+      <i class='bx bx-store-alt'></i>
+      <span class="sidebar-logo-text">Inventory Management</span>
       <i id="sidebarToggle" class='bx bx-chevron-left'></i>
     </div>
     
@@ -587,16 +559,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Desktop: Hover behavior when collapsed
     if (!isMobile) {
         sidebar?.addEventListener('mouseenter', () => {
-            // Only expand on hover if it's currently collapsed (based on localStorage)
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            if (isCollapsed) {
                 sidebar.classList.remove('close');
                 toggleBtn?.classList.replace('bx-chevron-right', 'bx-chevron-left');
             }
         });
         
         sidebar?.addEventListener('mouseleave', () => {
-            // Only re-collapse on mouseleave if it should be collapsed (from localStorage)
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            if (isCollapsed) {
                 sidebar.classList.add('close');
                 toggleBtn?.classList.replace('bx-chevron-left', 'bx-chevron-right');
             }
@@ -667,21 +637,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 sidebar?.classList.remove('mobile-open');
                 overlay?.classList.remove('active');
                 document.body.style.overflow = '';
-            } else {
-                // Switched to desktop - remove mobile-open class if present
-                sidebar?.classList.remove('mobile-open');
-                overlay?.classList.remove('active');
-                document.body.style.overflow = '';
-
-                // Restore desktop collapsed state
-                isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-                if (isCollapsed) {
-                    sidebar?.classList.add('close');
-                    toggleBtn?.classList.replace('bx-chevron-left', 'bx-chevron-right');
-                } else {
-                    sidebar?.classList.remove('close');
-                    toggleBtn?.classList.replace('bx-chevron-right', 'bx-chevron-left');
-                }
             }
         }, 250);
     });
