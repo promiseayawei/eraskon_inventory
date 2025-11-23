@@ -466,9 +466,9 @@
       @click="activeTab = 'notifications'">
       <i class="bx bx-bell"></i> Notifications ({{ notifications.length }})
     </button>
-    <button class="chairman-nav-btn" :class="{ active: activeTab === 'settings' }" @click="activeTab = 'settings'">
+    <!-- <button class="chairman-nav-btn" :class="{ active: activeTab === 'settings' }" @click="activeTab = 'settings'">
       <i class="bx bx-cog"></i> Settings
-    </button>
+    </button> -->
   </div>
 
   <div v-if="activeTab === 'dashboard'">
