@@ -18,7 +18,7 @@
  <script src="assets/js/metaManager.js"></script>
  <style>
     body {
-      background-color: #f3f4f6;
+      background-color: #ffffff;
     }
 
     /* Inside the @media (max-width: 768px) block: */
@@ -69,7 +69,8 @@
   <script src="components/navbar.js"></script>
   <script src="components/sidebar.js"></script>
 
-  <div id="main-content">
+    <main id="app" class="main-content">
+      <h1 class="page-title">Stock Movements & Warehouses</h1>
   <div id="stockTabs" style="margin-top:30px;">
       <div style="display:flex;gap:8px;margin-bottom:18px;">
         <button class="tab-btn active" data-tab="alertsTab">Low Stock Alerts</button>
@@ -781,41 +782,76 @@ renderWarehouseStockCards();
 </script>
 
 <script>
+  /**
+   * loadReports()
+   * Fetches order and stock movement data, handles authentication, pagination, and rendering.
+   */
   async function loadReports() {
+    // We use a try...catch block to handle network errors and missing tokens gracefully.
     try {
       const API_BASE = window.BASE_URL;
       const token = localStorage.getItem('token');
+      
+      // 🛑 Critical Robustness Check: Ensure token exists.
+      if (!token || token.trim() === '') {
+        // Instead of just throwing, you might want to redirect the user to login here.
+        throw new Error("Authentication token missing. Please log in.");
+      }
+      
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Fetch data
+      // --- Data Fetching ---
+      // Concurrent fetching for better performance
       const [ordersRes, stockMovementsRes] = await Promise.all([
         axios.get(`${API_BASE}/order`, { headers }),
-        axios.get(`${API_BASE}/stock-movement`, { headers })
+        axios.get(`${API_BASE}/stock-movement`, { headers }) // Authorization header applied here
       ]);
-      const orders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.orders || []);
-      const stockMovements = Array.isArray(stockMovementsRes.data) ? stockMovementsRes.data : (stockMovementsRes.data.stockMovements || stockMovementsRes.data);
 
-      // Pagination and search state
+      // 🛑 Robustness Check 2: Safely extract data, defaulting to an empty array
+      const orders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.orders || []);
+      const stockMovements = Array.isArray(stockMovementsRes.data) ? stockMovementsRes.data : (stockMovementsRes.data.stockMovements || stockMovementsRes.data || []);
+
+      // --- State Variables ---
       const itemsPerPage = 10;
+      // Scoped state for pagination and search
       let salesPage = 1, orderPage = 1, stockPage = 1;
       let salesSearch = '', orderSearch = '', stockSearch = '';
 
-      // --- Render Functions ---
+      // --- Helper: Render Pagination Buttons ---
+      function renderPagination(pagDivId, currentPage, totalPages, pageSetter, renderFunc) {
+          const pagDiv = document.getElementById(pagDivId);
+          if (pagDiv) {
+              pagDiv.innerHTML = '';
+              for (let i = 1; i <= totalPages; i++) {
+                  const btn = document.createElement('button');
+                  btn.textContent = i;
+                  btn.style.cssText = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i===currentPage?'#2563eb':'#fff'};color:${i===currentPage?'#fff':'#2563eb'};cursor:pointer;margin-right:4px;`;
+                  btn.onclick = () => { pageSetter(i); renderFunc(); };
+                  pagDiv.appendChild(btn);
+              }
+          }
+      }
+      
+      // --- Render Functions (Encapsulated) ---
+
       function renderSalesTable() {
-        const table = document.getElementById('salesReportTable');
-        if (!table) return; // Prevent error if table is missing
-        const tbody = table.querySelector('tbody');
-        if (!tbody) return;
-        let filtered = orders.filter(o =>
-          (o.orderCode || '').toLowerCase().includes(salesSearch) ||
-          (o.customer?.name || '').toLowerCase().includes(salesSearch) ||
-          (o.channel || '').toLowerCase().includes(salesSearch) ||
-          (o.status || '').toLowerCase().includes(salesSearch) ||
-          (o.paymentMethod || '').toLowerCase().includes(salesSearch)
-        );
+        const tbody = document.getElementById('salesReportTableBody');
+        const salesTotalElement = document.getElementById('salesTotal');
+        if (!tbody) return; 
+        
+        let filtered = orders.filter(o => {
+            const searchLower = salesSearch.toLowerCase();
+            return (o.orderCode || '').toLowerCase().includes(searchLower) ||
+                   (o.customer?.name || '').toLowerCase().includes(searchLower) ||
+                   (o.channel || '').toLowerCase().includes(searchLower) ||
+                   (o.status || '').toLowerCase().includes(searchLower) ||
+                   (o.paymentMethod || '').toLowerCase().includes(searchLower);
+        });
+
         const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-        salesPage = Math.min(salesPage, totalPages);
+        salesPage = Math.min(Math.max(1, salesPage), totalPages); // Keep page within bounds
         const paginated = filtered.slice((salesPage - 1) * itemsPerPage, salesPage * itemsPerPage);
+        
         tbody.innerHTML = paginated.map(o => `
           <tr>
             <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
@@ -823,92 +859,95 @@ renderWarehouseStockCards();
             <td>${o.customer?.name || '-'}</td>
             <td>${o.channel || '-'}</td>
             <td>${o.status || '-'}</td>
-            <td>₦${o.total ? Number(o.total).toLocaleString() : '0'}</td>
+            <td>₦${o.total ? Number(o.total).toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
             <td>${o.paymentMethod || '-'}</td>
           </tr>
-        `).join('');
+        `).join('') || `<tr><td colspan="7" style="text-align:center;">No sales records found.</td></tr>`;
+
         // Pagination controls
-        const pagDiv = document.getElementById('salesPagination');
-        pagDiv.innerHTML = '';
-        for (let i = 1; i <= totalPages; i++) {
-          const btn = document.createElement('button');
-          btn.textContent = i;
-          btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i===salesPage?'#2563eb':'#fff'};color:${i===salesPage?'#fff':'#2563eb'};cursor:pointer;`;
-          btn.onclick = () => { salesPage = i; renderSalesTable(); };
-          pagDiv.appendChild(btn);
-        }
+        renderPagination('salesPagination', salesPage, totalPages, (page) => salesPage = page, renderSalesTable);
+        
         // Total
-        const salesTotal = filtered.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
-        document.getElementById('salesTotal').textContent = `₦${salesTotal.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+        if (salesTotalElement) {
+            const salesTotal = filtered.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+            salesTotalElement.textContent = `₦${salesTotal.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+        }
       }
 
       function renderOrderTable() {
-        const table = document.getElementById('orderReportTable');
-        if (!table) return;
-        const tbody = table.querySelector('tbody');
+        const tbody = document.getElementById('orderReportTableBody'); 
+        const ordersTotalElement = document.getElementById('ordersTotal');
         if (!tbody) return;
-        let filtered = orders.filter(o =>
-          (o.orderCode || '').toLowerCase().includes(orderSearch) ||
-          (Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '-').join(', ').toLowerCase() : '').includes(orderSearch) ||
-          (o.status || '').toLowerCase().includes(orderSearch)
-        );
+        
+        let filtered = orders.filter(o => {
+            const searchLower = orderSearch.toLowerCase();
+            return (o.orderCode || '').toLowerCase().includes(searchLower) ||
+                   (Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '').join(', ').toLowerCase() : '').includes(searchLower) ||
+                   (o.status || '').toLowerCase().includes(searchLower);
+        });
+        
         const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-        orderPage = Math.min(orderPage, totalPages);
+        orderPage = Math.min(Math.max(1, orderPage), totalPages);
         const paginated = filtered.slice((orderPage - 1) * itemsPerPage, orderPage * itemsPerPage);
+        
         tbody.innerHTML = paginated.map(o => {
           const qty = Array.isArray(o.items) ? o.items.reduce((sum, item) => sum + (item.qty || 0), 0) : 0;
+          
+          const subTotal = Number(o.subTotal) || 0;
           const discount = Array.isArray(o.discounts)
             ? o.discounts.reduce((sum, d) => {
-                if (d.type === 'fixed') return sum + (d.value || 0);
-                if (d.type === 'percent') return sum + ((o.subTotal || 0) * (d.value || 0)) / 100;
+                const value = Number(d.value) || 0;
+                if (d.type === 'fixed') return sum + value;
+                if (d.type === 'percent') return sum + (subTotal * value) / 100;
                 return sum;
               }, 0)
             : 0;
+          const tax = Number(o.tax) || 0;
+          const total = Number(o.total) || 0;
+          
           return `
             <tr>
               <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
               <td>${o.orderCode || '-'}</td>
               <td>${Array.isArray(o.items) ? o.items.map(i => i.productVariantName || '-').join(', ') : '-'}</td>
               <td>${qty}</td>
-              <td>₦${o.subTotal ? Number(o.subTotal).toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
-              <td>₦${discount ? discount.toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
-              <td>₦${o.tax ? Number(o.tax).toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
-              <td>₦${o.total ? Number(o.total).toLocaleString(undefined, {minimumFractionDigits:2}) : '0.00'}</td>
+              <td>₦${subTotal.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+              <td>₦${discount.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+              <td>₦${tax.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+              <td>₦${total.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
             </tr>
           `;
-        }).join('');
+        }).join('') || `<tr><td colspan="8" style="text-align:center;">No order records found.</td></tr>`;
+        
         // Pagination controls
-        const pagDiv = document.getElementById('orderPagination');
-        pagDiv.innerHTML = '';
-        for (let i = 1; i <= totalPages; i++) {
-          const btn = document.createElement('button');
-          btn.textContent = i;
-          btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i===orderPage?'#2563eb':'#fff'};color:${i===orderPage?'#fff':'#2563eb'};cursor:pointer;`;
-          btn.onclick = () => { orderPage = i; renderOrderTable(); };
-          pagDiv.appendChild(btn);
-        }
+        renderPagination('orderPagination', orderPage, totalPages, (page) => orderPage = page, renderOrderTable);
+        
         // Total
-        const ordersTotal = filtered.reduce((sum, o) => sum + (Number(o.subTotal) || 0), 0);
-        document.getElementById('ordersTotal').textContent = `₦${ordersTotal.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+        if (ordersTotalElement) {
+            const ordersTotal = filtered.reduce((sum, o) => sum + (Number(o.subTotal) || 0), 0);
+            ordersTotalElement.textContent = `₦${ordersTotal.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+        }
       }
 
       function renderStockTable() {
-        const table = document.getElementById('stockMovementTable');
-        if (!table) return;
         const tbody = document.getElementById('stockMovementTableBody');
         if (!tbody) return;
-        let filtered = Array.isArray(stockMovements) ? stockMovements.filter(m =>
-          (m.productVariant?.name || '').toLowerCase().includes(stockSearch) ||
-          (m.type || '').toLowerCase().includes(stockSearch) ||
-          (m.warehouse?.name || '').toLowerCase().includes(stockSearch) ||
-          (m.batchNumber || '').toLowerCase().includes(stockSearch) ||
-          (m.reason || '').toLowerCase().includes(stockSearch) ||
-          (m.reference || '').toLowerCase().includes(stockSearch)
-        ) : [];
+        
+        let filtered = Array.isArray(stockMovements) ? stockMovements.filter(m => {
+            const searchLower = stockSearch.toLowerCase();
+            return (m.productVariant?.name || '').toLowerCase().includes(searchLower) ||
+                   (m.type || '').toLowerCase().includes(searchLower) ||
+                   (m.warehouse?.name || '').toLowerCase().includes(searchLower) ||
+                   (m.batchNumber || '').toLowerCase().includes(searchLower) ||
+                   (m.reason || '').toLowerCase().includes(searchLower) ||
+                   (m.reference || '').toLowerCase().includes(searchLower);
+        }) : [];
+        
         const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-        stockPage = Math.min(stockPage, totalPages);
+        stockPage = Math.min(Math.max(1, stockPage), totalPages);
         const paginated = filtered.slice((stockPage - 1) * itemsPerPage, stockPage * itemsPerPage);
-        tbody.innerHTML = paginated.length ? paginated.map(m => `
+        
+        tbody.innerHTML = paginated.map(m => `
           <tr>
             <td>${m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '-'}</td>
             <td>${m.productVariant?.name || '-'}</td>
@@ -919,49 +958,54 @@ renderWarehouseStockCards();
             <td>${m.reason || '-'}</td>
             <td>${m.reference || '-'}</td>
           </tr>
-        `).join('') : `<tr><td colspan="8" style="text-align:center;">No stock movement data</td></tr>`;
+        `).join('') || `<tr><td colspan="8" style="text-align:center;">No stock movement data</td></tr>`;
+        
         // Pagination controls
-        const pagDiv = document.getElementById('stockPagination');
-        pagDiv.innerHTML = '';
-        for (let i = 1; i <= totalPages; i++) {
-          const btn = document.createElement('button');
-          btn.textContent = i;
-          btn.style = `padding:3px 10px;border-radius:4px;border:1px solid #2563eb;background:${i===stockPage?'#2563eb':'#fff'};color:${i===stockPage?'#fff':'#2563eb'};cursor:pointer;`;
-          btn.onclick = () => { stockPage = i; renderStockTable(); };
-          pagDiv.appendChild(btn);
-        }
+        renderPagination('stockPagination', stockPage, totalPages, (page) => stockPage = page, renderStockTable);
       }
 
       // --- Event Listeners for Search ---
-      if (document.getElementById('salesSearch')) {
-        document.getElementById('salesSearch').addEventListener('input', e => {
-          salesSearch = e.target.value.trim().toLowerCase();
-          salesPage = 1;
-          renderSalesTable();
-        });
-      }
-      if (document.getElementById('orderSearch')) {
-        document.getElementById('orderSearch').addEventListener('input', e => {
-          orderSearch = e.target.value.trim().toLowerCase();
-          orderPage = 1;
-          renderOrderTable();
-        });
-      }
-      if (document.getElementById('stockSearch')) {
-        document.getElementById('stockSearch').addEventListener('input', e => {
-          stockSearch = e.target.value.trim().toLowerCase();
-          stockPage = 1;
-          renderStockTable();
-        });
+      function setupSearchListener(elementId, searchVar, pageVar, renderFunc) {
+          const element = document.getElementById(elementId);
+          if (element) {
+              element.addEventListener('input', e => {
+                  // NOTE: Using a direct function update is safer than eval()
+                  if (elementId === 'salesSearch') salesSearch = e.target.value.trim().toLowerCase();
+                  if (elementId === 'orderSearch') orderSearch = e.target.value.trim().toLowerCase();
+                  if (elementId === 'stockSearch') stockSearch = e.target.value.trim().toLowerCase();
+                  
+                  if (elementId === 'salesSearch') salesPage = 1;
+                  if (elementId === 'orderSearch') orderPage = 1;
+                  if (elementId === 'stockSearch') stockPage = 1;
+                  
+                  renderFunc();
+              });
+          }
       }
 
+      setupSearchListener('salesSearch', 'salesSearch', 'salesPage', renderSalesTable);
+      setupSearchListener('orderSearch', 'orderSearch', 'orderPage', renderOrderTable);
+      setupSearchListener('stockSearch', 'stockSearch', 'stockPage', renderStockTable);
+
       // --- Initial Render ---
-      if (document.getElementById('salesReportTable')) renderSalesTable();
-      if (document.getElementById('orderReportTable')) renderOrderTable();
-      if (document.getElementById('stockMovementTable')) renderStockTable();
+      renderSalesTable();
+      renderOrderTable();
+      renderStockTable();
+
     } catch (err) {
-      alert('Error loading reports: ' + (err.response?.data?.message || err.message));
-      console.error(err);
+      // Improved error handling for the 401 Unauthorized issue seen in the screenshot
+      const errorMessage = err.response?.status === 401 
+                         ? "Access Denied: Your session may have expired. Please log in."
+                         : (err.message || err.response?.data?.message || 'An unknown error occurred.');
+                         
+      alert('Error loading reports: ' + errorMessage);
+      console.error("Report loading error:", err);
+
+      // If authentication failed, redirect to a safe place (e.g., login page)
+      if (err.response?.status === 401 || err.message.includes("Authentication token missing")) {
+          // You would uncomment this line if your auth logic doesn't catch it elsewhere:
+          // window.location.href = '/login.html'; 
+      }
     }
   }
 
