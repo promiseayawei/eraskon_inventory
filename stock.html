@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Stock Management</title>
 
-    <!-- Boxicons CSS -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -16,16 +15,16 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-     <script src="assets/js/metaManager.js"></script>
-  <script>
-    setMeta({
-      title: "Eraskon | Stock Management",
-      desc: "Access the Eraskon Inventory portal to manage stock.",
-      image: "assets/images/eraskon_logo.webp",
-      favicon: "assets/images/eraskon_logo.webp",
-      keywords: "Inventory, Warehouse, Stock, Stock Management"
-    });
-  </script>
+    <script src="assets/js/metaManager.js"></script>
+    <script>
+        setMeta({
+            title: "Eraskon | Stock Management",
+            desc: "Access the Eraskon Inventory portal to manage stock.",
+            image: "assets/images/eraskon_logo.webp",
+            favicon: "assets/images/eraskon_logo.webp",
+            keywords: "Inventory, Warehouse, Stock, Stock Management"
+        });
+    </script>
     <style>
         :root {
             --bg-color: #e2dcdc;
@@ -49,9 +48,16 @@
             transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        /* TABLE */
+        /* --- TABLE FIXES --- */
+        .table-responsive {
+            overflow-x: auto; /* Allows horizontal scrolling on small screens */
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
         table {
             width: 100%;
+            min-width: 900px; /* Ensures space for all columns before scroll */
             border-collapse: collapse;
             background-color: var(--card-bg);
             color: var(--text-color);
@@ -65,6 +71,8 @@
             border: 1px solid var(--border-color);
             text-align: left;
             transition: background-color 0.3s ease, color 0.3s ease;
+            word-wrap: break-word; 
+            min-width: 80px;
         }
 
         th {
@@ -82,6 +90,7 @@
         body.dark tr:hover {
             background-color: rgba(255, 255, 255, 0.08);
         }
+        /* --- END TABLE FIXES --- */
 
         /* BUTTON */
         button {
@@ -99,7 +108,7 @@
             background: #2563eb;
         }
 
-        /* MODAL */
+        /* --- MODAL FIXES (Centering and Mobile) --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -127,10 +136,19 @@
             background: white;
             padding: 25px;
             border-radius: 8px;
-            width: 100%;
+            width: 90%; /* Responsive width */
             max-width: 500px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            max-height: 90vh; /* Limits height on mobile */
+            overflow-y: auto; /* Allows scrolling inside the modal */
+            margin: 20px auto; /* Ensures no weird offsets */
         }
+        
+        body.dark .modal-content {
+            background: var(--card-bg); 
+            color: var(--text-color);
+        }
+        /* --- END MODAL FIXES --- */
 
         .active {
             background-color: #2563eb !important;
@@ -230,16 +248,13 @@
 <body>
     <script src="components/uiComponents.js"></script>
     <script src="components/authGuard.js"></script>
-    <!-- Load Navbar -->
     <script src="components/navbar.js"></script>
 
-    <!-- Load Sidebar -->
     <script src="components/sidebar.js"></script>
 
     <main id="app" class="main-content">
         <h2>Stock Movements</h2>
 
-        <!-- Filters -->
         <div class="inline-row">
             <select v-model="filters.product">
                 <option value="">All Products</option>
@@ -257,20 +272,15 @@
 
         <button @click="showModal = true">New Stock Transfer</button>
 
-        <!-- Modal -->
-        <!-- Modal -->
         <div v-if="showModal" class="modal show" @click.self="closeModal">
             <div class="modal-content">
                 <h3>Stock Transfer</h3>
                 <form @submit.prevent="submitTransfer">
                     <label>Product</label>
                     <select v-model="form.productVariantId" required>
-
-
                         <option value="">Select Product</option>
                         <option v-for="p in products" :value="p._id">{{ p.name }}</option>
                     </select>
-                    <!-- Product Stock Details -->
                     <div v-if="selectedProductVariant">
                         <p><strong>Current Stock:</strong> {{ selectedProductVariant.stock }}</p>
                         <p><strong>Warehouse:</strong> {{ selectedProductVariant.warehouse?.name || '—' }}</p>
@@ -309,70 +319,69 @@
         </div>
 
 
-        <!-- Stock Movements Table  -->
-        <table>
-            <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Product</th>
-                    <th>Qty</th>
-                    <th>Type</th>
-                    <th>Reason</th>
-                    <th>From</th>
-                    <th>To</th>
-                    <th>Created by</th>
-                    <th>Approved by</th>
-                    <th>Approved</th>
-                    <th>Received</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="m in filteredMovements" :key="m._id">
-                    <td>{{ m.code }}</td>
-                    <td>{{ m.productVariant?.name }}</td>
-                    <td>{{ m.quantity }}</td>
-                    <td>{{ m.type }}</td>
-                    <td>{{ m.reason }}</td>
-                    <td>{{ m.warehouse?.name }}</td>
-                    <td>{{ m.destinationWarehouse?.name || '—' }}</td>
-                    <td>
-                        <div v-if="createdLog(m)">{{ formatLog(createdLog(m)) }}</div>
-                    </td>
-                    <td>
-                        <div v-if="approvedLog(m)">{{ formatLog(approvedLog(m)) }}</div>
-                    </td>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Type</th>
+                        <th>Reason</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Created by</th>
+                        <th>Approved by</th>
+                        <th>Approved</th>
+                        <th>Received</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="m in filteredMovements" :key="m._id">
+                        <td>{{ m.code }}</td>
+                        <td>{{ m.productVariant?.name }}</td>
+                        <td>{{ m.quantity }}</td>
+                        <td>{{ m.type }}</td>
+                        <td>{{ m.reason }}</td>
+                        <td>{{ m.warehouse?.name }}</td>
+                        <td>{{ m.destinationWarehouse?.name || '—' }}</td>
+                        <td>
+                            <div v-if="createdLog(m)">{{ formatLog(createdLog(m)) }}</div>
+                        </td>
+                        <td>
+                            <div v-if="approvedLog(m)">{{ formatLog(approvedLog(m)) }}</div>
+                        </td>
 
 
 
-                    <!-- Approve Column -->
-                    <td>
-                        <div v-if="m.type === 'in-transit' && !approvedLog(m)">
-                            <button v-if="userRole === 'admin'" @click="approve(m._id)">Approve</button>
-                        </div>
-                        <div v-else-if="approvedLog(m)">
-                            <span class="text-success">Approved</span>
-                        </div>
-                    </td>
+                        <td>
+                            <div v-if="m.type === 'in-transit' && !approvedLog(m)">
+                                <button v-if="userRole === 'admin'" @click="approve(m._id)">Approve</button>
+                            </div>
+                            <div v-else-if="approvedLog(m)">
+                                <span class="text-success">Approved</span>
+                            </div>
+                        </td>
 
-                    <!-- Receive Column -->
-                    <td>
-                        <div v-if="m.type === 'in-transit' && approvedLog(m) && !receivedLog(m)">
-                            <button @click="receive(m._id)">Receive</button>
-                        </div>
-                        <div v-else-if="receivedLog(m)">
-                            <span class="text-success">Received</span>
-                        </div>
-                        <div v-else-if="m.type === 'in-transit' && !approvedLog(m)">
-                            <span class="text-warning">Awaiting Approval</span>
-                        </div>
-                    </td>
+                        <td>
+                            <div v-if="m.type === 'in-transit' && approvedLog(m) && !receivedLog(m)">
+                                <button @click="receive(m._id)">Receive</button>
+                            </div>
+                            <div v-else-if="receivedLog(m)">
+                                <span class="text-success">Received</span>
+                            </div>
+                            <div v-else-if="m.type === 'in-transit' && !approvedLog(m)">
+                                <span class="text-warning">Awaiting Approval</span>
+                            </div>
+                        </td>
 
 
 
 
-                </tr>
-            </tbody>
-        </table>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <div class="inline-row" style="margin-top: 1rem;">
             <button :disabled="pagination.page === 1" @click="pagination.page--">Previous</button>
 
@@ -386,10 +395,7 @@
         </div>
 
 
-        <!-- Modal -->
-
-
-    </main>
+        </main>
 
 
 
@@ -399,20 +405,6 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="config.js"></script>
     <script src="assets/js/script.js"></script>
-    <!-- This is an updated stock.html template with:
-1. Approve / Receive buttons
-2. Filters (product, warehouse, date)
-3. Export to Excel and PDF
--->
-
-    <!-- Add required libraries in <head> -->
-
-
-
-
-
-    <!-- Just the fixed JS portion at the bottom, full file remains same -->
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const token = localStorage.getItem('token');

@@ -5,9 +5,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Chairman Dashboard</title>
-
+ <!-- <link rel="stylesheet" href="assets/css/style.css"> -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-  <!-- <link rel="stylesheet" href="assets/css/style.css"> -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -19,6 +18,36 @@
         /* ------------------------------------------- */
         /* 1. Chairman Navigation & Tabs               */
         /* ------------------------------------------- */
+
+        /* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  padding: 80px 20px;
+  z-index: 100;
+  overflow-y: auto;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-speed) ease;
+  width: var(--sidebar-width);
+  background-color: var(--white-color); 
+}
+.sidebar.close {
+  width: var(--collapsed-sidebar-width);
+}
+.sidebar .nav_link {
+  color: var(--grey-color);
+}
+.nav_link:hover {
+  color: white;
+  background: var(--primary-blue); 
+  border-radius: var(--border-radius-base);
+}
+.sidebar.close .bottom_content {
+  width: 50px;
+  left: 15px;
+}
         .chairman-nav {
             display: flex;
             gap: 10px;
@@ -157,10 +186,19 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
-            padding: 20px;
+            /* FIX 1: Remove global padding from body to let fixed elements use full width */
+            padding: 0; 
             margin: 0;
         }
-
+        
+        /* FIX 2: Offset main content for fixed navbar (assuming navbar is ~80px/5rem tall) */
+        .main-content {
+            padding: 20px; /* Restore the original page padding */
+            padding-top: 80px; /* Pushes content down to clear fixed navbar */
+            /* The sidebar component should be a sibling of main-content 
+               or its position must be relative to the body/container */
+        }
+        
         h1, h2, h3, h4 {
             color: var(--text-color);
         }
@@ -270,14 +308,17 @@
         /* ========================================= */
         @media (max-width: 700px) {
           body {
-            padding: 10px;
+            /* FIX 3: Removed padding, handled by .main-content now */
+            padding: 0;
           }
           
           .main-content {
+            /* FIX 4: Adjust mobile padding and apply top offset */
             padding: 10px;
+            padding-top: 60px; /* Assuming smaller mobile navbar height */
           }
           
-          /* Chairman Navigation - Mobile Optimized */
+          /* Chairman Navigation - Mobile Optimized (Keep existing sticky styles for tabs) */
           .chairman-nav {
             display: flex;
             flex-wrap: nowrap;
@@ -466,10 +507,7 @@
       @click="activeTab = 'notifications'">
       <i class="bx bx-bell"></i> Notifications ({{ notifications.length }})
     </button>
-    <!-- <button class="chairman-nav-btn" :class="{ active: activeTab === 'settings' }" @click="activeTab = 'settings'">
-      <i class="bx bx-cog"></i> Settings
-    </button> -->
-  </div>
+    </div>
 
   <div v-if="activeTab === 'dashboard'">
     <h2>Overview & Quick Metrics</h2>
@@ -857,142 +895,19 @@
             <td>{{ formatDate(order.createdAt) }}</td>
             <td>₦{{ Number(order.total).toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</td>
             <td :style="{ color: order.paymentStatus && order.paymentStatus.toLowerCase() === 'paid' ? '#059669' : '#f59e0b' }">
-                {{ order.paymentStatus ? order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) : '-' }}
+                {{ order.paymentStatus ? order.paymentStatus : 'N/A' }}
             </td>
-            <td>
-              <span :style="{ 
-                'padding': '4px 8px', 
-                'border-radius': '4px',
-                'font-weight': '600',
-                'background-color': order.status && order.status.toLowerCase() === 'completed' ? 'rgba(5, 150, 105, 0.2)' : 
-                                    order.status && order.status.toLowerCase() === 'cancelled' ? 'rgba(239, 68, 68, 0.2)' : 
-                                    order.status && order.status.toLowerCase() === 'created' ? 'rgba(59, 130, 246, 0.2)' : 
-                                    'rgba(107, 114, 128, 0.2)',
-                'color': order.status && order.status.toLowerCase() === 'completed' ? '#059669' : 
-                         order.status && order.status.toLowerCase() === 'cancelled' ? '#ef4444' : 
-                         order.status && order.status.toLowerCase() === 'created' ? '#3b82f6' : 
-                         '#6b7280'
-              }">
-                {{ order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : '-' }}
-              </span>
-            </td>
-          </tr>
-          <tr v-if="!paginatedOrdersByStatus.length">
-            <td colspan="6" style="text-align: center;">No orders found with this status or search query.</td>
           </tr>
         </tbody>
       </table>
     </div>
-    <div v-if="paginatedOrdersByStatus.length" style="margin-top: 20px;">
-      <button @click="prevOrderStatusPage" :disabled="orderStatusPage === 1" class="chairman-nav-btn">Previous</button>
-      <span style="margin: 0 10px;">Page {{ orderStatusPage }} of {{ totalOrderStatusPages }}</span>
-      <button @click="nextOrderStatusPage" :disabled="orderStatusPage === totalOrderStatusPages" class="chairman-nav-btn">Next</button>
-    </div>
   </div>
-  <div v-else-if="activeTab === 'notifications'">
-
-    <h2>System Alerts & Notifications</h2>
-
-    <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-      <button v-for="type in ['all', 'error', 'warning', 'success', 'info']" :key="type"
-        @click="notificationFilter = type" class="chairman-nav-btn" :class="{ active: notificationFilter === type }"
-        :style="type !== 'all' ? { 
-          'background-color': type === 'error' ? '#ef4444' : 
-                             type === 'warning' ? '#f59e0b' : 
-                             type === 'success' ? '#059669' : 
-                             '#3b82f6',
-          'color': 'white'
-        } : {}">
-        {{ type.charAt(0).toUpperCase() + type.slice(1) }}
-      </button>
-      <button @click="fetchNotifications" class="chairman-nav-btn" style="margin-left: auto;">
-        <i class="bx bx-refresh"></i> Refresh
-      </button>
-    </div>
-
-    <div v-if="filteredNotifications.length">
-      <div v-for="notif in filteredNotifications" :key="notif.id" class="notification-card" :style="{ 
-          'padding': '15px', 
-          'margin-bottom': '12px', 
-          'border-radius': '8px', 
-          'border-left': '5px solid', 
-          'display': 'flex', 
-          'justify-content': 'space-between', 
-          'align-items': 'start', 
-          'background': 'var(--card-bg)',
-          'border-left-color': notif.type === 'error' ? '#ef4444' : 
-                              notif.type === 'warning' ? '#f59e0b' : 
-                              notif.type === 'success' ? '#059669' : 
-                              '#3b82f6'
-        }">
-        <div style="flex: 1;">
-          <div style="display: flex; align-items: center; margin-bottom: 5px;">
-            <i :class="notif.icon"
-              :style="{ marginRight: '10px', fontSize: '1.4em', color: getNotificationColor(notif.type) }">
-            </i>
-            <strong style="font-size: 1.1em;">{{ notif.title }}</strong>
-            <span style="margin-left: auto; font-size: 0.8em; color: #6b7280;">
-              {{ notif.date }}
-            </span>
-          </div>
-          <p style="margin: 5px 0;">{{ notif.message }}</p>
-          <div v-if="notif.code" style="font-size: 0.9em; color: #6b7280; margin-top: 5px;">
-            Reference: {{ notif.code }}
-          </div>
-        </div>
-        <button @click="dismissNotification(notif.id)" class="chairman-nav-btn"
-          style="padding: 4px 8px; background: none; color: #6b7280; margin-left: 10px;">
-          <i class="bx bx-x"></i>
-        </button>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-        <button @click="clearAllNotifications" class="chairman-nav-btn"
-          style="background-color: #ef4444; color: white;">
-          <i class="bx bx-trash"></i> Clear All
-        </button>
-      </div>
-    </div>
-    <div v-else
-      style="padding: 30px; border: 1px dashed var(--border-color); text-align: center; color: #6b7280; border-radius: 8px;">
-      <i class="bx bx-bell-off" style="font-size: 2em; margin-bottom: 10px;"></i>
-      <p>No notifications to display.</p>
-    </div>
-
-    <spinner-component v-if="loading"></spinner-component>
-  </div>
-
-  <div v-else-if="activeTab === 'settings'">
-    <h2>System Settings</h2>
-    <div
-      style="max-width: 600px; padding: 20px; background: var(--card-bg); border-radius: 12px; gap: 20px; display: flex; flex-direction: column;">
-
-      <div>
-        <h3><i class="bx bx-cloud-upload"></i> Data Sync & Environment</h3>
-        <p style="color: #6b7280;">Current API Base URL: <strong>{{ API_BASE }}</strong></p>
-        <button @click="runManualSync" class="chairman-nav-btn" style="background-color: #f59e0b; color: white;">
-          <i class="bx bx-refresh"></i> Run Manual Data Sync
-        </button>
-      </div>
-
-      <hr style="border-color: var(--border-color);">
-
-      <div>
-        <h3><i class="bx bx-bell"></i> Push Notifications</h3>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <label for="highSaleNotif">Alert for High-Value Sales ( > ₦1,000,000):</label>
-          <input type="checkbox" id="highSaleNotif" v-model="settings.highSaleAlert" @change="saveSettings">
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <label for="lowStockNotif">Alert for Low Stock:</label>
-          <input type="checkbox" id="lowStockNotif" v-model="settings.lowStockAlert" @change="saveSettings">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <spinner-component v-if="loading"></spinner-component>
 </main>
+<spinner-component v-if="loading"></spinner-component> 
+
+</body>
+
+</html>
 
   <script src="assets/js/script.js"></script>
   <script>

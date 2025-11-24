@@ -57,13 +57,20 @@
       background: #2563eb;
     }
 
+    /* --- ADDED FOR TABLE RESPONSIVENESS --- */
+    .table-responsive {
+        overflow-x: auto; /* Allows horizontal scrolling on small screens */
+        margin-top: 16px;
+    }
+    
     table {
       width: 100%;
+      min-width: 1000px; /* Ensure all columns have space before scrolling */
       border-collapse: collapse;
       background-color: var(--card-bg);
       color: var(--text-color);
       border: 1px solid var(--border-color);
-      margin-top: 16px;
+      margin-top: 0; /* Margin moved to .table-responsive */
     }
 
     th,
@@ -71,6 +78,9 @@
       padding: 10px;
       border: 1px solid var(--border-color);
       text-align: left;
+      /* Ensures content wraps */
+      word-wrap: break-word;
+      min-width: 80px; 
     }
 
     th {
@@ -88,6 +98,7 @@
     body.dark tr:hover {
       background-color: rgba(255, 255, 255, 0.08);
     }
+    /* --- END TABLE RESPONSIVENESS FIX --- */
 
     button {
       padding: 6px 10px;
@@ -117,6 +128,7 @@
       width: 100vw;
       height: 100vh;
       background: rgba(0, 0, 0, 0.3);
+      /* Ensure centering */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -129,7 +141,17 @@
       border-radius: 8px;
       min-width: 300px;
       box-shadow: 0 2px 16px #0002;
+      /* Added responsiveness for general modals */
+      max-width: 90%; 
+      max-height: 90vh;
+      overflow-y: auto;
     }
+    
+    body.dark .modal-content {
+        background: var(--card-bg); 
+        color: var(--text-color);
+    }
+
 
     .modal-content h3 {
       margin-top: 0;
@@ -138,11 +160,14 @@
     /* Modal enhancements */
     .receipt-modal {
       max-width: 900px !important;
-      width: 100%;
+      width: 90%; /* Use responsive width */
       background: #f9fafb;
       border-radius: 14px;
       box-shadow: 0 4px 32px #0002;
       padding: 32px 36px 28px 36px;
+      /* Override general modal-content overflow for this specific modal */
+      max-height: 95vh;
+      overflow-y: auto;
     }
 
     .order-details-section {
@@ -290,8 +315,25 @@
         max-width: 98vw !important;
       }
 
+      .carousel-row {
+        /* Allow navigation buttons to be on their own line if necessary */
+        flex-wrap: wrap; 
+        justify-content: center;
+      }
+      
+      .carousel-nav {
+        /* Make nav buttons smaller on mobile */
+        width: 30px;
+        height: 30px;
+        font-size: 1em;
+      }
+      
+      .carousel-image-container {
+        min-width: 100%;
+      }
+      
       .carousel-image {
-        max-width: 90vw;
+        max-width: 90%; /* Responsive image size */
         max-height: 40vw;
       }
     }
@@ -336,80 +378,81 @@
     </div>
 
     <div v-if="paginatedOrders.length">
-      <table>
-        <thead>
-          <tr>
-            <th>Order Code</th>
-            <th>Customer</th>
-            <th>Total Amount</th>
-            <th>Status</th>
-            <th>Payment</th>
-            <th>Payment Receipt</th>
-            <th>Date</th>
-            <th>Created By</th>
-            <th>Confirmed By</th>
-            <th v-if="activeTab === 'completed'">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="order in paginatedOrders" :key="order._id">
-            <td>{{ order.orderCode || 'nil' }}</td>
-            <td>{{ order.customer?.name || 'nil' }}</td>
-            <td>&#8358;{{ order.total?.toFixed(2) || '0.00' }}</td>
-            <td>
-              {{ order.status || 'nil' }}
-              <button @click="openStatusModal(order)" style="margin-left:8px;">Edit</button>
-            </td>
-            <td>{{ order.paymentStatus || 'nil' }} ({{ order.paymentMethod || 'nil' }})</td>
-            <!-- Payment Receipt column -->
-            <td>
-              <div style="display:flex; gap:8px; margin-bottom:6px;">
-                <button type="button" style="background:#059669;color:#fff;" @click="openUploadModal(order._id)">Upload
-                </button>
-                <button @click="reviewReceipts(order)" type="button">Review</button>
-              </div>
-              <ul v-if="order.paymentReceipts && order.paymentReceipts.length">
-                <li v-for="(receipt, idx) in order.paymentReceipts" :key="idx">
-                  <a :href="`${API_BASE}/order/${order._id}/receipt`" target="_blank">View</a>
-                  <span style="font-size:0.9em;">
-                    - {{ receipt.uploadedBy?.name || receipt.uploadedBy || 'Unknown' }},
-                    {{ receipt.uploadedAt ? new Date(receipt.uploadedAt).toLocaleString() : 'Unknown' }}
-                  </span>
-                </li>
-              </ul>
-              <div v-else>No receipts</div>
-            </td>
-            <td>{{ order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'nil' }}</td>
-            <td>
-              {{
-              order.createdBy
-              ? `${order.createdBy.firstName || ''} ${order.createdBy.lastName || ''}`.trim()
-              : 'System Admin'
-              }}
-            </td>
+      
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Order Code</th>
+              <th>Customer</th>
+              <th>Total Amount</th>
+              <th>Status</th>
+              <th>Payment</th>
+              <th>Payment Receipt</th>
+              <th>Date</th>
+              <th>Created By</th>
+              <th>Confirmed By</th>
+              <th v-if="activeTab === 'completed'">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="order in paginatedOrders" :key="order._id">
+              <td>{{ order.orderCode || 'nil' }}</td>
+              <td>{{ order.customer?.name || 'nil' }}</td>
+              <td>&#8358;{{ order.total?.toFixed(2) || '0.00' }}</td>
+              <td>
+                {{ order.status || 'nil' }}
+                <button @click="openStatusModal(order)" style="margin-left:8px;">Edit</button>
+              </td>
+              <td>{{ order.paymentStatus || 'nil' }} ({{ order.paymentMethod || 'nil' }})</td>
+              <td>
+                <div style="display:flex; gap:8px; margin-bottom:6px;">
+                  <button type="button" style="background:#059669;color:#fff;" @click="openUploadModal(order._id)">Upload
+                  </button>
+                  <button @click="reviewReceipts(order)" type="button">Review</button>
+                </div>
+                <ul v-if="order.paymentReceipts && order.paymentReceipts.length">
+                  <li v-for="(receipt, idx) in order.paymentReceipts" :key="idx">
+                    <a :href="`${API_BASE}/order/${order._id}/receipt`" target="_blank">View</a>
+                    <span style="font-size:0.9em;">
+                      - {{ receipt.uploadedBy?.name || receipt.uploadedBy || 'Unknown' }},
+                      {{ receipt.uploadedAt ? new Date(receipt.uploadedAt).toLocaleString() : 'Unknown' }}
+                    </span>
+                  </li>
+                </ul>
+                <div v-else>No receipts</div>
+              </td>
+              <td>{{ order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'nil' }}</td>
+              <td>
+                {{
+                order.createdBy
+                ? `${order.createdBy.firstName || ''} ${order.createdBy.lastName || ''}`.trim()
+                : 'System Admin'
+                }}
+              </td>
 
-            <td>{{ order.paymentConfirmedBy
-                  ? (typeof order.paymentConfirmedBy === 'object'
-                  ? `${order.paymentConfirmedBy.firstName || ''} ${order.paymentConfirmedBy.lastName || ''}`.trim()
-                  : order.paymentConfirmedBy)
-                  : 'System Admin'
-                  }}</td>
-            <td v-if="activeTab === 'completed'">
-              <button @click="printInvoice(order)" title="Print Invoice"><i class="fa fa-print"></i></button>
-              <button @click="sendInvoice(order)" title="Send Invoice"><i class="fa fa-paper-plane"></i></button>
-            </td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="2" style="font-weight:bold;">Total</td>
-            <td style="font-weight:bold;">₦{{ totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}
-            </td>
-            <td colspan="6"></td>
-          </tr>
-        </tfoot>
-      </table>
-
+              <td>{{ order.paymentConfirmedBy
+                    ? (typeof order.paymentConfirmedBy === 'object'
+                    ? `${order.paymentConfirmedBy.firstName || ''} ${order.paymentConfirmedBy.lastName || ''}`.trim()
+                    : order.paymentConfirmedBy)
+                    : 'System Admin'
+                    }}</td>
+              <td v-if="activeTab === 'completed'">
+                <button @click="printInvoice(order)" title="Print Invoice"><i class="fa fa-print"></i></button>
+                <button @click="sendInvoice(order)" title="Send Invoice"><i class="fa fa-paper-plane"></i></button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2" style="font-weight:bold;">Total</td>
+              <td style="font-weight:bold;">₦{{ totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}
+              </td>
+              <td colspan="7"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
       <div style="margin-top: 20px;">
         <button @click="prevPage" :disabled="page === 1">Prev</button>
         Page {{ page }} of {{ totalPages }}
@@ -421,7 +464,6 @@
       No orders found for this tab or search term.
     </div>
 
-    <!-- Status Edit Modal -->
     <div v-if="showStatusModal" class="modal-overlay">
       <div class="modal-content">
         <h3>Edit Order Status</h3>
@@ -439,7 +481,6 @@
       </div>
     </div>
 
-    <!-- Payment Receipt Review Modal (Carousel) -->
     <div v-if="showReviewModal" class="modal-overlay">
       <div class="modal-content receipt-modal">
         <h3>Order Details</h3>
@@ -479,7 +520,6 @@
             </button>
             <div class="carousel-image-container">
               <img :src="selectedOrder.paymentReceipts[reviewReceiptIndex].url" alt="Receipt" class="carousel-image" />
-              <!-- Delete icon (top-right corner of image) -->
               <button
                 @click="deleteReceiptImage(selectedOrder._id, selectedOrder.paymentReceipts[reviewReceiptIndex]._id)"
                 title="Delete Receipt" class="delete-receipt-btn">
@@ -515,7 +555,6 @@
       </div>
     </div>
 
-    <!-- Upload Receipt Modal -->
     <div v-if="showUploadModal" class="modal-overlay">
       <div class="modal-content" style="max-width:400px;">
         <h3>Upload Payment Receipt</h3>
@@ -635,7 +674,7 @@
             });
         },
 
-        
+
         async sendInvoice(order) {
           // Validate required order properties
           if (!order?._id) {
@@ -651,7 +690,7 @@
 
           try {
             const token = localStorage.getItem('token');
-            
+
             // Send minimal required data to avoid template issues
             const orderData = {
               orderId: order._id,
@@ -670,12 +709,12 @@
             await axios.post(`${API_BASE}/order/${order._id}/send-receipt`, orderData, {
               headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             alert(`Receipt sent to ${order.customer.email} successfully!`);
           } catch (err) {
             console.error('Failed to send receipt:', err);
             let errorMessage = 'Failed to send receipt. ';
-            
+
             // Handle specific error cases
             if (err.response?.data?.message) {
               errorMessage += err.response.data.message;
@@ -684,7 +723,7 @@
             } else {
               errorMessage += 'Please try again later.';
             }
-            
+
             alert(errorMessage);
           }
         },
