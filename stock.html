@@ -7,7 +7,7 @@
     <title>Stock Management</title>
 
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- <link rel="stylesheet" href="assets/css/style.css"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,12 +26,20 @@
         });
     </script>
     <style>
-        :root {
+        /* Sidebar */
+
+         :root {
             --bg-color: #e2dcdc;
             --text-color: #090F3B;
             --card-bg: #ffffff;
             --border-color: #ccc;
             --input-border: #ccc;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+            --sidebar-width: 220px;
+            --collapsed-sidebar-width: 80px;
         }
 
         body.dark {
@@ -47,17 +55,49 @@
             color: var(--text-color);
             transition: background-color 0.5s ease, color 0.5s ease;
         }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            padding: 80px 20px;
+            z-index: 100;
+            overflow-y: auto;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+            transition: all var(--transition-speed) ease;
+            
+        }
 
-        /* --- TABLE FIXES --- */
+        .sidebar.close {
+            width: var(--collapsed-sidebar-width);
+        }
+
+        .sidebar .nav_link {
+            color: var(--grey-color);
+        }
+
+        .nav_link:hover {
+            color: white;
+            background: var(--primary-blue);
+            border-radius: var(--border-radius-base);
+        }
+
+        .sidebar.close .bottom_content {
+            width: 50px;
+            left: 15px;
+        }
+
+       
+
         .table-responsive {
-            overflow-x: auto; /* Allows horizontal scrolling on small screens */
+            overflow-x: auto;
             margin-top: 15px;
             margin-bottom: 15px;
         }
 
         table {
             width: 100%;
-            min-width: 900px; /* Ensures space for all columns before scroll */
+            min-width: 1000px;
             border-collapse: collapse;
             background-color: var(--card-bg);
             color: var(--text-color);
@@ -71,12 +111,13 @@
             border: 1px solid var(--border-color);
             text-align: left;
             transition: background-color 0.3s ease, color 0.3s ease;
-            word-wrap: break-word; 
+            word-wrap: break-word;
             min-width: 80px;
         }
 
         th {
             background-color: rgba(0, 0, 0, 0.05);
+            font-weight: 600;
         }
 
         body.dark th {
@@ -90,25 +131,52 @@
         body.dark tr:hover {
             background-color: rgba(255, 255, 255, 0.08);
         }
-        /* --- END TABLE FIXES --- */
 
-        /* BUTTON */
         button {
             padding: 8px 12px;
             margin: 5px;
             border: none;
-            background: #3b82f6;
+            background: var(--info-color);
             color: white;
             border-radius: 6px;
             cursor: pointer;
             transition: background 0.3s ease;
+            font-size: 0.9em;
         }
 
-        button:hover {
+        button:hover:not(:disabled) {
             background: #2563eb;
         }
 
-        /* --- MODAL FIXES (Centering and Mobile) --- */
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.btn-success {
+            background: var(--success-color);
+        }
+
+        button.btn-success:hover:not(:disabled) {
+            background: #059669;
+        }
+
+        button.btn-warning {
+            background: var(--warning-color);
+        }
+
+        button.btn-warning:hover:not(:disabled) {
+            background: #d97706;
+        }
+
+        button.btn-danger {
+            background: var(--danger-color);
+        }
+
+        button.btn-danger:hover:not(:disabled) {
+            background: #dc2626;
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -136,39 +204,24 @@
             background: white;
             padding: 25px;
             border-radius: 8px;
-            width: 90%; /* Responsive width */
+            width: 90%;
             max-width: 500px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            max-height: 90vh; /* Limits height on mobile */
-            overflow-y: auto; /* Allows scrolling inside the modal */
-            margin: 20px auto; /* Ensures no weird offsets */
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: 20px auto;
         }
-        
+
         body.dark .modal-content {
-            background: var(--card-bg); 
+            background: var(--card-bg);
             color: var(--text-color);
         }
-        /* --- END MODAL FIXES --- */
 
         .active {
             background-color: #2563eb !important;
             font-weight: bold;
         }
 
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* CARDS */
         .card-container {
             display: flex;
             flex-wrap: wrap;
@@ -190,6 +243,126 @@
             transform: scale(1.02);
         }
 
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .inline-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .badge-approved {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .badge-in-transit {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .badge-completed {
+            background: #10b981;
+            color: white;
+        }
+
+        .text-success {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .text-warning {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+
+        .text-muted {
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+
+        .stat-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--text-color);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            background: rgba(241, 243, 246, 1);
+        }
+
+        .tab.active {
+            border-bottom-color: var(--info-color);
+            color: var(--info-color);
+            font-weight: 600;
+        }
+
         @media (min-width: 600px) {
             .card {
                 width: calc(50% - 20px);
@@ -201,124 +374,124 @@
                 width: calc(33.333% - 20px);
             }
         }
-
-        /* FORMS */
-        label {
-            display: block;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 6px 8px;
-            margin-top: 4px;
-            border: 1px solid var(--input-border);
-            border-radius: 4px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-        }
-
-        /* OTHER */
-        .preview {
-            max-width: 100px;
-            margin-top: 10px;
-        }
-
-        .inline-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .error {
-            color: red;
-            font-size: 0.9em;
-        }
-
-        .text-success {
-            color: green;
-            font-weight: bold;
-        }
     </style>
-
 </head>
 
 <body>
     <script src="components/uiComponents.js"></script>
     <script src="components/authGuard.js"></script>
     <script src="components/navbar.js"></script>
-
     <script src="components/sidebar.js"></script>
 
     <main id="app" class="main-content">
         <h2>Stock Movements</h2>
 
+        <!-- Stats Dashboard -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <h4>Pending OUT Approvals</h4>
+                <div class="value">{{ stats.pendingOut }}</div>
+            </div>
+            <div class="stat-card">
+                <h4>In-Transit</h4>
+                <div class="value">{{ stats.inTransit }}</div>
+            </div>
+            <div class="stat-card">
+                <h4>Completed Today</h4>
+                <div class="value">{{ stats.completedToday }}</div>
+            </div>
+            <div class="stat-card">
+                <h4>Total Movements</h4>
+                <div class="value">{{ movements.length }}</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">
+                All Movements
+            </button>
+            <button v-if="canApprove" class="tab" :class="{ active: activeTab === 'pending' }"
+                @click="activeTab = 'pending'">
+                Pending OUT ({{ stats.pendingOut }})
+            </button>
+            <button class="tab" :class="{ active: activeTab === 'in-transit' }" @click="activeTab = 'in-transit'">
+                In-Transit ({{ stats.inTransit }})
+            </button>
+        </div>
+
+        <!-- Filters -->
         <div class="inline-row">
             <select v-model="filters.product">
                 <option value="">All Products</option>
-                <option v-for="p in products" :value="p._id">{{ p.name }}</option>
+                <option v-for="p in products" :key="p._id" :value="p._id">{{ p.name }}</option>
             </select>
             <select v-model="filters.warehouse">
                 <option value="">All Warehouses</option>
-                <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+                <option v-for="w in warehouses" :key="w._id" :value="w._id">{{ w.name }}</option>
             </select>
-            <input type="date" v-model="filters.dateFrom">
-            <input type="date" v-model="filters.dateTo">
-            <button @click="exportToExcel">Export Excel</button>
-            <button @click="exportToPDF">Export PDF</button>
+            <input type="date" v-model="filters.dateFrom" placeholder="From Date">
+            <input type="date" v-model="filters.dateTo" placeholder="To Date">
+            <button @click="exportToExcel"><i class="fas fa-file-excel"></i> Export Excel</button>
+            <button @click="exportToPDF"><i class="fas fa-file-pdf"></i> Export PDF</button>
         </div>
 
-        <button @click="showModal = true">New Stock Transfer</button>
+        <button @click="showModal = true" class="btn-success">
+            <i class="fas fa-plus"></i> New Stock Transfer
+        </button>
 
+        <!-- Transfer Modal -->
         <div v-if="showModal" class="modal show" @click.self="closeModal">
             <div class="modal-content">
-                <h3>Stock Transfer</h3>
+                <h3>Create Stock Transfer</h3>
                 <form @submit.prevent="submitTransfer">
-                    <label>Product</label>
+                    <label>Product *</label>
                     <select v-model="form.productVariantId" required>
                         <option value="">Select Product</option>
-                        <option v-for="p in products" :value="p._id">{{ p.name }}</option>
+                        <option v-for="p in products" :key="p._id" :value="p._id">{{ p.name }}</option>
                     </select>
-                    <div v-if="selectedProductVariant">
-                        <p><strong>Current Stock:</strong> {{ selectedProductVariant.stock }}</p>
-                        <p><strong>Warehouse:</strong> {{ selectedProductVariant.warehouse?.name || '—' }}</p>
+
+                    <div v-if="selectedProductVariant"
+                        style="margin: 10px 0; padding: 10px; background: rgba(59, 130, 246, 0.1); border-radius: 4px;">
                         <p><strong>SKU:</strong> {{ selectedProductVariant.sku || 'N/A' }}</p>
+                        <p><strong>Total Stock:</strong> {{ selectedProductVariant.totalStock || 0 }}</p>
                     </div>
 
-                    <label>Quantity</label>
-                    <input type="number" v-model.number="form.quantity" required />
+                    <label>Quantity *</label>
+                    <input type="number" v-model.number="form.quantity" min="1" required />
 
-                    <label>From Warehouse</label>
+                    <label>From Warehouse *</label>
                     <select v-model="form.warehouse" required>
-                        <option value="">Select From</option>
-                        <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+                        <option value="">Select Source</option>
+                        <option v-for="w in warehouses" :key="w._id" :value="w._id">{{ w.name }}</option>
                     </select>
 
-                    <label>To Warehouse</label>
+                    <label>To Warehouse *</label>
                     <select v-model="form.destinationWarehouse" required>
-                        <option value="">Select To</option>
-                        <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+                        <option value="">Select Destination</option>
+                        <option v-for="w in warehouses" :key="w._id" :value="w._id"
+                            :disabled="w._id === form.warehouse">
+                            {{ w.name }}
+                        </option>
                     </select>
 
-                    <label>Reason</label>
-                    <input v-model="form.reason" required />
+                    <label>Reason *</label>
+                    <input v-model="form.reason" placeholder="e.g., Stock Replenishment" required />
 
                     <label>Reference</label>
-                    <input v-model="form.reference" />
+                    <input v-model="form.reference" placeholder="e.g., Order ID, Invoice No." />
 
-                    <div class="inline-row">
-                        <button type="submit" :disabled="loading">
-                            {{ loading ? 'Transferring...' : 'Transfer' }}
+                    <div class="inline-row" style="margin-top: 15px;">
+                        <button type="submit" :disabled="loading" class="btn-success">
+                            {{ loading ? 'Creating...' : 'Create Transfer' }}
                         </button>
-                        <button type="button" @click="closeModal">Cancel</button>
+                        <button type="button" @click="closeModal" class="btn-danger">Cancel</button>
                     </div>
                 </form>
             </div>
         </div>
 
-
+        <!-- Movements Table -->
         <div class="table-responsive">
             <table>
                 <thead>
@@ -326,64 +499,81 @@
                         <th>Code</th>
                         <th>Product</th>
                         <th>Qty</th>
-                        <th>Type</th>
+                        <th>Status</th>
                         <th>Reason</th>
                         <th>From</th>
                         <th>To</th>
-                        <th>Created by</th>
-                        <th>Approved by</th>
-                        <th>Approved</th>
-                        <th>Received</th>
+                        <th>Created By</th>
+                        <th>OUT Approved</th>
+                        <th>IN Approved</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="m in filteredMovements" :key="m._id">
-                        <td>{{ m.code }}</td>
-                        <td>{{ m.productVariant?.name }}</td>
+                        <td><strong>{{ m.code }}</strong></td>
+                        <td>{{ m.productVariant?.name || 'N/A' }}</td>
                         <td>{{ m.quantity }}</td>
-                        <td>{{ m.type }}</td>
-                        <td>{{ m.reason }}</td>
-                        <td>{{ m.warehouse?.name }}</td>
+                        <td>
+                            <span class="badge" :class="getStatusClass(m)">
+                                {{ getStatusText(m) }}
+                            </span>
+                        </td>
+                        <td>{{ m.reason || '—' }}</td>
+                        <td>{{ m.warehouse?.name || '—' }}</td>
                         <td>{{ m.destinationWarehouse?.name || '—' }}</td>
                         <td>
-                            <div v-if="createdLog(m)">{{ formatLog(createdLog(m)) }}</div>
+                            <div v-if="createdLog(m)" class="text-muted">
+                                {{ createdLog(m).userName }}<br>
+                                <small>{{ formatDate(createdLog(m).timestamp) }}</small>
+                            </div>
                         </td>
                         <td>
-                            <div v-if="approvedLog(m)">{{ formatLog(approvedLog(m)) }}</div>
+                            <div v-if="outApprovedLog(m)" class="text-success">
+                                <i class="fas fa-check-circle"></i> {{ outApprovedLog(m).userName }}<br>
+                                <small>{{ formatDate(outApprovedLog(m).timestamp) }}</small>
+                            </div>
+                            <div v-else-if="m.type === 'out'">
+                                <span class="badge badge-pending">Pending</span>
+                            </div>
                         </td>
-
-
-
                         <td>
-                            <div v-if="m.type === 'in-transit' && !approvedLog(m)">
-                                <button v-if="userRole === 'admin'" @click="approve(m._id)">Approve</button>
+                            <div v-if="inApprovedLog(m)" class="text-success">
+                                <i class="fas fa-check-circle"></i> {{ inApprovedLog(m).userName }}<br>
+                                <small>{{ formatDate(inApprovedLog(m).timestamp) }}</small>
                             </div>
-                            <div v-else-if="approvedLog(m)">
-                                <span class="text-success">Approved</span>
+                            <div v-else-if="m.type === 'in-transit'">
+                                <span class="badge badge-warning">Awaiting Receipt</span>
                             </div>
                         </td>
-
                         <td>
-                            <div v-if="m.type === 'in-transit' && approvedLog(m) && !receivedLog(m)">
-                                <button @click="receive(m._id)">Receive</button>
-                            </div>
-                            <div v-else-if="receivedLog(m)">
-                                <span class="text-success">Received</span>
-                            </div>
-                            <div v-else-if="m.type === 'in-transit' && !approvedLog(m)">
-                                <span class="text-warning">Awaiting Approval</span>
-                            </div>
+                            <!-- OUT Approval (Admin/Finance only) -->
+                            <button v-if="m.type === 'out' && !outApprovedLog(m) && canApprove"
+                                @click="approveOut(m._id)" class="btn-success">
+                                <i class="fas fa-check"></i> Approve OUT
+                            </button>
+
+                            <!-- IN Approval (Admin/Finance/Warehouse) -->
+                            <button v-if="m.type === 'in-transit' && !inApprovedLog(m) && canReceive"
+                                @click="approveIn(m._id)" class="btn-warning">
+                                <i class="fas fa-box"></i> Receive
+                            </button>
+
+                            <!-- Completed -->
+                            <span v-if="m.type === 'in' && inApprovedLog(m)" class="text-success">
+                                <i class="fas fa-check-double"></i> Completed
+                            </span>
                         </td>
-
-
-
-
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
         <div class="inline-row" style="margin-top: 1rem;">
-            <button :disabled="pagination.page === 1" @click="pagination.page--">Previous</button>
+            <button :disabled="pagination.page === 1" @click="pagination.page--">
+                <i class="fas fa-chevron-left"></i> Previous
+            </button>
 
             <span v-for="p in totalPages" :key="p" style="margin: 0 4px;">
                 <button :class="{ active: pagination.page === p }" @click="pagination.page = p">
@@ -391,18 +581,12 @@
                 </button>
             </span>
 
-            <button :disabled="pagination.page === totalPages" @click="pagination.page++">Next</button>
+            <button :disabled="pagination.page === totalPages" @click="pagination.page++">
+                Next <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
+    </main>
 
-
-        </main>
-
-
-
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="config.js"></script>
     <script src="assets/js/script.js"></script>
     <script>
@@ -421,15 +605,17 @@
                     warehouses: [],
                     movements: [],
                     showModal: false,
-                    loading: false, // ✅ loading spinner control
+                    loading: false,
                     selectedProductVariant: null,
                     userRole: localStorage.getItem('role') || '',
+                    userId: localStorage.getItem('userId') || '',
+                    userWarehouse: localStorage.getItem('userWarehouse') || '', // Store user's warehouse
+                    activeTab: 'all',
 
                     pagination: {
                         page: 1,
                         perPage: 10
                     },
-
 
                     form: {
                         productVariantId: '',
@@ -439,6 +625,7 @@
                         reason: '',
                         reference: ''
                     },
+
                     filters: {
                         product: '',
                         warehouse: '',
@@ -447,12 +634,45 @@
                     }
                 },
                 computed: {
+                    canApprove() {
+                        return ['admin', 'finance'].includes(this.userRole);
+                    },
+                    canReceive() {
+                        return ['admin', 'finance', 'warehouse'].includes(this.userRole);
+                    },
+                    stats() {
+                        return {
+                            pendingOut: this.movements.filter(m => m.type === 'out' && !this.outApprovedLog(m)).length,
+                            inTransit: this.movements.filter(m => m.type === 'in-transit').length,
+                            completedToday: this.movements.filter(m => {
+                                const log = this.inApprovedLog(m);
+                                return log && new Date(log.timestamp).toDateString() === new Date().toDateString();
+                            }).length
+                        };
+                    },
                     filteredMovements() {
-                        const sorted = [...this.movements].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                        let filtered = [...this.movements];
 
-                        const filtered = sorted.filter(m => {
-                            const from = this.filters.dateFrom ? new Date(this.filters.dateFrom) : null;
-                            const to = this.filters.dateTo ? new Date(this.filters.dateTo) : null;
+                        // Role-based filtering for warehouse/inventory roles
+                        if (['warehouse', 'inventory'].includes(this.userRole) && this.userWarehouse) {
+                            filtered = filtered.filter(m =>
+                                m.warehouse?._id === this.userWarehouse ||
+                                m.destinationWarehouse?._id === this.userWarehouse
+                            );
+                        }
+
+                        // Tab filtering
+                        if (this.activeTab === 'pending') {
+                            filtered = filtered.filter(m => m.type === 'out' && !this.outApprovedLog(m));
+                        } else if (this.activeTab === 'in-transit') {
+                            filtered = filtered.filter(m => m.type === 'in-transit');
+                        }
+
+                        // Date/product/warehouse filters
+                        const from = this.filters.dateFrom ? new Date(this.filters.dateFrom) : null;
+                        const to = this.filters.dateTo ? new Date(this.filters.dateTo) : null;
+
+                        filtered = filtered.filter(m => {
                             const created = new Date(m.createdAt);
                             return (!this.filters.product || m.productVariant?._id === this.filters.product) &&
                                 (!this.filters.warehouse || m.warehouse?._id === this.filters.warehouse) &&
@@ -460,18 +680,21 @@
                                 (!to || created <= to);
                         });
 
+                        // Sort by date descending
+                        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
                         this.totalPages = Math.ceil(filtered.length / this.pagination.perPage);
 
                         const start = (this.pagination.page - 1) * this.pagination.perPage;
                         return filtered.slice(start, start + this.pagination.perPage);
                     }
-
                 },
                 watch: {
                     'filters.product': 'resetPage',
                     'filters.warehouse': 'resetPage',
                     'filters.dateFrom': 'resetPage',
                     'filters.dateTo': 'resetPage',
+                    'activeTab': 'resetPage',
                     'form.productVariantId'(val) {
                         this.selectedProductVariant = this.products.find(p => p._id === val) || null;
                     }
@@ -481,110 +704,192 @@
                     document.addEventListener('keydown', e => {
                         if (e.key === 'Escape') this.closeModal();
                     });
+
+                    // Auto-refresh every 30 seconds
+                    setInterval(() => {
+                        this.fetchAll();
+                    }, 30000);
                 },
                 methods: {
                     closeModal() {
                         this.showModal = false;
+                        this.form = {
+                            productVariantId: '',
+                            quantity: '',
+                            warehouse: '',
+                            destinationWarehouse: '',
+                            reason: '',
+                            reference: ''
+                        };
                     },
+
                     async fetchAll() {
-                        const [prodRes, whRes, movRes] = await Promise.all([
-                            axios.get(`${window.BASE_URL}/product-variant`),
-                            axios.get(`${window.BASE_URL}/warehouse`),
-                            axios.get(`${API}`)
-                        ]);
-                        this.products = prodRes.data;
-                        this.warehouses = whRes.data;
-                        this.movements = movRes.data;
+                        try {
+                            const [prodRes, whRes, movRes] = await Promise.all([
+                                axios.get(`${window.BASE_URL}/product-variant`),
+                                axios.get(`${window.BASE_URL}/warehouse`),
+                                axios.get(`${API}`)
+                            ]);
+                            this.products = prodRes.data;
+                            this.warehouses = whRes.data;
+                            this.movements = movRes.data;
+                        } catch (error) {
+                            console.error('Fetch error:', error);
+                            alert('Failed to load data');
+                        }
                     },
+
                     createdLog(m) {
                         return m.stock_log?.find(l => l.action === 'created');
                     },
-                    approvedLog(m) {
-                        return m.stock_log?.find(l => l.action === 'approved');
+
+                    outApprovedLog(m) {
+                        return m.stock_log?.find(l => l.action === 'out-approved');
                     },
-                    receivedLog(m) {
-                        return m.stock_log?.find(l => l.action === 'received');
+
+                    inApprovedLog(m) {
+                        return m.stock_log?.find(l => l.action === 'in-approved');
                     },
-                    formatLog(log) {
-                        return `${this.formatDate(log.timestamp)}\n${log.role} - ${log.userName}\n${log.warehouseName}`;
+
+                    getStatusText(m) {
+                        if (m.type === 'in' && this.inApprovedLog(m)) return 'Completed';
+                        if (m.type === 'in-transit') return 'In-Transit';
+                        if (m.type === 'out' && !this.outApprovedLog(m)) return 'Pending OUT Approval';
+                        if (m.type === 'out' && this.outApprovedLog(m)) return 'OUT Approved';
+                        return m.type.toUpperCase();
                     },
+
+                    getStatusClass(m) {
+                        if (m.type === 'in' && this.inApprovedLog(m)) return 'badge-completed';
+                        if (m.type === 'in-transit') return 'badge-in-transit';
+                        if (m.type === 'out' && !this.outApprovedLog(m)) return 'badge-pending';
+                        if (m.type === 'out' && this.outApprovedLog(m)) return 'badge-approved';
+                        return '';
+                    },
+
                     formatDate(d) {
-                        return new Date(d).toLocaleString();
+                        return new Date(d).toLocaleString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
                     },
+
                     async submitTransfer() {
+                        if (this.form.warehouse === this.form.destinationWarehouse) {
+                            alert('Source and destination warehouses cannot be the same');
+                            return;
+                        }
+
                         this.loading = true;
                         try {
-                            await axios.post(`${API}`, { ...this.form, type: 'transfer' });
+                            await axios.post(`${API}`, {
+                                ...this.form,
+                                type: 'transfer'
+                            });
                             await this.fetchAll();
                             this.closeModal();
-                            this.form = {
-                                productVariantId: '',
-                                quantity: '',
-                                warehouse: '',
-                                destinationWarehouse: '',
-                                reason: '',
-                                reference: ''
-                            };
+                            alert('Transfer request created successfully! Awaiting approval.');
                         } catch (err) {
                             console.error(err);
-                            alert('Transfer failed.');
+                            alert(err.response?.data?.message || 'Transfer failed');
                         } finally {
                             this.loading = false;
                         }
                     },
-                    async approve(id) {
-                        await axios.put(`${API}/approve/${id}`);
-                        this.fetchAll();
-                    },
-                    async receive(id) {
+
+                    async approveOut(id) {
+                        if (!confirm('Approve this OUT movement? Stock will be deducted from source warehouse.')) return;
+
                         try {
-                            await axios.put(`${API}/receive/${id}`);
-                            this.fetchAll();
-                        } catch (error) {
-                            console.error('Receive failed:', error.response?.data || error.message);
-                            alert('Receive failed: ' + (error.response?.data?.message || error.message));
+                            await axios.post(`${API}/${id}/approve-out`);
+                            await this.fetchAll();
+                            alert('OUT movement approved! In-transit movement created.');
+                        } catch (err) {
+                            console.error(err);
+                            alert(err.response?.data?.message || 'Approval failed');
                         }
                     },
 
+                    async approveIn(id) {
+                        if (!confirm('Mark this shipment as received? Stock will be added to destination warehouse.')) return;
 
+                        try {
+                            await axios.post(`${API}/${id}/approve-in`);
+                            await this.fetchAll();
+                            alert('Stock received successfully!');
+                        } catch (err) {
+                            console.error(err);
+                            alert(err.response?.data?.message || 'Receipt failed');
+                        }
+                    },
 
                     exportToExcel() {
-                        const ws = XLSX.utils.json_to_sheet(this.filteredMovements.map(m => ({
+                        const data = this.filteredMovements.map(m => ({
                             Code: m.code,
                             Product: m.productVariant?.name,
                             Quantity: m.quantity,
-                            Type: m.type,
+                            Status: this.getStatusText(m),
                             Reason: m.reason,
                             From: m.warehouse?.name,
-                            To: m.destinationWarehouse?.name,
-                            Created: this.createdLog(m)?.userName,
-                            Approved: this.approvedLog(m)?.userName,
-                            Received: this.receivedLog(m)?.userName
-                        })));
+                            To: m.destinationWarehouse?.name || '—',
+                            'Created By': this.createdLog(m)?.userName,
+                            'OUT Approved': this.outApprovedLog(m)?.userName || 'Pending',
+                            'IN Approved': this.inApprovedLog(m)?.userName || 'Pending',
+                            'Created Date': this.formatDate(m.createdAt)
+                        }));
+
+                        const ws = XLSX.utils.json_to_sheet(data);
                         const wb = XLSX.utils.book_new();
-                        XLSX.utils.book_append_sheet(wb, ws, 'Stock');
-                        XLSX.writeFile(wb, 'stock_movements.xlsx');
+                        XLSX.utils.book_append_sheet(wb, ws, 'Stock Movements');
+                        XLSX.writeFile(wb, `stock_movements_${new Date().toISOString().split('T')[0]}.xlsx`);
                     },
+
                     exportToPDF() {
                         const { jsPDF } = window.jspdf;
-                        const doc = new jsPDF();
-                        doc.text("Stock Movements", 10, 10);
-                        this.filteredMovements.forEach((m, i) => {
-                            const y = 20 + i * 10;
-                            doc.text(`${m.code} | ${m.productVariant?.name} | ${m.quantity} | ${m.type}`, 10, y);
+                        const doc = new jsPDF({ orientation: 'landscape' });
+                        const title = 'Stock Movement Report';
+
+                        const data = this.filteredMovements.map(m => [
+                            m.code,
+                            m.productVariant?.name || 'N/A',
+                            m.quantity.toString(),
+                            this.getStatusText(m),
+                            m.reason || '—',
+                            m.warehouse?.name || '—',
+                            m.destinationWarehouse?.name || '—',
+                            this.createdLog(m)?.userName || '—',
+                            this.outApprovedLog(m)?.userName ? 'Approved' : 'Pending',
+                            this.inApprovedLog(m)?.userName ? 'Received' : 'Pending',
+                            this.formatDate(m.createdAt).split(', ')[0]
+                        ]);
+
+                        const headers = [
+                            ['Code', 'Product', 'Qty', 'Status', 'Reason', 'From', 'To', 'Created By', 'OUT Approved', 'IN Approved', 'Date']
+                        ];
+
+                        doc.autoTable({
+                            head: headers,
+                            body: data,
+                            startY: 15,
+                            styles: { fontSize: 8, cellPadding: 2 },
+                            headStyles: { fillColor: [59, 130, 246] },
+                            margin: { top: 10 }
                         });
-                        doc.save('stock_movements.pdf');
+
+                        doc.text(title, 14, 10);
+                        doc.save(`stock_movements_${new Date().toISOString().split('T')[0]}.pdf`);
                     },
+
                     resetPage() {
                         this.pagination.page = 1;
-                    },
-
-
+                    }
                 }
             });
         });
     </script>
-
 </body>
 
 </html>
