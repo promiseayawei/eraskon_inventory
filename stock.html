@@ -4,17 +4,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Stock Management</title>
+    <title>Stock Movement Management</title>
 
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-    <!-- <link rel="stylesheet" href="assets/css/style.css"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="assets/js/metaManager.js"></script>
     <script>
         setMeta({
@@ -25,9 +23,9 @@
             keywords: "Inventory, Warehouse, Stock, Stock Management"
         });
     </script>
-    <style>
-        /* Sidebar */
 
+    <style>
+        /* --- START OF PROVIDED CSS --- */
          :root {
             --bg-color: #e2dcdc;
             --text-color: #090F3B;
@@ -40,6 +38,10 @@
             --info-color: #3b82f6;
             --sidebar-width: 220px;
             --collapsed-sidebar-width: 80px;
+            --primary-blue: #007bff;
+            --grey-color: #6c757d;
+            --transition-speed: 0.3s;
+            --border-radius-base: 4px;
         }
 
         body.dark {
@@ -54,40 +56,17 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             transition: background-color 0.5s ease, color 0.5s ease;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            padding: 80px 20px;
-            z-index: 100;
-            overflow-y: auto;
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
-            transition: all var(--transition-speed) ease;
-            
+        
+        .main-content {
+            padding: 20px;
+            margin-left: 0; 
+            max-width: 1400px;
+            margin: 20px auto;
         }
-
-        .sidebar.close {
-            width: var(--collapsed-sidebar-width);
-        }
-
-        .sidebar .nav_link {
-            color: var(--grey-color);
-        }
-
-        .nav_link:hover {
-            color: white;
-            background: var(--primary-blue);
-            border-radius: var(--border-radius-base);
-        }
-
-        .sidebar.close .bottom_content {
-            width: 50px;
-            left: 15px;
-        }
-
-       
 
         .table-responsive {
             overflow-x: auto;
@@ -177,7 +156,7 @@
             background: #dc2626;
         }
 
-        .modal-overlay {
+        .modal-overlay, .modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -188,16 +167,6 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-        }
-
-        .modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1001;
         }
 
         .modal-content {
@@ -258,6 +227,7 @@
             border-radius: 4px;
             background-color: var(--bg-color);
             color: var(--text-color);
+            box-sizing: border-box; 
         }
 
         .inline-row {
@@ -275,13 +245,18 @@
             font-weight: 600;
         }
 
-        .badge-pending {
+        .badge-pending, .badge-out-pending-approval {
             background: var(--warning-color);
             color: white;
         }
 
-        .badge-approved {
+        .badge-approved, .badge-out-approved {
             background: var(--success-color);
+            color: white;
+        }
+        
+        .badge-queried {
+            background: var(--danger-color);
             color: white;
         }
 
@@ -289,9 +264,19 @@
             background: var(--info-color);
             color: white;
         }
+        
+        .badge-in-pending-approval {
+             background: var(--warning-color);
+             color: white;
+        }
 
         .badge-completed {
             background: #10b981;
+            color: white;
+        }
+        
+        .badge-cancelled {
+            background: #6b7280;
             color: white;
         }
 
@@ -362,31 +347,25 @@
             color: var(--info-color);
             font-weight: 600;
         }
-
-        @media (min-width: 600px) {
-            .card {
-                width: calc(50% - 20px);
-            }
-        }
-
-        @media (min-width: 900px) {
-            .card {
-                width: calc(33.333% - 20px);
-            }
-        }
+        /* --- END OF PROVIDED CSS --- */
     </style>
+    
 </head>
 
 <body>
+    <script>
+        // config.js equivalent
+        window.BASE_URL = "https://api.eraskon.com";
+    </script>
+    
     <script src="components/uiComponents.js"></script>
     <script src="components/authGuard.js"></script>
     <script src="components/navbar.js"></script>
     <script src="components/sidebar.js"></script>
-
+    
     <main id="app" class="main-content">
         <h2>Stock Movements</h2>
-
-        <!-- Stats Dashboard -->
+        
         <div class="stats-container">
             <div class="stat-card">
                 <h4>Pending OUT Approvals</h4>
@@ -406,7 +385,6 @@
             </div>
         </div>
 
-        <!-- Tabs -->
         <div class="tabs">
             <button class="tab" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">
                 All Movements
@@ -420,7 +398,6 @@
             </button>
         </div>
 
-        <!-- Filters -->
         <div class="inline-row">
             <select v-model="filters.product">
                 <option value="">All Products</option>
@@ -436,62 +413,10 @@
             <button @click="exportToPDF"><i class="fas fa-file-pdf"></i> Export PDF</button>
         </div>
 
-        <button @click="showModal = true" class="btn-success">
+        <button @click="showTransferModal = true" class="btn-success">
             <i class="fas fa-plus"></i> New Stock Transfer
         </button>
 
-        <!-- Transfer Modal -->
-        <div v-if="showModal" class="modal show" @click.self="closeModal">
-            <div class="modal-content">
-                <h3>Create Stock Transfer</h3>
-                <form @submit.prevent="submitTransfer">
-                    <label>Product *</label>
-                    <select v-model="form.productVariantId" required>
-                        <option value="">Select Product</option>
-                        <option v-for="p in products" :key="p._id" :value="p._id">{{ p.name }}</option>
-                    </select>
-
-                    <div v-if="selectedProductVariant"
-                        style="margin: 10px 0; padding: 10px; background: rgba(59, 130, 246, 0.1); border-radius: 4px;">
-                        <p><strong>SKU:</strong> {{ selectedProductVariant.sku || 'N/A' }}</p>
-                        <p><strong>Total Stock:</strong> {{ selectedProductVariant.totalStock || 0 }}</p>
-                    </div>
-
-                    <label>Quantity *</label>
-                    <input type="number" v-model.number="form.quantity" min="1" required />
-
-                    <label>From Warehouse *</label>
-                    <select v-model="form.warehouse" required>
-                        <option value="">Select Source</option>
-                        <option v-for="w in warehouses" :key="w._id" :value="w._id">{{ w.name }}</option>
-                    </select>
-
-                    <label>To Warehouse *</label>
-                    <select v-model="form.destinationWarehouse" required>
-                        <option value="">Select Destination</option>
-                        <option v-for="w in warehouses" :key="w._id" :value="w._id"
-                            :disabled="w._id === form.warehouse">
-                            {{ w.name }}
-                        </option>
-                    </select>
-
-                    <label>Reason *</label>
-                    <input v-model="form.reason" placeholder="e.g., Stock Replenishment" required />
-
-                    <label>Reference</label>
-                    <input v-model="form.reference" placeholder="e.g., Order ID, Invoice No." />
-
-                    <div class="inline-row" style="margin-top: 15px;">
-                        <button type="submit" :disabled="loading" class="btn-success">
-                            {{ loading ? 'Creating...' : 'Create Transfer' }}
-                        </button>
-                        <button type="button" @click="closeModal" class="btn-danger">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Movements Table -->
         <div class="table-responsive">
             <table>
                 <thead>
@@ -503,17 +428,19 @@
                         <th>Reason</th>
                         <th>From</th>
                         <th>To</th>
-                        <th>Created By</th>
-                        <th>OUT Approved</th>
-                        <th>IN Approved</th>
+                        <th>Created</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="m in filteredMovements" :key="m._id">
+                    <tr v-for="m in paginatedMovements" :key="m._id">
                         <td><strong>{{ m.code }}</strong></td>
-                        <td>{{ m.productVariant?.name || 'N/A' }}</td>
-                        <td>{{ m.quantity }}</td>
+                        <td>
+                            <div v-for="item in m.items" :key="item._id">
+                                {{ item.name || 'N/A' }} ({{ item.quantity }})
+                            </div>
+                        </td>
+                        <td>{{ (m.items || []).reduce((sum, i) => sum + i.quantity, 0) }}</td>
                         <td>
                             <span class="badge" :class="getStatusClass(m)">
                                 {{ getStatusText(m) }}
@@ -521,7 +448,7 @@
                         </td>
                         <td>{{ m.reason || '—' }}</td>
                         <td>{{ m.warehouse?.name || '—' }}</td>
-                        <td>{{ m.destinationWarehouse?.name || '—' }}</td>
+                        <td>{{ m.destinationWarehouse?.name || m.destinationCustomer?.name || '—' }}</td>
                         <td>
                             <div v-if="createdLog(m)" class="text-muted">
                                 {{ createdLog(m).userName }}<br>
@@ -529,47 +456,15 @@
                             </div>
                         </td>
                         <td>
-                            <div v-if="outApprovedLog(m)" class="text-success">
-                                <i class="fas fa-check-circle"></i> {{ outApprovedLog(m).userName }}<br>
-                                <small>{{ formatDate(outApprovedLog(m).timestamp) }}</small>
-                            </div>
-                            <div v-else-if="m.type === 'out'">
-                                <span class="badge badge-pending">Pending</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div v-if="inApprovedLog(m)" class="text-success">
-                                <i class="fas fa-check-circle"></i> {{ inApprovedLog(m).userName }}<br>
-                                <small>{{ formatDate(inApprovedLog(m).timestamp) }}</small>
-                            </div>
-                            <div v-else-if="m.type === 'in-transit'">
-                                <span class="badge badge-warning">Awaiting Receipt</span>
-                            </div>
-                        </td>
-                        <td>
-                            <!-- OUT Approval (Admin/Finance only) -->
-                            <button v-if="m.type === 'out' && !outApprovedLog(m) && canApprove"
-                                @click="approveOut(m._id)" class="btn-success">
-                                <i class="fas fa-check"></i> Approve OUT
+                            <button @click="showMovementDetails(m)" class="btn-info">
+                                <i class="fas fa-eye"></i> Details
                             </button>
-
-                            <!-- IN Approval (Admin/Finance/Warehouse) -->
-                            <button v-if="m.type === 'in-transit' && !inApprovedLog(m) && canReceive"
-                                @click="approveIn(m._id)" class="btn-warning">
-                                <i class="fas fa-box"></i> Receive
-                            </button>
-
-                            <!-- Completed -->
-                            <span v-if="m.type === 'in' && inApprovedLog(m)" class="text-success">
-                                <i class="fas fa-check-double"></i> Completed
-                            </span>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Pagination -->
         <div class="inline-row" style="margin-top: 1rem;">
             <button :disabled="pagination.page === 1" @click="pagination.page--">
                 <i class="fas fa-chevron-left"></i> Previous
@@ -585,18 +480,185 @@
                 Next <i class="fas fa-chevron-right"></i>
             </button>
         </div>
+        
+        <div v-if="showTransferModal" class="modal" @click.self="closeTransferModal">
+            <div class="modal-content" style="max-width: 600px;">
+                <h3>Create Stock Transfer</h3>
+                <form @submit.prevent="submitTransfer">
+                    
+                    <label>From Warehouse *</label>
+                    <select v-model="form.warehouse" required>
+                        <option value="">Select Source</option>
+                        <option v-for="w in warehouses" :key="w._id" :value="w._id">{{ w.name }}</option>
+                    </select>
+
+                    <label>To Warehouse *</label>
+                    <select v-model="form.destinationWarehouse" required>
+                        <option value="">Select Destination</option>
+                        <option v-for="w in warehouses" :key="w._id" :value="w._id"
+                            :disabled="w._id === form.warehouse">
+                            {{ w.name }}
+                        </option>
+                    </select>
+                    
+                    <h4>Items to Transfer</h4>
+                    <div v-for="(item, index) in form.items" :key="index" style="border: 1px dashed var(--border-color); padding: 10px; margin-bottom: 10px;">
+                        <label>Product *</label>
+                        <select v-model="item.productVariantId" required @change="updateItemStock(item)">
+                            <option value="">Select Product</option>
+                            <option v-for="p in products" :key="p._id" :value="p._id">{{ p.name }}</option>
+                        </select>
+                        
+                        <div v-if="item.maxStock" class="text-muted" style="margin-top: 5px;">
+                            Available stock in Source: {{ item.maxStock }}
+                        </div>
+
+                        <label>Quantity *</label>
+                        <input type="number" v-model.number="item.quantity" min="1" :max="item.maxStock" required />
+                        
+                        <label>Batch Number (Optional)</label>
+                        <input type="text" v-model="item.batchNumber" />
+                        
+                        <button type="button" @click="form.items.splice(index, 1)" class="btn-danger" style="margin-top: 10px; display: block;">Remove Item</button>
+                    </div>
+
+                    <button type="button" @click="addItem" class="btn-info" style="margin-bottom: 15px;">Add Item</button>
+
+                    <label>Reason *</label>
+                    <input v-model="form.reason" placeholder="e.g., Stock Replenishment" required />
+
+                    <label>Reference</label>
+                    <input v-model="form.reference" placeholder="e.g., Order ID, Invoice No." />
+                    
+                    <h4>🚚 Logistics Details (Optional)</h4>
+                    <label>Logistics ID</label>
+                    <input v-model="form.logisticsId" placeholder="e.g., Shipment Tracking No." />
+
+                    <label>Driver Name</label>
+                    <input v-model="form.driverName" placeholder="e.g., John Doe" />
+
+                    <div class="inline-row" style="margin-top: 15px;">
+                        <button type="submit" :disabled="loading || form.items.length === 0" class="btn-success">
+                            {{ loading ? 'Creating...' : 'Create Transfer' }}
+                        </button>
+                        <button type="button" @click="closeTransferModal" class="btn-danger">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div v-if="showDetailModal && selectedMovement" class="modal" @click.self="closeDetailModal">
+            <div class="modal-content" style="max-width: 800px;">
+                <h3 style="margin-top: 0;">Movement: {{ selectedMovement.code }} 
+                    <span class="badge" :class="getStatusClass(selectedMovement)">{{ getStatusText(selectedMovement) }}</span>
+                </h3>
+                
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <h4>From</h4>
+                        <div class="value">{{ selectedMovement.warehouse?.name || 'N/A' }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>To</h4>
+                        <div class="value">{{ selectedMovement.destinationWarehouse?.name || selectedMovement.destinationCustomer?.name || 'N/A' }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Total Qty</h4>
+                        <div class="value">{{ (selectedMovement.items || []).reduce((sum, i) => sum + i.quantity, 0) }}</div>
+                    </div>
+                </div>
+
+                <h4>Workflow Actions</h4>
+                <div class="inline-row" style="margin-bottom: 20px;">
+                    <button v-if="selectedMovement.status === 'out_pending_approval' && canApprove" @click="approveOut(selectedMovement._id)" class="btn-success">✅ Approve OUT (Start Transit)</button>
+                    
+                    <button v-if="selectedMovement.status === 'in_transit' && canReceive" @click="markPendingInPrompt(selectedMovement._id)" class="btn-warning">📦 Mark Pending IN (Arrived)</button>
+                    
+                    <button v-if="selectedMovement.status === 'in_pending_approval' && canApprove" @click="approveIn(selectedMovement._id)" class="btn-success">💰 Approve IN (Receive Stock)</button>
+                    
+                    <button v-if="selectedMovement.status !== 'completed' && selectedMovement.status !== 'cancelled' && selectedMovement.status !== 'queried'" @click="queryMovementPrompt(selectedMovement._id)" class="btn-danger">❓ Query Movement</button>
+                    
+                    <button v-if="selectedMovement.status === 'queried' && canApprove" @click="resolveQueryPrompt(selectedMovement._id)" class="btn-success">🛠️ Resolve Query</button>
+                    
+                    <button v-if="selectedMovement.status === 'out_pending_approval' || selectedMovement.status === 'in_transit'" @click="updateLogisticsPrompt(selectedMovement._id)" class="btn-info">🚚 Update Logistics</button>
+                    
+                    <button v-if="selectedMovement.status !== 'completed' && selectedMovement.status !== 'cancelled' && canAdmin" @click="cancelMovementPrompt(selectedMovement._id)" class="btn-danger">❌ Cancel Movement</button>
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab" :class="{ active: detailTab === 'items' }" @click="detailTab = 'items'">Items</button>
+                    <button class="tab" :class="{ active: detailTab === 'log' }" @click="detailTab = 'log'">Movement Log</button>
+                    <button v-if="selectedMovement.query" class="tab" :class="{ active: detailTab === 'query' }" @click="detailTab = 'query'">Query Details</button>
+                </div>
+
+                <div v-if="detailTab === 'items'" style="max-height: 250px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Quantity</th>
+                                <th>Batch No.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in selectedMovement.items" :key="item._id">
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.batchNumber || 'N/A' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div v-if="detailTab === 'log'" style="max-height: 250px; overflow-y: auto; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <div v-for="log in selectedMovement.stock_log" :key="log.timestamp" class="text-muted" style="border-bottom: 1px dashed #eee; padding: 5px 0;">
+                        <p style="margin: 0;">
+                            <strong>{{ log.action.toUpperCase().replace(/_/g, ' ') }}</strong> by {{ log.userName }} ({{ log.role }}) on {{ formatDate(log.timestamp) }}
+                        </p>
+                        <small>WH: {{ log.warehouseName || 'N/A' }} | Comment: {{ log.comments || 'No comment provided.' }}</small>
+                    </div>
+                </div>
+
+                <div v-if="detailTab === 'query' && selectedMovement.query">
+                    <div class="stat-card">
+                        <h4>Original Query</h4>
+                        <p>{{ selectedMovement.query.queryText }}</p>
+                        <p class="text-muted">Queried by {{ selectedMovement.query.queriedBy?.userName || 'N/A' }} on {{ formatDate(selectedMovement.query.queriedAt) }}</p>
+                    </div>
+                    <div v-if="selectedMovement.query.resolution" class="stat-card" style="margin-top: 10px;">
+                        <h4>Resolution</h4>
+                        <p>{{ selectedMovement.query.resolution }}</p>
+                        <p class="text-success">Resolved by {{ selectedMovement.query.resolvedBy?.userName || 'N/A' }} on {{ formatDate(selectedMovement.query.resolvedAt) }}</p>
+                    </div>
+                </div>
+                
+                <button type="button" @click="closeDetailModal" class="btn-danger" style="margin-top: 20px;">Close</button>
+            </div>
+        </div>
+
     </main>
 
-    <script src="config.js"></script>
-    <script src="assets/js/script.js"></script>
     <script>
+        // --- VUE.JS APPLICATION LOGIC ---
+        
+        // BASE_URL is set above via the 'config.js equivalent' script tag.
+        const BASE_URL = window.BASE_URL || '/api'; 
+        // CORRECTED API ENDPOINT (singular)
+        const API = BASE_URL + '/stock-movement'; 
+
+        // Helper function to find stock in a specific warehouse
+        function getWarehouseStock(product, warehouseId) {
+            if (!product?.warehouses || !warehouseId) return 0;
+            const stockEntry = product.warehouses.find(w => w.warehouse === warehouseId);
+            return stockEntry ? stockEntry.stock : 0;
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
+            // Setup Axios Interceptor for Auth
             const token = localStorage.getItem('token');
             if (token) {
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             }
-
-            const API = window.BASE_URL + '/stock-movement';
 
             new Vue({
                 el: '#app',
@@ -604,26 +666,31 @@
                     products: [],
                     warehouses: [],
                     movements: [],
-                    showModal: false,
+                    
+                    showTransferModal: false,
+                    showDetailModal: false,
+                    selectedMovement: null, 
                     loading: false,
-                    selectedProductVariant: null,
-                    userRole: localStorage.getItem('role') || '',
-                    userId: localStorage.getItem('userId') || '',
-                    userWarehouse: localStorage.getItem('userWarehouse') || '', // Store user's warehouse
+                    detailTab: 'items', 
+
+                    userRole: localStorage.getItem('role') || 'Warehouse', 
+                    userWarehouse: localStorage.getItem('userWarehouse') || '', 
                     activeTab: 'all',
 
                     pagination: {
                         page: 1,
                         perPage: 10
                     },
-
+                    
                     form: {
-                        productVariantId: '',
-                        quantity: '',
+                        type: 'transfer', 
                         warehouse: '',
                         destinationWarehouse: '',
                         reason: '',
-                        reference: ''
+                        reference: '',
+                        logisticsId: '', 
+                        driverName: '', 
+                        items: [{ productVariantId: '', quantity: 1, batchNumber: '', maxStock: 0 }]
                     },
 
                     filters: {
@@ -634,59 +701,60 @@
                     }
                 },
                 computed: {
+                    canAdmin() {
+                        return ['Admin', 'Super Admin'].includes(this.userRole);
+                    },
                     canApprove() {
-                        return ['admin', 'finance'].includes(this.userRole);
+                        return ['Admin', 'Super Admin', 'Warehouse'].includes(this.userRole);
                     },
                     canReceive() {
-                        return ['admin', 'finance', 'warehouse'].includes(this.userRole);
+                        return ['Admin', 'Super Admin', 'Warehouse', 'inventory'].includes(this.userRole);
                     },
                     stats() {
                         return {
-                            pendingOut: this.movements.filter(m => m.type === 'out' && !this.outApprovedLog(m)).length,
-                            inTransit: this.movements.filter(m => m.type === 'in-transit').length,
+                            pendingOut: this.movements.filter(m => m.status === 'out_pending_approval').length,
+                            inTransit: this.movements.filter(m => m.status === 'in_transit').length,
                             completedToday: this.movements.filter(m => {
-                                const log = this.inApprovedLog(m);
-                                return log && new Date(log.timestamp).toDateString() === new Date().toDateString();
+                                return m.status === 'completed' && new Date(m.createdAt).toDateString() === new Date().toDateString();
                             }).length
                         };
                     },
                     filteredMovements() {
                         let filtered = [...this.movements];
 
-                        // Role-based filtering for warehouse/inventory roles
-                        if (['warehouse', 'inventory'].includes(this.userRole) && this.userWarehouse) {
-                            filtered = filtered.filter(m =>
-                                m.warehouse?._id === this.userWarehouse ||
-                                m.destinationWarehouse?._id === this.userWarehouse
-                            );
-                        }
-
-                        // Tab filtering
                         if (this.activeTab === 'pending') {
-                            filtered = filtered.filter(m => m.type === 'out' && !this.outApprovedLog(m));
+                            filtered = filtered.filter(m => m.status === 'out_pending_approval');
                         } else if (this.activeTab === 'in-transit') {
-                            filtered = filtered.filter(m => m.type === 'in-transit');
+                            filtered = filtered.filter(m => m.status === 'in_transit');
                         }
 
-                        // Date/product/warehouse filters
                         const from = this.filters.dateFrom ? new Date(this.filters.dateFrom) : null;
                         const to = this.filters.dateTo ? new Date(this.filters.dateTo) : null;
 
                         filtered = filtered.filter(m => {
                             const created = new Date(m.createdAt);
-                            return (!this.filters.product || m.productVariant?._id === this.filters.product) &&
-                                (!this.filters.warehouse || m.warehouse?._id === this.filters.warehouse) &&
+                            const itemMatches = !this.filters.product || m.items.some(item => item.productVariant === this.filters.product);
+                            
+                            return itemMatches &&
+                                (!this.filters.warehouse || m.warehouse?._id === this.filters.warehouse || m.destinationWarehouse?._id === this.filters.warehouse) &&
                                 (!from || created >= from) &&
                                 (!to || created <= to);
                         });
 
-                        // Sort by date descending
                         filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
+                        
                         this.totalPages = Math.ceil(filtered.length / this.pagination.perPage);
-
+                        return filtered;
+                    },
+                    paginatedMovements() {
                         const start = (this.pagination.page - 1) * this.pagination.perPage;
-                        return filtered.slice(start, start + this.pagination.perPage);
+                        return this.filteredMovements.slice(start, start + this.pagination.perPage);
+                    },
+                    totalPages: {
+                        get() {
+                            return Math.ceil(this.filteredMovements.length / this.pagination.perPage);
+                        },
+                        set(val) {} 
                     }
                 },
                 watch: {
@@ -695,39 +763,54 @@
                     'filters.dateFrom': 'resetPage',
                     'filters.dateTo': 'resetPage',
                     'activeTab': 'resetPage',
-                    'form.productVariantId'(val) {
-                        this.selectedProductVariant = this.products.find(p => p._id === val) || null;
+                    'form.warehouse'(newWhId) {
+                        this.form.items.forEach(item => this.updateItemStock(item, newWhId));
                     }
                 },
                 mounted() {
                     this.fetchAll();
                     document.addEventListener('keydown', e => {
-                        if (e.key === 'Escape') this.closeModal();
+                        if (e.key === 'Escape') {
+                            this.closeTransferModal();
+                            this.closeDetailModal();
+                        }
                     });
-
-                    // Auto-refresh every 30 seconds
-                    setInterval(() => {
-                        this.fetchAll();
-                    }, 30000);
                 },
                 methods: {
-                    closeModal() {
-                        this.showModal = false;
+                    // --- Modal Management ---
+                    closeTransferModal() {
+                        this.showTransferModal = false;
                         this.form = {
-                            productVariantId: '',
-                            quantity: '',
+                            type: 'transfer',
                             warehouse: '',
                             destinationWarehouse: '',
                             reason: '',
-                            reference: ''
+                            reference: '',
+                            logisticsId: '', 
+                            driverName: '', 
+                            items: [{ productVariantId: '', quantity: 1, batchNumber: '', maxStock: 0 }]
                         };
                     },
+                    closeDetailModal() {
+                        this.selectedMovement = null;
+                        this.showDetailModal = false;
+                        this.detailTab = 'items';
+                    },
 
+                    showMovementDetails(movement) {
+                        this.selectedMovement = movement;
+                        this.showDetailModal = true;
+                    },
+
+                    // --- Data Fetching ---
                     async fetchAll() {
                         try {
                             const [prodRes, whRes, movRes] = await Promise.all([
-                                axios.get(`${window.BASE_URL}/product-variant`),
-                                axios.get(`${window.BASE_URL}/warehouse`),
+                                // CORRECTED ENDPOINT: /product-variant
+                                axios.get(`${BASE_URL}/product-variant`), 
+                                // CORRECTED ENDPOINT: /warehouse
+                                axios.get(`${BASE_URL}/warehouse`), 
+                                // CORRECTED ENDPOINT: /stock-movement
                                 axios.get(`${API}`)
                             ]);
                             this.products = prodRes.data;
@@ -735,36 +818,100 @@
                             this.movements = movRes.data;
                         } catch (error) {
                             console.error('Fetch error:', error);
-                            alert('Failed to load data');
+                        }
+                    },
+                    
+                    // --- Transfer Form Helpers ---
+                    addItem() {
+                         this.form.items.push({ productVariantId: '', quantity: 1, batchNumber: '', maxStock: 0 });
+                    },
+                    
+                    updateItemStock(item, warehouseId = this.form.warehouse) {
+                        if (item.productVariantId && warehouseId) {
+                            const product = this.products.find(p => p._id === item.productVariantId);
+                            const stock = getWarehouseStock(product, warehouseId);
+                            item.maxStock = stock;
+                            if (item.quantity > stock) {
+                                item.quantity = stock;
+                            }
+                        } else {
+                            item.maxStock = 0;
                         }
                     },
 
+                    // --- Submission ---
+                    async submitTransfer() {
+                        if (this.form.warehouse === this.form.destinationWarehouse) {
+                            alert('Source and destination warehouses cannot be the same');
+                            return;
+                        }
+                        if (this.form.items.some(i => !i.productVariantId || i.quantity <= 0)) {
+                            alert('Please ensure all items have a valid product and quantity.');
+                            return;
+                        }
+                        
+                        const transferData = {
+                            type: 'transfer',
+                            warehouse: this.form.warehouse,
+                            destinationWarehouse: this.form.destinationWarehouse,
+                            reason: this.form.reason,
+                            reference: this.form.reference,
+                            items: this.form.items.map(item => ({
+                                productVariantId: item.productVariantId,
+                                quantity: item.quantity,
+                                batchNumber: item.batchNumber
+                            }))
+                        };
+                        
+                        // Add logistics data if available
+                        if (this.form.logisticsId) {
+                            transferData.logisticsId = this.form.logisticsId;
+                        }
+                        if (this.form.driverName) {
+                            transferData.driver = { driverName: this.form.driverName }; 
+                        }
+
+                        this.loading = true;
+                        try {
+                            await axios.post(`${API}`, transferData);
+                            await this.fetchAll();
+                            this.closeTransferModal();
+                            alert('Transfer request created successfully! Awaiting approval.');
+                        } catch (err) {
+                            console.error(err.response || err);
+                            alert(err.response?.data?.message || 'Transfer failed');
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+                    
+                    // --- Log Accessors and Formatting ---
                     createdLog(m) {
-                        return m.stock_log?.find(l => l.action === 'created');
-                    },
-
-                    outApprovedLog(m) {
-                        return m.stock_log?.find(l => l.action === 'out-approved');
-                    },
-
-                    inApprovedLog(m) {
-                        return m.stock_log?.find(l => l.action === 'in-approved');
+                        return m.stock_log?.find(l => l.action === 'created' || l.action === 'updated');
                     },
 
                     getStatusText(m) {
-                        if (m.type === 'in' && this.inApprovedLog(m)) return 'Completed';
-                        if (m.type === 'in-transit') return 'In-Transit';
-                        if (m.type === 'out' && !this.outApprovedLog(m)) return 'Pending OUT Approval';
-                        if (m.type === 'out' && this.outApprovedLog(m)) return 'OUT Approved';
-                        return m.type.toUpperCase();
+                        const statusMap = {
+                            'out_pending_approval': 'Pending OUT Approval',
+                            'in_transit': 'In-Transit',
+                            'in_pending_approval': 'Pending IN Approval',
+                            'queried': 'Queried/On Hold',
+                            'completed': 'Completed',
+                            'cancelled': 'Cancelled'
+                        };
+                        return statusMap[m.status] || m.status?.replace(/_/g, ' ').toUpperCase() || 'N/A';
                     },
 
                     getStatusClass(m) {
-                        if (m.type === 'in' && this.inApprovedLog(m)) return 'badge-completed';
-                        if (m.type === 'in-transit') return 'badge-in-transit';
-                        if (m.type === 'out' && !this.outApprovedLog(m)) return 'badge-pending';
-                        if (m.type === 'out' && this.outApprovedLog(m)) return 'badge-approved';
-                        return '';
+                        const classMap = {
+                            'out_pending_approval': 'badge-pending',
+                            'in_transit': 'badge-in-transit',
+                            'in_pending_approval': 'badge-warning',
+                            'queried': 'badge-danger',
+                            'completed': 'badge-completed',
+                            'cancelled': 'badge-cancelled'
+                        };
+                        return classMap[m.status] || 'badge-muted';
                     },
 
                     formatDate(d) {
@@ -776,68 +923,98 @@
                             minute: '2-digit'
                         });
                     },
-
-                    async submitTransfer() {
-                        if (this.form.warehouse === this.form.destinationWarehouse) {
-                            alert('Source and destination warehouses cannot be the same');
-                            return;
-                        }
-
-                        this.loading = true;
+                    
+                    // --- Workflow Actions (PUT) ---
+                    async executePutAction(id, endpoint, payload = {}, successMsg) {
                         try {
-                            await axios.post(`${API}`, {
-                                ...this.form,
-                                type: 'transfer'
-                            });
+                            await axios.put(`${API}/${id}/${endpoint}`, payload);
                             await this.fetchAll();
-                            this.closeModal();
-                            alert('Transfer request created successfully! Awaiting approval.');
+                            this.closeDetailModal();
+                            alert(successMsg);
                         } catch (err) {
                             console.error(err);
-                            alert(err.response?.data?.message || 'Transfer failed');
-                        } finally {
-                            this.loading = false;
+                            alert(err.response?.data?.message || `Action failed for ${endpoint}`);
                         }
                     },
 
-                    async approveOut(id) {
-                        if (!confirm('Approve this OUT movement? Stock will be deducted from source warehouse.')) return;
-
-                        try {
-                            await axios.post(`${API}/${id}/approve-out`);
-                            await this.fetchAll();
-                            alert('OUT movement approved! In-transit movement created.');
-                        } catch (err) {
-                            console.error(err);
-                            alert(err.response?.data?.message || 'Approval failed');
+                    approveOut(id) {
+                        const comments = prompt('Enter approval comments (optional):');
+                        if (comments !== null) {
+                            this.executePutAction(id, 'approve-out', { comments }, 'OUT movement approved! Shipment is now in transit.');
                         }
                     },
 
-                    async approveIn(id) {
-                        if (!confirm('Mark this shipment as received? Stock will be added to destination warehouse.')) return;
-
-                        try {
-                            await axios.post(`${API}/${id}/approve-in`);
-                            await this.fetchAll();
-                            alert('Stock received successfully!');
-                        } catch (err) {
-                            console.error(err);
-                            alert(err.response?.data?.message || 'Receipt failed');
+                    markPendingInPrompt(id) {
+                        const comments = prompt('Enter arrival comments (optional):');
+                        if (comments !== null) {
+                            this.executePutAction(id, 'mark-pending-in', { comments }, 'Movement marked as arrived, awaiting IN approval.');
+                        }
+                    },
+                    
+                    approveIn(id) {
+                        const comments = prompt('Enter receipt approval comments (optional):');
+                        if (comments !== null) {
+                            this.executePutAction(id, 'approve-in', { comments }, 'Stock received and approved successfully! Stock added to destination.');
                         }
                     },
 
+                    queryMovementPrompt(id) {
+                        const queryText = prompt('Enter the query or issue (required):');
+                        if (queryText && queryText.trim()) {
+                            this.executePutAction(id, 'query', { queryText }, 'Movement successfully queried. Status updated.');
+                        } else if (queryText !== null) {
+                            alert('Query text is required.');
+                        }
+                    },
+
+                    resolveQueryPrompt(id) {
+                        const resolution = prompt('Enter the resolution details (required):');
+                        if (!resolution || !resolution.trim()) return alert('Resolution details are required.');
+                        
+                        const newStatus = prompt('Set the new status (in_transit or in_pending_approval):', 'in_pending_approval');
+                        if (newStatus && ['in_transit', 'in_pending_approval'].includes(newStatus)) {
+                             this.executePutAction(id, 'resolve-query', { resolution, newStatus }, 'Query resolved successfully. Status updated.');
+                        } else if (newStatus !== null) {
+                            alert('Invalid status selected.');
+                        }
+                    },
+                    
+                    updateLogisticsPrompt(id) {
+                        const driverName = prompt('Enter new Driver Name (Optional):');
+                        const logisticsId = prompt('Enter new Logistics ID (Optional):');
+                        
+                        if (driverName !== null || logisticsId !== null) {
+                            const payload = {};
+                            if (driverName && driverName.trim()) payload.driver = { driverName: driverName.trim() };
+                            if (logisticsId && logisticsId.trim()) payload.logisticsId = logisticsId.trim();
+                            
+                            if (Object.keys(payload).length > 0) {
+                                this.executePutAction(id, 'logistics', payload, 'Logistics/Driver updated successfully.');
+                            } else {
+                                alert('No changes entered.');
+                            }
+                        }
+                    },
+
+                    cancelMovementPrompt(id) {
+                        const reason = prompt('Enter the cancellation reason (required):');
+                        if (!reason) return alert('Cancellation reason is required.');
+                        if (confirm('Are you sure you want to CANCEL this movement? This action will revert stock if already deducted.')) {
+                            this.executePutAction(id, 'cancel', { reason }, 'Movement cancelled successfully. Stock reversed if needed.');
+                        }
+                    },
+
+                    // --- Export and Pagination ---
                     exportToExcel() {
                         const data = this.filteredMovements.map(m => ({
                             Code: m.code,
-                            Product: m.productVariant?.name,
-                            Quantity: m.quantity,
+                            Product: (m.items || []).map(i => i.name).join(', '),
+                            Quantity: (m.items || []).reduce((sum, i) => sum + i.quantity, 0),
                             Status: this.getStatusText(m),
-                            Reason: m.reason,
-                            From: m.warehouse?.name,
-                            To: m.destinationWarehouse?.name || '—',
-                            'Created By': this.createdLog(m)?.userName,
-                            'OUT Approved': this.outApprovedLog(m)?.userName || 'Pending',
-                            'IN Approved': this.inApprovedLog(m)?.userName || 'Pending',
+                            Reason: m.reason || '—',
+                            From: m.warehouse?.name || '—',
+                            To: m.destinationWarehouse?.name || m.destinationCustomer?.name || '—',
+                            'Created By': this.createdLog(m)?.userName || '—',
                             'Created Date': this.formatDate(m.createdAt)
                         }));
 
@@ -854,20 +1031,18 @@
 
                         const data = this.filteredMovements.map(m => [
                             m.code,
-                            m.productVariant?.name || 'N/A',
-                            m.quantity.toString(),
+                            (m.items || []).map(i => i.name).join(', '),
+                            (m.items || []).reduce((sum, i) => sum + i.quantity, 0).toString(),
                             this.getStatusText(m),
                             m.reason || '—',
                             m.warehouse?.name || '—',
-                            m.destinationWarehouse?.name || '—',
+                            m.destinationWarehouse?.name || m.destinationCustomer?.name || '—',
                             this.createdLog(m)?.userName || '—',
-                            this.outApprovedLog(m)?.userName ? 'Approved' : 'Pending',
-                            this.inApprovedLog(m)?.userName ? 'Received' : 'Pending',
                             this.formatDate(m.createdAt).split(', ')[0]
                         ]);
 
                         const headers = [
-                            ['Code', 'Product', 'Qty', 'Status', 'Reason', 'From', 'To', 'Created By', 'OUT Approved', 'IN Approved', 'Date']
+                            ['Code', 'Products', 'Qty', 'Status', 'Reason', 'From', 'To', 'Created By', 'Date']
                         ];
 
                         doc.autoTable({
@@ -891,5 +1066,7 @@
         });
     </script>
 </body>
+
+</html>
 
 </html>
