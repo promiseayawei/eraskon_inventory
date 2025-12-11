@@ -23,6 +23,36 @@
     });
   </script>
   <style>
+
+           /* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  padding: 80px 5px;
+  z-index: 100;
+  overflow-y: auto;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-speed) ease;
+  width: var(--sidebar-width);
+  background-color: var(--white-color); 
+}
+.sidebar.close {
+  width: var(--collapsed-sidebar-width);
+}
+.sidebar .nav_link {
+  color: var(--grey-color);
+}
+.nav_link:hover {
+  color: white;
+  background: var(--primary-blue); 
+  border-radius: var(--border-radius-base);
+}
+.sidebar.close .bottom_content {
+  width: 50px;
+  left: 15px;
+}
     /* Global Overrides for White Background and Clean Transitions */
     body {
         background-color: rgb(255, 254, 254) !important;

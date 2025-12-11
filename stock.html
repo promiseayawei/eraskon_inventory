@@ -25,8 +25,42 @@
     </script>
 
     <style>
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            padding: 80px 5px;
+            z-index: 100;
+            overflow-y: auto;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+            transition: all var(--transition-speed) ease;
+            width: var(--sidebar-width);
+            background-color: var(--white-color);
+        }
+
+        .sidebar.close {
+            width: var(--collapsed-sidebar-width);
+        }
+
+        .sidebar .nav_link {
+            color: var(--grey-color);
+        }
+
+        .nav_link:hover {
+            color: white;
+            background: var(--primary-blue);
+            border-radius: var(--border-radius-base);
+        }
+
+        .sidebar.close .bottom_content {
+            width: 50px;
+            left: 15px;
+        }
+
         /* --- START OF PROVIDED CSS --- */
-         :root {
+        :root {
             --bg-color: #e2dcdc;
             --text-color: #090F3B;
             --card-bg: #ffffff;
@@ -60,10 +94,10 @@
             margin: 0;
             padding: 0;
         }
-        
+
         .main-content {
             padding: 20px;
-            margin-left: 0; 
+            margin-left: 0;
             max-width: 1400px;
             margin: 20px auto;
         }
@@ -156,7 +190,8 @@
             background: #dc2626;
         }
 
-        .modal-overlay, .modal {
+        .modal-overlay,
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -227,7 +262,7 @@
             border-radius: 4px;
             background-color: var(--bg-color);
             color: var(--text-color);
-            box-sizing: border-box; 
+            box-sizing: border-box;
         }
 
         .inline-row {
@@ -245,16 +280,18 @@
             font-weight: 600;
         }
 
-        .badge-pending, .badge-out-pending-approval {
+        .badge-pending,
+        .badge-out-pending-approval {
             background: var(--warning-color);
             color: white;
         }
 
-        .badge-approved, .badge-out-approved {
+        .badge-approved,
+        .badge-out-approved {
             background: var(--success-color);
             color: white;
         }
-        
+
         .badge-queried {
             background: var(--danger-color);
             color: white;
@@ -264,17 +301,17 @@
             background: var(--info-color);
             color: white;
         }
-        
+
         .badge-in-pending-approval {
-             background: var(--warning-color);
-             color: white;
+            background: var(--warning-color);
+            color: white;
         }
 
         .badge-completed {
             background: #10b981;
             color: white;
         }
-        
+
         .badge-cancelled {
             background: #6b7280;
             color: white;
@@ -347,9 +384,10 @@
             color: var(--info-color);
             font-weight: 600;
         }
+
         /* --- END OF PROVIDED CSS --- */
     </style>
-    
+
 </head>
 
 <body>
@@ -357,15 +395,15 @@
         // config.js equivalent
         window.BASE_URL = "https://api.eraskon.com";
     </script>
-    
+
     <script src="components/uiComponents.js"></script>
     <script src="components/authGuard.js"></script>
     <script src="components/navbar.js"></script>
     <script src="components/sidebar.js"></script>
-    
+
     <main id="app" class="main-content">
         <h2>Stock Movements</h2>
-        
+
         <div class="stats-container">
             <div class="stat-card">
                 <h4>Pending OUT Approvals</h4>
@@ -480,12 +518,12 @@
                 Next <i class="fas fa-chevron-right"></i>
             </button>
         </div>
-        
+
         <div v-if="showTransferModal" class="modal" @click.self="closeTransferModal">
             <div class="modal-content" style="max-width: 600px;">
                 <h3>Create Stock Transfer</h3>
                 <form @submit.prevent="submitTransfer">
-                    
+
                     <label>From Warehouse *</label>
                     <select v-model="form.warehouse" required>
                         <option value="">Select Source</option>
@@ -500,43 +538,60 @@
                             {{ w.name }}
                         </option>
                     </select>
-                    
+
                     <h4>Items to Transfer</h4>
-                    <div v-for="(item, index) in form.items" :key="index" style="border: 1px dashed var(--border-color); padding: 10px; margin-bottom: 10px;">
+                    <div v-for="(item, index) in form.items" :key="index"
+                        style="border: 1px dashed var(--border-color); padding: 10px; margin-bottom: 10px;">
                         <label>Product *</label>
                         <select v-model="item.productVariantId" required @change="updateItemStock(item)">
                             <option value="">Select Product</option>
                             <option v-for="p in products" :key="p._id" :value="p._id">{{ p.name }}</option>
                         </select>
-                        
+
                         <div v-if="item.maxStock" class="text-muted" style="margin-top: 5px;">
                             Available stock in Source: {{ item.maxStock }}
                         </div>
 
                         <label>Quantity *</label>
                         <input type="number" v-model.number="item.quantity" min="1" :max="item.maxStock" required />
-                        
+
                         <label>Batch Number (Optional)</label>
                         <input type="text" v-model="item.batchNumber" />
-                        
-                        <button type="button" @click="form.items.splice(index, 1)" class="btn-danger" style="margin-top: 10px; display: block;">Remove Item</button>
+
+                        <button type="button" @click="form.items.splice(index, 1)" class="btn-danger"
+                            style="margin-top: 10px; display: block;">Remove Item</button>
                     </div>
 
-                    <button type="button" @click="addItem" class="btn-info" style="margin-bottom: 15px;">Add Item</button>
+                    <button type="button" @click="addItem" class="btn-info" style="margin-bottom: 15px;">Add
+                        Item</button>
 
                     <label>Reason *</label>
                     <input v-model="form.reason" placeholder="e.g., Stock Replenishment" required />
 
                     <label>Reference</label>
                     <input v-model="form.reference" placeholder="e.g., Order ID, Invoice No." />
-                    
+
                     <h4>🚚 Logistics Details (Optional)</h4>
-                    <label>Logistics ID</label>
-                    <input v-model="form.logisticsId" placeholder="e.g., Shipment Tracking No." />
 
-                    <label>Driver Name</label>
-                    <input v-model="form.driverName" placeholder="e.g., John Doe" />
+                    <label>Existing Logistics Provider/Record</label>
+                    <select v-model="form.logisticsId" @change="handleLogisticsChange">
+                        <option value="">Select or leave blank</option>
+                        <option v-for="l in logisticsRecords" :key="l._id" :value="l._id">
+                            {{ l.displayName }}
+                        </option>
+                    </select>
 
+                    <p class="text-muted" style="margin-top: 5px; font-size: 0.85em;">
+                        Selecting a provider auto-allocates the first available driver.
+                    </p>
+
+                    <label>Driver (Allocated by Logistics or Manual)</label>
+                    <select v-model="form.driverId">
+                        <option value="">Select Driver</option>
+                        <option v-for="d in drivers" :key="d._id" :value="d._id">
+                            {{ d.name }} ({{ d.providerName || 'Internal' }}) - {{ d.vehicleNumber }}
+                        </option>
+                    </select>
                     <div class="inline-row" style="margin-top: 15px;">
                         <button type="submit" :disabled="loading || form.items.length === 0" class="btn-success">
                             {{ loading ? 'Creating...' : 'Create Transfer' }}
@@ -546,13 +601,14 @@
                 </form>
             </div>
         </div>
-        
+
         <div v-if="showDetailModal && selectedMovement" class="modal" @click.self="closeDetailModal">
             <div class="modal-content" style="max-width: 800px;">
-                <h3 style="margin-top: 0;">Movement: {{ selectedMovement.code }} 
-                    <span class="badge" :class="getStatusClass(selectedMovement)">{{ getStatusText(selectedMovement) }}</span>
+                <h3 style="margin-top: 0;">Movement: {{ selectedMovement.code }}
+                    <span class="badge" :class="getStatusClass(selectedMovement)">{{ getStatusText(selectedMovement)
+                        }}</span>
                 </h3>
-                
+
                 <div class="stats-container">
                     <div class="stat-card">
                         <h4>From</h4>
@@ -560,35 +616,55 @@
                     </div>
                     <div class="stat-card">
                         <h4>To</h4>
-                        <div class="value">{{ selectedMovement.destinationWarehouse?.name || selectedMovement.destinationCustomer?.name || 'N/A' }}</div>
+                        <div class="value">{{ selectedMovement.destinationWarehouse?.name ||
+                            selectedMovement.destinationCustomer?.name || 'N/A' }}</div>
                     </div>
                     <div class="stat-card">
                         <h4>Total Qty</h4>
-                        <div class="value">{{ (selectedMovement.items || []).reduce((sum, i) => sum + i.quantity, 0) }}</div>
+                        <div class="value">{{ (selectedMovement.items || []).reduce((sum, i) => sum + i.quantity, 0) }}
+                        </div>
                     </div>
                 </div>
 
                 <h4>Workflow Actions</h4>
                 <div class="inline-row" style="margin-bottom: 20px;">
-                    <button v-if="selectedMovement.status === 'out_pending_approval' && canApprove" @click="approveOut(selectedMovement._id)" class="btn-success">✅ Approve OUT (Start Transit)</button>
-                    
-                    <button v-if="selectedMovement.status === 'in_transit' && canReceive" @click="markPendingInPrompt(selectedMovement._id)" class="btn-warning">📦 Mark Pending IN (Arrived)</button>
-                    
-                    <button v-if="selectedMovement.status === 'in_pending_approval' && canApprove" @click="approveIn(selectedMovement._id)" class="btn-success">💰 Approve IN (Receive Stock)</button>
-                    
-                    <button v-if="selectedMovement.status !== 'completed' && selectedMovement.status !== 'cancelled' && selectedMovement.status !== 'queried'" @click="queryMovementPrompt(selectedMovement._id)" class="btn-danger">❓ Query Movement</button>
-                    
-                    <button v-if="selectedMovement.status === 'queried' && canApprove" @click="resolveQueryPrompt(selectedMovement._id)" class="btn-success">🛠️ Resolve Query</button>
-                    
-                    <button v-if="selectedMovement.status === 'out_pending_approval' || selectedMovement.status === 'in_transit'" @click="updateLogisticsPrompt(selectedMovement._id)" class="btn-info">🚚 Update Logistics</button>
-                    
-                    <button v-if="selectedMovement.status !== 'completed' && selectedMovement.status !== 'cancelled' && canAdmin" @click="cancelMovementPrompt(selectedMovement._id)" class="btn-danger">❌ Cancel Movement</button>
+                    <button v-if="selectedMovement.status === 'out_pending_approval' && canApprove"
+                        @click="approveOut(selectedMovement._id)" class="btn-success">✅ Approve OUT (Start
+                        Transit)</button>
+
+                    <button v-if="selectedMovement.status === 'in_transit' && canReceive"
+                        @click="markPendingInPrompt(selectedMovement._id)" class="btn-warning">📦 Mark Pending IN
+                        (Arrived)</button>
+
+                    <button v-if="selectedMovement.status === 'in_pending_approval' && canApprove"
+                        @click="approveIn(selectedMovement._id)" class="btn-success">💰 Approve IN (Receive
+                        Stock)</button>
+
+                    <button
+                        v-if="selectedMovement.status !== 'completed' && selectedMovement.status !== 'cancelled' && selectedMovement.status !== 'queried'"
+                        @click="queryMovementPrompt(selectedMovement._id)" class="btn-danger">❓ Query Movement</button>
+
+                    <button v-if="selectedMovement.status === 'queried' && canApprove"
+                        @click="resolveQueryPrompt(selectedMovement._id)" class="btn-success">🛠️ Resolve Query</button>
+
+                    <button
+                        v-if="selectedMovement.status === 'out_pending_approval' || selectedMovement.status === 'in_transit'"
+                        @click="updateLogisticsPrompt(selectedMovement._id)" class="btn-info">🚚 Update
+                        Logistics</button>
+
+                    <button
+                        v-if="selectedMovement.status !== 'completed' && selectedMovement.status !== 'cancelled' && canAdmin"
+                        @click="cancelMovementPrompt(selectedMovement._id)" class="btn-danger">❌ Cancel
+                        Movement</button>
                 </div>
-                
+
                 <div class="tabs">
-                    <button class="tab" :class="{ active: detailTab === 'items' }" @click="detailTab = 'items'">Items</button>
-                    <button class="tab" :class="{ active: detailTab === 'log' }" @click="detailTab = 'log'">Movement Log</button>
-                    <button v-if="selectedMovement.query" class="tab" :class="{ active: detailTab === 'query' }" @click="detailTab = 'query'">Query Details</button>
+                    <button class="tab" :class="{ active: detailTab === 'items' }"
+                        @click="detailTab = 'items'">Items</button>
+                    <button class="tab" :class="{ active: detailTab === 'log' }" @click="detailTab = 'log'">Movement
+                        Log</button>
+                    <button v-if="selectedMovement.query" class="tab" :class="{ active: detailTab === 'query' }"
+                        @click="detailTab = 'query'">Query Details</button>
                 </div>
 
                 <div v-if="detailTab === 'items'" style="max-height: 250px; overflow-y: auto;">
@@ -609,13 +685,17 @@
                         </tbody>
                     </table>
                 </div>
-                
-                <div v-if="detailTab === 'log'" style="max-height: 250px; overflow-y: auto; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
-                    <div v-for="log in selectedMovement.stock_log" :key="log.timestamp" class="text-muted" style="border-bottom: 1px dashed #eee; padding: 5px 0;">
+
+                <div v-if="detailTab === 'log'"
+                    style="max-height: 250px; overflow-y: auto; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <div v-for="log in selectedMovement.stock_log" :key="log.timestamp" class="text-muted"
+                        style="border-bottom: 1px dashed #eee; padding: 5px 0;">
                         <p style="margin: 0;">
-                            <strong>{{ log.action.toUpperCase().replace(/_/g, ' ') }}</strong> by {{ log.userName }} ({{ log.role }}) on {{ formatDate(log.timestamp) }}
+                            <strong>{{ log.action.toUpperCase().replace(/_/g, ' ') }}</strong> by {{ log.userName }} ({{
+                            log.role }}) on {{ formatDate(log.timestamp) }}
                         </p>
-                        <small>WH: {{ log.warehouseName || 'N/A' }} | Comment: {{ log.comments || 'No comment provided.' }}</small>
+                        <small>WH: {{ log.warehouseName || 'N/A' }} | Comment: {{ log.comments || 'No comment provided.'
+                            }}</small>
                     </div>
                 </div>
 
@@ -623,16 +703,19 @@
                     <div class="stat-card">
                         <h4>Original Query</h4>
                         <p>{{ selectedMovement.query.queryText }}</p>
-                        <p class="text-muted">Queried by {{ selectedMovement.query.queriedBy?.userName || 'N/A' }} on {{ formatDate(selectedMovement.query.queriedAt) }}</p>
+                        <p class="text-muted">Queried by {{ selectedMovement.query.queriedBy?.userName || 'N/A' }} on {{
+                            formatDate(selectedMovement.query.queriedAt) }}</p>
                     </div>
                     <div v-if="selectedMovement.query.resolution" class="stat-card" style="margin-top: 10px;">
                         <h4>Resolution</h4>
                         <p>{{ selectedMovement.query.resolution }}</p>
-                        <p class="text-success">Resolved by {{ selectedMovement.query.resolvedBy?.userName || 'N/A' }} on {{ formatDate(selectedMovement.query.resolvedAt) }}</p>
+                        <p class="text-success">Resolved by {{ selectedMovement.query.resolvedBy?.userName || 'N/A' }}
+                            on {{ formatDate(selectedMovement.query.resolvedAt) }}</p>
                     </div>
                 </div>
-                
-                <button type="button" @click="closeDetailModal" class="btn-danger" style="margin-top: 20px;">Close</button>
+
+                <button type="button" @click="closeDetailModal" class="btn-danger"
+                    style="margin-top: 20px;">Close</button>
             </div>
         </div>
 
@@ -640,11 +723,11 @@
 
     <script>
         // --- VUE.JS APPLICATION LOGIC ---
-        
+
         // BASE_URL is set above via the 'config.js equivalent' script tag.
-        const BASE_URL = window.BASE_URL || '/api'; 
+        const BASE_URL = window.BASE_URL || '/api';
         // CORRECTED API ENDPOINT (singular)
-        const API = BASE_URL + '/stock-movement'; 
+        const API = BASE_URL + '/stock-movement';
 
         // Helper function to find stock in a specific warehouse
         function getWarehouseStock(product, warehouseId) {
@@ -663,33 +746,35 @@
             new Vue({
                 el: '#app',
                 data: {
+                    logisticsRecords: [], // NEW
+                    drivers: [],          // NEW
                     products: [],
                     warehouses: [],
                     movements: [],
-                    
+
                     showTransferModal: false,
                     showDetailModal: false,
-                    selectedMovement: null, 
+                    selectedMovement: null,
                     loading: false,
-                    detailTab: 'items', 
+                    detailTab: 'items',
 
-                    userRole: localStorage.getItem('role') || 'Warehouse', 
-                    userWarehouse: localStorage.getItem('userWarehouse') || '', 
+                    userRole: localStorage.getItem('role') || 'Warehouse',
+                    userWarehouse: localStorage.getItem('userWarehouse') || '',
                     activeTab: 'all',
 
                     pagination: {
                         page: 1,
                         perPage: 10
                     },
-                    
+
                     form: {
-                        type: 'transfer', 
+                        type: 'transfer',
                         warehouse: '',
                         destinationWarehouse: '',
                         reason: '',
                         reference: '',
-                        logisticsId: '', 
-                        driverName: '', 
+                        logisticsId: '',
+                        driverName: '',
                         items: [{ productVariantId: '', quantity: 1, batchNumber: '', maxStock: 0 }]
                     },
 
@@ -698,7 +783,9 @@
                         warehouse: '',
                         dateFrom: '',
                         dateTo: ''
-                    }
+                    },
+                    logisticsId: '', // Keep existing
+                    driverId: '',    // NEW: Use an ID to link the driver to the logistics
                 },
                 computed: {
                     canAdmin() {
@@ -734,7 +821,7 @@
                         filtered = filtered.filter(m => {
                             const created = new Date(m.createdAt);
                             const itemMatches = !this.filters.product || m.items.some(item => item.productVariant === this.filters.product);
-                            
+
                             return itemMatches &&
                                 (!this.filters.warehouse || m.warehouse?._id === this.filters.warehouse || m.destinationWarehouse?._id === this.filters.warehouse) &&
                                 (!from || created >= from) &&
@@ -742,7 +829,7 @@
                         });
 
                         filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                        
+
                         this.totalPages = Math.ceil(filtered.length / this.pagination.perPage);
                         return filtered;
                     },
@@ -754,7 +841,7 @@
                         get() {
                             return Math.ceil(this.filteredMovements.length / this.pagination.perPage);
                         },
-                        set(val) {} 
+                        set(val) { }
                     }
                 },
                 watch: {
@@ -769,6 +856,7 @@
                 },
                 mounted() {
                     this.fetchAll();
+                    this.fetchLogisticsAndDriversData();
                     document.addEventListener('keydown', e => {
                         if (e.key === 'Escape') {
                             this.closeTransferModal();
@@ -777,6 +865,119 @@
                     });
                 },
                 methods: {
+                    // NEW & UPDATED: Fetch Providers (as "Logistics Records") and extract all Drivers
+                    async fetchLogisticsAndDriversData() {
+                        try {
+                            const response = await axios.get(`${BASE_URL}/logistics`);
+
+                            // Use optional chaining to safely access data or fall back to response.data 
+                            // in case the server doesn't wrap the data (e.g., response.data is the array itself)
+                            const fetchedData = response.data?.data || response.data;
+
+                            // 1. Validate and filter the fetched data array
+                            if (Array.isArray(fetchedData)) {
+                                // Ensure no null/undefined entries exist in the top-level array before processing
+                                const validProviders = fetchedData.filter(p => p && typeof p === 'object');
+
+                                // --- A. Populate Logistics Records (Providers) ---
+                                this.logisticsRecords = validProviders.map(p => {
+                                    // Map the Provider to the expected format for the select dropdown
+                                    return {
+                                        _id: p._id,
+                                        logisticsId: p.serviceId,
+                                        provider: p.provider,
+                                        // Create a clear display name for the select option
+                                        displayName: `Provider: ${p.provider} (${p.serviceId})`,
+                                        // Store the drivers array for quick lookup in handleLogisticsChange
+                                        associatedDrivers: p.drivers || []
+                                    };
+                                });
+
+                                // --- B. Extract and Flatten All Drivers ---
+                                let allDrivers = [];
+
+                                validProviders.forEach(provider => {
+                                    // Ensure drivers is an array and filter out any null/undefined drivers
+                                    const validDrivers = (provider.drivers || []).filter(d => d && typeof d === 'object');
+
+                                    validDrivers.forEach(driver => {
+                                        allDrivers.push({
+                                            ...driver,
+                                            // Add the provider name for better context in the driver select dropdown
+                                            providerName: provider.provider
+                                        });
+                                    });
+                                });
+
+                                this.drivers = allDrivers;
+
+                            } else {
+                                // Handle cases where the data property is missing, null, or not an array
+                                this.logisticsRecords = [];
+                                this.drivers = [];
+                                console.warn("Logistics API returned data in an unexpected format or no records found.");
+                            }
+
+                        } catch (error) {
+                            // Handle network errors, timeouts, or non-200 responses
+                            console.error('Error fetching logistics providers and drivers:', error);
+                            // alert('Failed to fetch logistics data.'); // Only use if necessary
+                        }
+                    },
+                    // UPDATED: Handle Provider ID selection (now assigns *all* associated drivers to the form for selection)
+                    handleLogisticsChange() {
+                        // Find the selected Provider object from our internal mapped list
+                        const selectedProvider = this.logisticsRecords.find(
+                            p => p._id === this.form.logisticsId
+                        );
+
+                        if (selectedProvider && selectedProvider.associatedDrivers.length > 0) {
+                            // Find the first active driver from the associated drivers (if available)
+                            const firstActiveDriver = selectedProvider.associatedDrivers.find(d => d.status === 'Active');
+
+                            // Pre-select the first driver associated with this provider
+                            this.form.driverId = firstActiveDriver ? firstActiveDriver._id : '';
+                        } else {
+                            // Clear driver selection if no provider selected or no drivers assigned to the provider
+                            this.form.driverId = '';
+                        }
+
+                        // **NOTE:** We don't need to filter the `drivers` list because we want the user to be able to manually override the selected driver using any driver available in the system.
+                    },
+                    // IMPORTANT: Update submitTransfer to include driverId
+                    async submitTransfer() {
+                        if (!this.form.warehouse || !this.form.destinationWarehouse || this.form.items.length === 0) {
+                            alert("Please fill in all required fields and add at least one item.");
+                            return;
+                        }
+
+                        this.loading = true;
+
+                        // Prepare the data payload, including the new driverId field
+                        const payload = {
+                            ...this.form,
+                            // Ensure only the ID is passed for items
+                            items: this.form.items.map(item => ({
+                                productVariant: item.productVariantId,
+                                quantity: item.quantity,
+                                batchNumber: item.batchNumber,
+                            })),
+                            // Map driverId to the backend's expected field (if necessary)
+                            driver: this.form.driverId || undefined,
+                        };
+
+                        try {
+                            await axios.post(API, payload);
+                            alert('Stock transfer created successfully!');
+                            this.closeTransferModal();
+                            this.fetchAll(); // Re-fetch movements to update the list
+                        } catch (error) {
+                            console.error('Error creating stock transfer:', error);
+                            alert('Failed to create stock transfer. ' + (error.response?.data?.message || 'Please check the console.'));
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
                     // --- Modal Management ---
                     closeTransferModal() {
                         this.showTransferModal = false;
@@ -786,8 +987,8 @@
                             destinationWarehouse: '',
                             reason: '',
                             reference: '',
-                            logisticsId: '', 
-                            driverName: '', 
+                            logisticsId: '',
+                            driverName: '',
                             items: [{ productVariantId: '', quantity: 1, batchNumber: '', maxStock: 0 }]
                         };
                     },
@@ -807,9 +1008,9 @@
                         try {
                             const [prodRes, whRes, movRes] = await Promise.all([
                                 // CORRECTED ENDPOINT: /product-variant
-                                axios.get(`${BASE_URL}/product-variant`), 
+                                axios.get(`${BASE_URL}/product-variant`),
                                 // CORRECTED ENDPOINT: /warehouse
-                                axios.get(`${BASE_URL}/warehouse`), 
+                                axios.get(`${BASE_URL}/warehouse`),
                                 // CORRECTED ENDPOINT: /stock-movement
                                 axios.get(`${API}`)
                             ]);
@@ -820,12 +1021,12 @@
                             console.error('Fetch error:', error);
                         }
                     },
-                    
+
                     // --- Transfer Form Helpers ---
                     addItem() {
-                         this.form.items.push({ productVariantId: '', quantity: 1, batchNumber: '', maxStock: 0 });
+                        this.form.items.push({ productVariantId: '', quantity: 1, batchNumber: '', maxStock: 0 });
                     },
-                    
+
                     updateItemStock(item, warehouseId = this.form.warehouse) {
                         if (item.productVariantId && warehouseId) {
                             const product = this.products.find(p => p._id === item.productVariantId);
@@ -849,7 +1050,7 @@
                             alert('Please ensure all items have a valid product and quantity.');
                             return;
                         }
-                        
+
                         const transferData = {
                             type: 'transfer',
                             warehouse: this.form.warehouse,
@@ -862,13 +1063,13 @@
                                 batchNumber: item.batchNumber
                             }))
                         };
-                        
+
                         // Add logistics data if available
                         if (this.form.logisticsId) {
                             transferData.logisticsId = this.form.logisticsId;
                         }
                         if (this.form.driverName) {
-                            transferData.driver = { driverName: this.form.driverName }; 
+                            transferData.driver = { driverName: this.form.driverName };
                         }
 
                         this.loading = true;
@@ -884,7 +1085,7 @@
                             this.loading = false;
                         }
                     },
-                    
+
                     // --- Log Accessors and Formatting ---
                     createdLog(m) {
                         return m.stock_log?.find(l => l.action === 'created' || l.action === 'updated');
@@ -923,7 +1124,7 @@
                             minute: '2-digit'
                         });
                     },
-                    
+
                     // --- Workflow Actions (PUT) ---
                     async executePutAction(id, endpoint, payload = {}, successMsg) {
                         try {
@@ -950,7 +1151,7 @@
                             this.executePutAction(id, 'mark-pending-in', { comments }, 'Movement marked as arrived, awaiting IN approval.');
                         }
                     },
-                    
+
                     approveIn(id) {
                         const comments = prompt('Enter receipt approval comments (optional):');
                         if (comments !== null) {
@@ -970,24 +1171,24 @@
                     resolveQueryPrompt(id) {
                         const resolution = prompt('Enter the resolution details (required):');
                         if (!resolution || !resolution.trim()) return alert('Resolution details are required.');
-                        
+
                         const newStatus = prompt('Set the new status (in_transit or in_pending_approval):', 'in_pending_approval');
                         if (newStatus && ['in_transit', 'in_pending_approval'].includes(newStatus)) {
-                             this.executePutAction(id, 'resolve-query', { resolution, newStatus }, 'Query resolved successfully. Status updated.');
+                            this.executePutAction(id, 'resolve-query', { resolution, newStatus }, 'Query resolved successfully. Status updated.');
                         } else if (newStatus !== null) {
                             alert('Invalid status selected.');
                         }
                     },
-                    
+
                     updateLogisticsPrompt(id) {
                         const driverName = prompt('Enter new Driver Name (Optional):');
                         const logisticsId = prompt('Enter new Logistics ID (Optional):');
-                        
+
                         if (driverName !== null || logisticsId !== null) {
                             const payload = {};
                             if (driverName && driverName.trim()) payload.driver = { driverName: driverName.trim() };
                             if (logisticsId && logisticsId.trim()) payload.logisticsId = logisticsId.trim();
-                            
+
                             if (Object.keys(payload).length > 0) {
                                 this.executePutAction(id, 'logistics', payload, 'Logistics/Driver updated successfully.');
                             } else {
