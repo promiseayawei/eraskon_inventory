@@ -11,7 +11,7 @@ const CONFIG = {
             'product.html': { roles: ['admin', 'inventory', 'warehouse'], icon: 'bx-box', label: 'Products' },
             'customer.html': { roles: ['admin', 'sales', 'finance'], icon: 'bx-user', label: 'Customers' },
             'report.html': { roles: ['admin', 'sales', 'inventory', 'warehouse', 'finance'], icon: 'bx-bar-chart-alt', label: 'Reports' },
-            'setting.html': { roles: ['admin'], icon: 'bx-cog', label: 'Settings' },
+            // 'setting.html': { roles: ['admin'], icon: 'bx-cog', label: 'Settings' },
             'chairman.html': { roles: ['chairman', 'admin'], icon: 'bx-briefcase-alt-2', label: 'Chairman Overview' }
         },
         admin: {
