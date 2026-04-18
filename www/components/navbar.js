@@ -149,32 +149,17 @@
 
   /* ── Mobile ── */
   @media (max-width: 768px) {
-    .navbar { padding: 0 10px; height: 56px; gap: 8px; }
-    .navbar-left { gap: 8px; }
-    .navbar-brand { gap: 5px; min-width: 0; }
-    .navbar-brand img { height: 26px; width: 26px; }
+    .navbar { padding: 0 12px; height: 56px; }
+    .navbar-brand { gap: 6px; min-width: 0; }
+    .navbar-brand img { height: 28px; width: 28px; }
     .navbar-brand-name {
       display: block;
-      font-size: 10px;
+      font-size: 11px;
       letter-spacing: 0.02em;
-      max-width: 112px;
+      max-width: 135px;
       line-height: 1.05;
     }
-    .navbar-right { gap: 8px; }
-    .nav-network-badge {
-      display: flex;
-      padding: 3px 7px;
-      gap: 4px;
-      font-size: 9px;
-      line-height: 1;
-      border-radius: 999px;
-      max-width: 76px;
-      overflow: hidden;
-    }
-    .nav-network-badge .dot {
-      width: 6px;
-      height: 6px;
-    }
+    .nav-network-badge { display: none; }
     .nav-user-info { display: none; }
     .nav-user-chip {
       padding: 4px;
@@ -188,6 +173,7 @@
 
 <nav class="navbar" id="mainNavbar">
   <div class="navbar-left">
+  
     <i class="bx bx-menu" id="sidebarOpen" title="Toggle sidebar"></i>
     <div class="navbar-brand">
       <img src="assets/images/eraskon_logo.webp" alt="Eraskon">
