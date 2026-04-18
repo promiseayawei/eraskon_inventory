@@ -13,16 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-     <script src="assets/js/metaManager.js"></script>
-  <script>
-    setMeta({
-      title: "Eraskon | Users",
-      desc: "Access the Eraskon Inventory portal to manage users.",
-      image: "assets/images/eraskon_logo.webp",
-      favicon: "assets/images/eraskon_logo.webp",
-      keywords: "Inventory, Warehouse, Stock, Users"
-    });
-  </script>
+
     <style>
         /* Your base styles here */
         :root {
@@ -271,25 +262,23 @@
             table.user-table th,
             table.user-table td,
             table.user-table tr {
-                display: block;
+                display: table;
                 width: 100%;
             }
 
             table.user-table thead {
-                display: none;
+                display: table-header-group;
             }
 
             table.user-table tr {
-                margin-bottom: 15px;
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                background: var(--card-bg-light);
-                color: var(--text-light);
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-                padding: 8px 0;
-                overflow-wrap: break-word;
-                word-break: break-word;
-                transition: background 0.3s, color 0.3s;
+                display: table-row;
+            }
+
+            table.user-table td,
+            table.user-table th {
+                display: table-cell;
+                padding: 8px 4px;
+                font-size: 0.95em;
             }
 
             body.dark table.user-table tr {
@@ -371,6 +360,25 @@
             background: #ef4444;
             color: #fff;
         }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 1rem;
+            background: var(--card-bg);
+            box-shadow: 0 1px 8px 0 rgba(30,41,59,0.04);
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 900px) {
+            .table-container {
+                border-radius: 0.5rem;
+                padding: 0.5rem 0;
+            }
+        }
+        @media (max-width: 600px) {
+            .table-container {
+                padding: 0;
+            }
+        }
     </style>
 
 </head>
@@ -380,6 +388,7 @@
     <script src="components/authGuard.js"></script>
     <script src="components/navbar.js"></script>
     <script src="components/sidebar.js"></script>
+  <script src="components/footerTab.js"></script>
     <script src="components/spinner.js"></script>
     <div id="main-content">
          <h2>User Management</h2>
@@ -401,19 +410,21 @@
 
         </div>
 
-        <table class="user-table" id="userTable">
-            <thead>
-                <tr>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Warehouse</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="userTableBody"></tbody>
-        </table>
+        <div class="table-container">
+            <table class="user-table" id="userTable">
+                <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Warehouse</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
 
         <div id="pagination"
             style="margin-top: 1rem; display: flex; gap: 8px; align-items: center; justify-content: flex-end;">

@@ -4,67 +4,101 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Stock Movement Management</title>
+    <title>Stock Management</title>
 
+    <!-- Boxicons CSS -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <script src="config.js"></script>
     <style>
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            padding: 80px 5px;
-            z-index: 100;
-            overflow-y: auto;
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
-            transition: all var(--transition-speed) ease;
-            width: var(--sidebar-width);
-            background-color: var(--white-color);
-        }
-
-        .sidebar.close {
-            width: var(--collapsed-sidebar-width);
-        }
-
-        .sidebar .nav_link {
-            color: var(--grey-color);
-        }
-
-        .nav_link:hover {
-            color: white;
-            background: var(--primary-blue);
-            border-radius: var(--border-radius-base);
-        }
-
-        .sidebar.close .bottom_content {
-            width: 50px;
-            left: 15px;
-        }
-
+                        /* Enhanced Pagination */
+                        .pagination {
+                            display: flex;
+                            flex-wrap: wrap;
+                            align-items: center;
+                            gap: 4px;
+                            margin-top: 1.5em;
+                            justify-content: center;
+                        }
+                        .pagination button {
+                            padding: 6px 14px;
+                            border-radius: 6px;
+                            border: none;
+                            background: #3b82f6;
+                            color: #fff;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: background 0.18s;
+                            margin: 0 2px;
+                        }
+                        .pagination button:disabled {
+                            background: #b3b3b3;
+                            color: #f1f1f1;
+                            cursor: not-allowed;
+                        }
+                        .pagination button.active {
+                            background: #2563eb;
+                            font-weight: bold;
+                            box-shadow: 0 2px 8px rgba(59,130,246,0.13);
+                        }
+                /* Responsive: Table scroll, filter/button stacking, modal/card tweaks */
+                @media (max-width: 900px) {
+                    .inline-row {
+                        flex-direction: column;
+                        gap: 8px;
+                    }
+                    .card-container {
+                        flex-direction: column;
+                        gap: 12px;
+                    }
+                    .card {
+                        width: 100% !important;
+                        max-width: 100% !important;
+                    }
+                }
+                @media (max-width: 700px) {
+                    .table-responsive {
+                        width: 100%;
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                    }
+                    table {
+                        min-width: 900px;
+                    }
+                }
+                @media (max-width: 600px) {
+                    .modal-content {
+                        max-width: 98vw;
+                        padding: 10px;
+                    }
+                    .inline-row {
+                        flex-direction: column;
+                        gap: 6px;
+                    }
+                    button, input, select {
+                        font-size: 1em;
+                    }
+                }
+                @media (max-width: 500px) {
+                    .main-content {
+                        padding: 4px !important;
+                    }
+                    .modal-content {
+                        padding: 4px;
+                    }
+                }
         :root {
             --bg-color: #e2dcdc;
             --text-color: #090F3B;
             --card-bg: #ffffff;
             --border-color: #ccc;
             --input-border: #ccc;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --info-color: #3b82f6;
-            --sidebar-width: 220px;
-            --collapsed-sidebar-width: 80px;
-            --primary-blue: #007bff;
-            --grey-color: #6c757d;
-            --transition-speed: 0.3s;
-            --border-radius-base: 4px;
         }
 
         body.dark {
@@ -79,27 +113,11 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             transition: background-color 0.5s ease, color 0.5s ease;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
         }
 
-        .main-content {
-            padding: 25px;
-            margin-left: 0;
-            max-width: 1400px;
-            margin: 20px auto;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-            margin-top: 15px;
-            margin-bottom: 15px;
-        }
-
+        /* TABLE */
         table {
             width: 100%;
-            min-width: 1000px;
             border-collapse: collapse;
             background-color: var(--card-bg);
             color: var(--text-color);
@@ -113,13 +131,10 @@
             border: 1px solid var(--border-color);
             text-align: left;
             transition: background-color 0.3s ease, color 0.3s ease;
-            word-wrap: break-word;
-            min-width: 80px;
         }
 
         th {
             background-color: rgba(0, 0, 0, 0.05);
-            font-weight: 600;
         }
 
         body.dark th {
@@ -134,53 +149,24 @@
             background-color: rgba(255, 255, 255, 0.08);
         }
 
+        /* BUTTON */
         button {
             padding: 8px 12px;
             margin: 5px;
             border: none;
-            background: var(--info-color);
+            background: #3b82f6;
             color: white;
             border-radius: 6px;
             cursor: pointer;
             transition: background 0.3s ease;
-            font-size: 0.9em;
         }
 
-        button:hover:not(:disabled) {
+        button:hover {
             background: #2563eb;
         }
 
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        button.btn-success {
-            background: var(--success-color);
-        }
-
-        button.btn-success:hover:not(:disabled) {
-            background: #059669;
-        }
-
-        button.btn-warning {
-            background: var(--warning-color);
-        }
-
-        button.btn-warning:hover:not(:disabled) {
-            background: #d97706;
-        }
-
-        button.btn-danger {
-            background: var(--danger-color);
-        }
-
-        button.btn-danger:hover:not(:disabled) {
-            background: #dc2626;
-        }
-
-        .modal-overlay,
-        .modal {
+        /* MODAL */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -193,38 +179,49 @@
             z-index: 1000;
         }
 
-        .modal-content {
-            /* Layout & Sizing */
-            width: 90%;
-            max-width: 500px;
-            margin: 20px auto;
-
-            /* Box Model (Padding & Height) */
-            padding: 25px;
-            /* Base padding for right, bottom, left */
-            padding-top: 5%;
-            /* Specific padding for the top, relative to width */
-            max-height: 90vh;
-            /* Limits the height to 90% of viewport */
-
-            /* Scrolling */
-            overflow-y: auto;
-            /* Enables vertical scrolling if content exceeds max-height */
-
-            /* Appearance */
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
         }
 
-        body.dark .modal-content {
-            background: var(--card-bg);
-            color: var(--text-color);
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .active {
             background-color: #2563eb !important;
             font-weight: bold;
+        }
+
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* CARDS */
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: flex-start;
         }
 
         .card {
@@ -241,6 +238,19 @@
             transform: scale(1.02);
         }
 
+        @media (min-width: 600px) {
+            .card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .card {
+                width: calc(33.333% - 20px);
+            }
+        }
+
+        /* FORMS */
         label {
             display: block;
             font-weight: bold;
@@ -250,684 +260,264 @@
         input,
         select {
             width: 100%;
-            padding: 8px;
+            padding: 6px 8px;
             margin-top: 4px;
             border: 1px solid var(--input-border);
             border-radius: 4px;
             background-color: var(--bg-color);
             color: var(--text-color);
-            box-sizing: border-box;
+        }
+
+        /* OTHER */
+        .preview {
+            max-width: 100px;
+            margin-top: 10px;
         }
 
         .inline-row {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-            align-items: center;
         }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-
-        .badge-pending,
-        .badge-out-pending-approval {
-            background: var(--warning-color);
-            color: white;
-        }
-
-        .badge-approved,
-        .badge-out-approved {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .badge-queried {
-            background: var(--danger-color);
-            color: white;
-        }
-
-        .badge-in-transit {
-            background: var(--info-color);
-            color: white;
-        }
-
-        .badge-in-pending-approval {
-            background: var(--warning-color);
-            color: white;
-        }
-
-        .badge-completed {
-            background: #10b981;
-            color: white;
-        }
-
-        .badge-cancelled {
-            background: #6b7280;
-            color: white;
+        .error {
+            color: red;
+            font-size: 0.9em;
         }
 
         .text-success {
-            color: var(--success-color);
+            color: green;
             font-weight: bold;
-        }
-
-        .text-warning {
-            color: var(--warning-color);
-            font-weight: bold;
-        }
-
-        .text-muted {
-            color: #6b7280;
-            font-size: 0.9em;
-        }
-
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .stat-card h4 {
-            margin: 0 0 8px 0;
-            font-size: 0.9em;
-            color: #6b7280;
-        }
-
-        .stat-card .value {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: var(--text-color);
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            color: var(--text-color);
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .tab:hover {
-            background: rgba(241, 243, 246, 1);
-        }
-
-        .tab.active {
-            border-bottom-color: var(--info-color);
-            color: var(--info-color);
-            font-weight: 600;
-        }
-
-        .error-text {
-            color: var(--danger-color);
-            font-size: 0.85em;
-            margin-top: 3px;
-        }
-
-        .info-banner {
-            padding: 10px 15px;
-            margin: 10px 0;
-            background: #dbeafe;
-            border: 1px solid #3b82f6;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-
-        .warning-banner {
-            padding: 10px 15px;
-            margin: 10px 0;
-            background: #fef3c7;
-            border: 1px solid #fbbf24;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-
-        .role-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-
-        .role-admin {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .role-warehouse {
-            background: var(--info-color);
-            color: white;
-        }
-
-        .role-inventory {
-            background: var(--warning-color);
-            color: white;
-        }
-
-        .role-finance {
-            background: #8b5cf6;
-            color: white;
         }
     </style>
 
 </head>
 
 <body>
-
-    <script src="components/spinner.js"></script>
+    <script src="components/uiComponents.js"></script>
     <script src="components/authGuard.js"></script>
+    <!-- Load Navbar -->
     <script src="components/navbar.js"></script>
+
+    <!-- Load Sidebar -->
     <script src="components/sidebar.js"></script>
+  <script src="components/footerTab.js"></script>
+
     <main id="app" class="main-content">
-        <div
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
-            <h2>Stock Movements</h2>
-            <div
-                style="padding: 8px 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 4px;">
-                <strong>User:</strong> {{ userName || 'N/A' }}
-                <span :class="getRoleBadgeClass()">{{ userRole }}</span>
-            </div>
-        </div>
+        <h2 style="font-size:1.5em;margin-bottom:0.5em;">Stock Movements</h2>
 
-        <div class="stats-container">
-            <div class="stat-card">
-                <h4>Pending OUT Approvals</h4>
-                <div class="value">{{ stats.pendingOut }}</div>
-            </div>
-            <div class="stat-card">
-                <h4>In-Transit</h4>
-                <div class="value">{{ stats.inTransit }}</div>
-            </div>
-            <div class="stat-card">
-                <h4>Completed Today</h4>
-                <div class="value">{{ stats.completedToday }}</div>
-            </div>
-            <div class="stat-card">
-                <h4>Total Movements</h4>
-                <div class="value">{{ movements.length }}</div>
-            </div>
-        </div>
-
-        <div class="tabs">
-            <button class="tab" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">
-                All Movements
-            </button>
-            <button v-if="permissions.canApproveOut" class="tab" :class="{ active: activeTab === 'pending' }"
-                @click="activeTab = 'pending'">
-                Pending OUT ({{ stats.pendingOut }})
-            </button>
-            <button class="tab" :class="{ active: activeTab === 'in-transit' }" @click="activeTab = 'in-transit'">
-                In-Transit ({{ stats.inTransit }})
-            </button>
-        </div>
-
+        <!-- Filters -->
         <div class="inline-row">
-            <select v-model="filters.product">
+            <select v-model="filters.product" style="min-width:120px;">
                 <option value="">All Products</option>
-                <option v-for="p in products" :key="p._id" :value="p._id">{{ p.name }}</option>
+                <option v-for="p in products" :value="p._id">{{ p.name }}</option>
             </select>
-            <select v-model="filters.warehouse">
+            <select v-model="filters.warehouse" style="min-width:120px;">
                 <option value="">All Warehouses</option>
-                <option v-for="w in warehouses" :key="w._id" :value="w._id">{{ w.name }}</option>
+                <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
             </select>
-            <input type="date" v-model="filters.dateFrom" placeholder="From Date">
-            <input type="date" v-model="filters.dateTo" placeholder="To Date">
-            <button @click="exportToExcel"><i class="fas fa-file-excel"></i> Export Excel</button>
-            <button @click="exportToPDF"><i class="fas fa-file-pdf"></i> Export PDF</button>
+            <input type="date" v-model="filters.dateFrom" style="min-width:120px;">
+            <input type="date" v-model="filters.dateTo" style="min-width:120px;">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button @click="exportToExcel" style="flex:1;min-width:110px;">Export Excel</button>
+                <button @click="exportToPDF" style="flex:1;min-width:110px;">Export PDF</button>
+            </div>
         </div>
 
-        <button v-if="permissions.canCreate" @click="showTransferModal = true" class="btn-success">
-            <i class="fas fa-plus"></i> New Stock Transfer
-        </button>
-        <div v-else class="warning-banner">
-            <strong>⚠️ Note:</strong> Only Warehouse, Inventory, and Admin users can create stock transfers.
+        <button @click="showModal = true">New Stock Transfer</button>
+
+        <!-- Modal -->
+        <!-- Modal -->
+        <div v-if="showModal" class="modal show" @click.self="closeModal">
+            <div class="modal-content">
+                <h3>Stock Transfer</h3>
+                <form @submit.prevent="submitTransfer">
+                    <label>Product</label>
+                    <select v-model="form.productVariantId" required>
+
+
+                        <option value="">Select Product</option>
+                        <option v-for="p in products" :value="p._id">{{ p.name }}</option>
+                    </select>
+                    <!-- Product Stock Details -->
+                    <div v-if="selectedProductVariant">
+                        <p><strong>Current Stock:</strong> {{ selectedProductVariant.stock }}</p>
+                        <p><strong>Warehouse:</strong> {{ selectedProductVariant.warehouse?.name || '—' }}</p>
+                        <p><strong>SKU:</strong> {{ selectedProductVariant.sku || 'N/A' }}</p>
+                    </div>
+
+                    <label>Quantity</label>
+                    <input type="number" v-model.number="form.quantity" required />
+
+                    <label>From Warehouse</label>
+                    <select v-model="form.warehouse" required>
+                        <option value="">Select From</option>
+                        <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+                    </select>
+
+                    <label>To Warehouse</label>
+                    <select v-model="form.destinationWarehouse" required>
+                        <option value="">Select To</option>
+                        <option v-for="w in warehouses" :value="w._id">{{ w.name }}</option>
+                    </select>
+
+                    <label>Reason</label>
+                    <input v-model="form.reason" required />
+
+                    <label>Reference</label>
+                    <input v-model="form.reference" />
+
+                    <div class="inline-row">
+                        <button type="submit" :disabled="loading">
+                            {{ loading ? 'Transferring...' : 'Transfer' }}
+                        </button>
+                        <button type="button" @click="closeModal">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
+
+        <!-- Stock Movements Table  -->
         <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Product</th>
-                        <th>Qty</th>
-                        <th>Status</th>
-                        <th>Reason</th>
-                        <th>From</th>
-                        <th>To</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="m in paginatedMovements" :key="m._id">
-                        <td><strong>{{ m.code }}</strong></td>
-                        <td>
-                            <div v-for="item in m.items" :key="item._id">
-                                {{ item.name || 'N/A' }} ({{ item.quantity }})
-                            </div>
-                        </td>
-                        <td>{{ (m.items || []).reduce((sum, i) => sum + i.quantity, 0) }}</td>
-                        <td>
-                            <span class="badge" :class="getStatusClass(m)">
-                                {{ getStatusText(m) }}
-                            </span>
-                        </td>
-                        <td>{{ m.reason || '—' }}</td>
-                        <td>{{ m.warehouse?.name || getWarehouseFromLog(m) || '—' }}</td>
-                        <td>{{ m.destinationWarehouse?.name || m.destinationCustomer?.name || '—' }}</td>
-                        <td>
-                            <div v-if="createdLog(m)" class="text-muted">
-                                {{ createdLog(m).userName }}<br>
-                                <small>{{ formatDate(createdLog(m).timestamp) }}</small>
-                            </div>
-                        </td>
-                        <td>
-                            <button @click="showMovementDetails(m)" class="btn-info">
-                                <i class="fas fa-eye"></i> Details
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Product</th>
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Type</th>
+                            <th>Reason</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Created by</th>
+                            <th>Approved by</th>
+                            <th>Approved</th>
+                            <th>Received</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="m in filteredMovements" :key="m._id">
+                            <td data-label="Code">{{ m.code }}</td>
+                            <td data-label="Product">{{ m.productVariant?.name }}</td>
+                            <td data-label="Qty">{{ m.quantity }}</td>
+                            <td data-label="Type">{{ m.type }}</td>
+                            <td data-label="Reason">{{ m.reason }}</td>
+                            <td data-label="From">{{ m.warehouse?.name }}</td>
+                            <td data-label="To">{{ m.destinationWarehouse?.name || '—' }}</td>
+                            <td data-label="Created by">
+                                <div v-if="createdLog(m)">{{ formatLog(createdLog(m)) }}</div>
+                            </td>
+                            <td data-label="Approved by">
+                                <div v-if="approvedLog(m)">{{ formatLog(approvedLog(m)) }}</div>
+                            </td>
+                            <!-- Approve Column -->
+                            <td data-label="Approved">
+                                <div v-if="m.type === 'in-transit' && !approvedLog(m)">
+                                    <button v-if="userRole === 'admin'" @click="approve(m._id)">Approve</button>
+                                </div>
+                                <div v-else-if="approvedLog(m)">
+                                    <span class="text-success">Approved</span>
+                                </div>
+                            </td>
+                            <!-- Receive Column -->
+                            <td data-label="Received">
+                                <div v-if="m.type === 'in-transit' && approvedLog(m) && !receivedLog(m)">
+                                    <button @click="receive(m._id)">Receive</button>
+                                </div>
+                                <div v-else-if="receivedLog(m)">
+                                    <span class="text-success">Received</span>
+                                </div>
+                                <div v-else-if="m.type === 'in-transit' && !approvedLog(m)">
+                                    <span class="text-warning">Awaiting Approval</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+
+
+                </tr>
+            </tbody>
+        </table>
         </div>
-
-        <div class="inline-row" style="margin-top: 1rem;">
-            <button :disabled="pagination.page === 1" @click="pagination.page--">
-                <i class="fas fa-chevron-left"></i> Previous
-            </button>
-
-            <span v-for="p in totalPages" :key="p" style="margin: 0 4px;">
-                <button :class="{ active: pagination.page === p }" @click="pagination.page = p">
+        <nav class="pagination" aria-label="Stock table pagination">
+            <button :disabled="pagination.page === 1" @click="pagination.page = 1" aria-label="First page">«</button>
+            <button :disabled="pagination.page === 1" @click="pagination.page--" aria-label="Previous page">‹</button>
+            <span v-for="p in totalPages" :key="p">
+                <button :class="{ active: pagination.page === p }" @click="pagination.page = p" :aria-current="pagination.page === p ? 'page' : null">
                     {{ p }}
                 </button>
             </span>
-
-            <button :disabled="pagination.page === totalPages" @click="pagination.page++">
-                Next <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-        <!-- show modal -->
-        <div v-if="showTransferModal" class="modal" @click.self="closeTransferModal">
-            <div class="modal-content" style="max-width: 600px;">
-                <h3>Create Stock Transfer</h3>
-                <form @submit.prevent="submitTransfer">
-
-                    <label>From Warehouse *</label>
-                    <select v-model="form.warehouse" required>
-                        <option value="">Select Source</option>
-                        <option v-for="w in availableSourceWarehouses" :key="w._id" :value="w._id">{{ w.name }}</option>
-                    </select>
-                    <div v-if="!isAdmin" class="info-banner" style="margin-top: 5px;">
-                        <small>📍 You can only transfer from your assigned warehouse: <strong>{{ userWarehouseName
-                                }}</strong></small>
-                    </div>
-
-                    <label>To Warehouse *</label>
-                    <select v-model="form.destinationWarehouse" required>
-                        <option value="">Select Destination</option>
-                        <option v-for="w in warehouses" :key="w._id" :value="w._id"
-                            :disabled="w._id === form.warehouse">
-                            {{ w.name }}
-                        </option>
-                    </select>
-
-                    <h4>Items to Transfer</h4>
-                    <div v-for="(item, index) in form.items" :key="index"
-                        style="border: 1px dashed var(--border-color); padding: 10px; margin-bottom: 10px;">
-                        <label>Product *</label>
-                        <select v-model="item.productVariantId" required @change="updateItemStock(item)">
-                            <option value="">Select Product</option>
-                            <option v-for="p in products" :key="p._id" :value="p._id">{{ p.name }}</option>
-                        </select>
-
-                        <div v-if="item.maxStock !== null && item.maxStock !== undefined" class="text-muted"
-                            style="margin-top: 5px;">
-                            Available stock in Source: <strong>{{ item.maxStock }}</strong>
-                        </div>
-
-                        <label>Quantity *</label>
-                        <input type="number" v-model.number="item.quantity" min="1" required />
-                        <div v-if="item.quantity > item.maxStock && item.maxStock > 0" class="error-text">
-                            ⚠️ Quantity exceeds available stock ({{ item.maxStock }})
-                        </div>
-
-                        <label>Batch Number (Optional)</label>
-                        <input type="text" v-model="item.batchNumber" />
-
-                        <button type="button" @click="form.items.splice(index, 1)" class="btn-danger"
-                            style="margin-top: 10px; display: block;">Remove Item</button>
-                    </div>
-
-                    <button type="button" @click="addItem" class="btn-info" style="margin-bottom: 15px;">
-                        <i class="fas fa-plus"></i> Add Item
-                    </button>
-
-                    <label>Reason *</label>
-                    <input v-model="form.reason" placeholder="e.g., Stock Replenishment" required />
-
-                    <label>Reference</label>
-                    <input v-model="form.reference" placeholder="e.g., Order ID, Invoice No." />
-
-                    <h4>🚚 Logistics Details (Optional)</h4>
-
-                    <label>Existing Logistics Provider/Record</label>
-                    <select v-model="form.logisticsId" @change="handleLogisticsChange">
-                        <option value="">Select or leave blank</option>
-                        <option v-for="l in logisticsRecords" :key="l._id" :value="l._id">
-                            {{ l.displayName }}
-                        </option>
-                    </select>
-
-                    <label>Driver (Allocated by Logistics or Manual)</label>
-                    <select v-model="form.driverId">
-                        <option value="">Select Driver</option>
-                        <option v-for="d in drivers" :key="d._id" :value="d._id">
-                            {{ d.driverName }} ({{ d.providerName || 'Internal' }}) - {{ d.vehicleNo || 'N/A' }}
-                        </option>
-                    </select>
-
-                    <div class="inline-row" style="margin-top: 15px;">
-                        <button type="submit" :disabled="loading || form.items.length === 0 || !isFormValid"
-                            class="btn-success">
-                            {{ loading ? 'Creating...' : 'Create Transfer' }}
-                        </button>
-                        <button type="button" @click="closeTransferModal" class="btn-danger">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- modal details -->
-        <div v-if="showDetailModal && selectedMovement" class="modal" @click.self="closeDetailModal">
-            <div class="modal-content" style="max-width: 800px;">
-                <h3 style="margin-top: 5%;">Movement: {{ selectedMovement.code }}
-                    <span class="badge" :class="getStatusClass(selectedMovement)">{{ getStatusText(selectedMovement)
-                        }}</span>
-                </h3>
-
-                <div class="stats-container">
-                    <div class="stat-card">
-                        <h4>From</h4>
-                        <div class="value">{{ selectedMovement.warehouse?.name || getWarehouseFromLog(selectedMovement)
-                            || 'N/A' }}</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>To</h4>
-                        <div class="value">{{ selectedMovement.destinationWarehouse?.name ||
-                            selectedMovement.destinationCustomer?.name || 'N/A' }}</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Total Qty</h4>
-                        <div class="value">{{ (selectedMovement.items || []).reduce((sum, i) => sum + i.quantity, 0) }}
-                        </div>
-                    </div>
-                </div>
-
-                <h4 style="margin-top: 20px;">Logistics Assignment</h4>
-                <div class="stats-container" style="margin-bottom: 20px;">
-                    <div class="stat-card" :class="{'stat-card-warning': !selectedMovement.logistics}">
-                        <h4>Provider (ID)</h4>
-                        <div class="value">{{ selectedMovement.logistics?.provider || 'UNASSIGNED' }}
-                            <small v-if="selectedMovement.logistics">({{ selectedMovement.logistics?.serviceId
-                                }})</small>
-                            <span v-else class="error-text"> (Approval Blocked)</span>
-                        </div>
-                    </div>
-                    <div class="stat-card" :class="{'stat-card-warning': !selectedMovement.driver}">
-                        <h4>Driver Name / Vehicle No.</h4>
-                        <div class="value">{{ selectedMovement.driver?.driverName || 'UNASSIGNED' }}</div>
-                        <small class="text-muted">{{ selectedMovement.driver?.vehicleNo || 'N/A' }}</small>
-                    </div>
-                </div>
+            <button :disabled="pagination.page === totalPages" @click="pagination.page++" aria-label="Next page">›</button>
+            <button :disabled="pagination.page === totalPages" @click="pagination.page = totalPages" aria-label="Last page">»</button>
+        </nav>
 
 
-                <h4>Workflow Actions</h4>
-                <div class="inline-row" style="margin-bottom: 20px;">
-                    <button v-if="selectedMovement.status === 'out_pending_approval' && permissions.canApproveOut"
-                        @click="approveOut(selectedMovement._id)" class="btn-success"
-                        :disabled="!selectedMovement.logistics || !selectedMovement.driver">
-                        ✅ Approve OUT (Start Transit)
-                    </button>
-                    <div v-if="selectedMovement.status === 'out_pending_approval' && permissions.canApproveOut && (!selectedMovement.logistics || !selectedMovement.driver)"
-                        class="error-text">
-                        Logistics and Driver must be assigned to approve.
-                    </div>
+        <!-- Modal -->
 
-                    <button v-if="selectedMovement.status === 'in_transit' && permissions.canMarkPendingIn"
-                        @click="markPendingInPrompt(selectedMovement._id)" class="btn-warning">
-                        📦 Mark Pending IN (Arrived)
-                    </button>
-
-                    <button v-if="selectedMovement.status === 'in_pending_approval' && permissions.canApproveIn"
-                        @click="approveIn(selectedMovement._id)" class="btn-success">
-                        💰 Approve IN (Receive Stock)
-                    </button>
-
-                    <button
-                        v-if="selectedMovement.status !== 'completed' && selectedMovement.status !== 'cancelled' && selectedMovement.status !== 'queried' && permissions.canQuery"
-                        @click="queryMovementPrompt(selectedMovement._id)" class="btn-danger">
-                        ❓ Query Movement
-                    </button>
-
-                    <button v-if="selectedMovement.status === 'queried' && permissions.canResolveQuery"
-                        @click="resolveQueryPrompt(selectedMovement._id)" class="btn-success">
-                        🛠️ Resolve Query
-                    </button>
-
-                    <button
-                        v-if="(selectedMovement.status === 'out_pending_approval' || selectedMovement.status === 'in_transit') && permissions.canUpdateLogistics"
-                        @click="updateLogisticsPrompt(selectedMovement._id)" class="btn-info">
-                        🚚 Update Logistics
-                    </button>
-
-                    <button
-                        v-if="selectedMovement.status !== 'completed' && selectedMovement.status !== 'cancelled' && permissions.canCancel"
-                        @click="cancelMovementPrompt(selectedMovement._id)" class="btn-danger">
-                        ❌ Cancel Movement
-                    </button>
-                </div>
-
-                <div v-if="hasLimitedPermissions(selectedMovement)" class="info-banner">
-                    <strong>ℹ️ Your Role Permissions:</strong>
-                    <ul style="margin: 5px 0; padding-left: 20px;">
-                        <li v-if="permissions.canApproveOut">✓ Can approve OUT movements</li>
-                        <li v-if="permissions.canMarkPendingIn">✓ Can mark arrivals (Pending IN)</li>
-                        <li v-if="permissions.canApproveIn">✓ Can approve IN movements</li>
-                        <li v-if="permissions.canQuery">✓ Can query movements</li>
-                        <li v-if="permissions.canResolveQuery">✓ Can resolve queries</li>
-                        <li v-if="permissions.canUpdateLogistics">✓ Can update logistics</li>
-                        <li v-if="permissions.canCancel">✓ Can cancel movements</li>
-                    </ul>
-                </div>
-
-                <div class="tabs">
-                    <button class="tab" :class="{ active: detailTab === 'items' }"
-                        @click="detailTab = 'items'">Items</button>
-                    <button class="tab" :class="{ active: detailTab === 'log' }" @click="detailTab = 'log'">Movement
-                        Log</button>
-                    <button v-if="selectedMovement.query" class="tab" :class="{ active: detailTab === 'query' }"
-                        @click="detailTab = 'query'">Query Details</button>
-                </div>
-
-                <div v-if="detailTab === 'items'" style="max-height: 250px; overflow-y: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Quantity</th>
-                                <th>Batch No.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="item in selectedMovement.items" :key="item._id">
-                                <td>{{ item.name }}</td>
-                                <td>{{ item.quantity }}</td>
-                                <td>{{ item.batchNumber || 'N/A' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div v-if="detailTab === 'log'"
-                    style="max-height: 250px; overflow-y: auto; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
-                    <div v-for="log in selectedMovement.stock_log" :key="log.timestamp" class="text-muted"
-                        style="border-bottom: 1px dashed #eee; padding: 5px 0;">
-                        <p style="margin: 0;">
-                            <strong>{{ log.action.toUpperCase().replace(/_/g, ' ') }}</strong> by {{ log.userName }} ({{
-                            log.role }}) on {{ formatDate(log.timestamp) }}
-                        </p>
-                        <small>WH: {{ log.warehouseName || 'N/A' }} | Comment: {{ log.comments || 'No comment provided.'
-                            }}</small>
-                    </div>
-                </div>
-
-                <div v-if="detailTab === 'query' && selectedMovement.query">
-                    <div class="stat-card">
-                        <h4>Original Query</h4>
-                        <p>{{ selectedMovement.query.queryText }}</p>
-                        <p class="text-muted">Queried by {{ selectedMovement.query.queriedBy?.userName || 'N/A' }} on {{
-                            formatDate(selectedMovement.query.queriedAt) }}</p>
-                    </div>
-                    <div v-if="selectedMovement.query.resolution" class="stat-card" style="margin-top: 10px;">
-                        <h4>Resolution</h4>
-                        <p>{{ selectedMovement.query.resolution }}</p>
-                        <p class="text-success">Resolved by {{ selectedMovement.query.resolvedBy?.userName || 'N/A' }}
-                            on {{ formatDate(selectedMovement.query.resolvedAt) }}</p>
-                    </div>
-                </div>
-
-                <button type="button" @click="closeDetailModal" class="btn-danger"
-                    style="margin-top: 20px;">Close</button>
-            </div>
-        </div>
-
-        <div v-if="showLogisticsUpdateModal" class="modal" @click.self="closeLogisticsUpdateModal">
-            <div class="modal-content" style="max-width: 450px;">
-                <h3>Update Logistics & Driver for {{ selectedMovement.code }}</h3>
-                <form @submit.prevent="submitLogisticsUpdate">
-                    <label>Select Logistics Provider</label>
-                    <select v-model="logisticsUpdateForm.logisticsId" required>
-                        <option value="">-- Select Provider --</option>
-                        <option v-for="l in logisticsRecords" :key="l._id" :value="l._id">
-                            {{ l.provider }} ({{ l.logisticsId }})
-                        </option>
-                    </select>
-
-                    <label style="margin-top: 15px;">Select Driver</label>
-                    <select v-model="logisticsUpdateForm.driverId" :disabled="!logisticsUpdateForm.logisticsId"
-                        required>
-                        <option value="">-- Select Driver --</option>
-                        <option v-for="d in availableDriversForLogisticsUpdate" :key="d._id" :value="d._id">
-                            {{ d.driverName }} ({{ d.vehicleNo || 'N/A' }}) - {{ d.providerName }}
-                        </option>
-                    </select>
-                    <small v-if="!logisticsUpdateForm.logisticsId" class="text-muted">
-                        Please select a provider first to see available drivers.
-                    </small>
-
-                    <div class="inline-row" style="margin-top: 25px;">
-                        <button type="submit"
-                            :disabled="loading || !logisticsUpdateForm.logisticsId || !logisticsUpdateForm.driverId"
-                            class="btn-success">
-                            {{ loading ? 'Updating...' : 'Save Logistics' }}
-                        </button>
-                        <button type="button" @click="closeLogisticsUpdateModal" class="btn-danger">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
 
     </main>
 
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="config.js"></script>
+    <script src="assets/js/script.js"></script>
+    <!-- This is an updated stock.html template with:
+1. Approve / Receive buttons
+2. Filters (product, warehouse, date)
+3. Export to Excel and PDF
+-->
+
+    <!-- Add required libraries in <head> -->
+
+
+
+
+
+    <!-- Just the fixed JS portion at the bottom, full file remains same -->
+
     <script>
-        const BASE_URL = window.BASE_URL || '/api';
-        const API = BASE_URL + '/stock-movement';
-
-        function getWarehouseStock(product, warehouseId) {
-            if (!product?.warehouses || !warehouseId) return 0;
-            const stockEntry = product.warehouses.find(w => String(w.warehouse) === String(warehouseId));
-            return stockEntry ? stockEntry.stock : 0;
-        }
-
         document.addEventListener("DOMContentLoaded", function () {
             const token = localStorage.getItem('token');
             if (token) {
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             }
 
+            const API = window.BASE_URL + '/stock-movement';
+
             new Vue({
                 el: '#app',
                 data: {
-                    logisticsRecords: [],
-                    drivers: [],
                     products: [],
                     warehouses: [],
                     movements: [],
-
-                    showTransferModal: false,
-                    showDetailModal: false,
-                    selectedMovement: null,
-                    loading: false,
-                    detailTab: 'items',
-
-                    // --- STATE FOR LOGISTICS UPDATE ---
-                    showLogisticsUpdateModal: false, // Placeholder for a UI modal
-                    logisticsUpdateForm: {
-                        movementId: '',
-                        logisticsId: '',
-                        driverId: '',
-                        selectedDriverObject: null,
-                    },
-                    // --- END STATE ---
-
-                    userData: null,
-                    userRole: 'warehouse',
-                    userName: 'User',
-                    userWarehouse: '',
-                    userWarehouseName: 'N/A',
-
-                    activeTab: 'all',
+                    showModal: false,
+                    loading: false, // ✅ loading spinner control
+                    selectedProductVariant: null,
+                    userRole: localStorage.getItem('role') || '',
 
                     pagination: {
                         page: 1,
                         perPage: 10
                     },
 
+
                     form: {
-                        type: 'transfer',
+                        productVariantId: '',
+                        quantity: '',
                         warehouse: '',
                         destinationWarehouse: '',
                         reason: '',
-                        reference: '',
-                        logisticsId: '',
-                        driverId: '',
-                        selectedDriverObject: null,
-                        items: [{ productVariantId: '', quantity: 1, batchNumber: '', maxStock: 0 }]
+                        reference: ''
                     },
-
                     filters: {
                         product: '',
                         warehouse: '',
@@ -936,678 +526,144 @@
                     }
                 },
                 computed: {
-                    isAdmin() { return this.userRole === 'admin'; },
-                    isWarehouse() { return this.userRole === 'warehouse'; },
-                    isInventory() { return this.userRole === 'inventory'; },
-                    isFinance() { return this.userRole === 'finance'; },
-
-                    selectedDriverFullObject() {
-                        if (!this.form.driverId) return null;
-
-                        const driver = this.drivers.find(d => String(d._id) === String(this.form.driverId));
-
-                        if (driver) {
-                            // This is for the CREATION form submission. It uses internal/temporary keys,
-                            // but the `submitTransfer` method must rely on the final object structure 
-                            // defined in this function, which will be submitted to the API.
-                            return {
-                                _id: driver._id,
-                                driverName: driver.driverName || driver.name,
-                                driverPhone: driver.driverPhone || driver.phone,
-                                vehicleCategory: driver.vehicleCategory || driver.category,
-                                vehicleType: driver.vehicleType,
-                                vehicleNo: driver.vehicleNo || driver.plateNumber
-                            };
-                        }
-                        return null;
-                    },
-
-                    availableDriversForLogisticsUpdate() {
-                        if (!this.logisticsUpdateForm.logisticsId) return [];
-
-                        const provider = this.logisticsRecords.find(
-                            p => String(p._id) === String(this.logisticsUpdateForm.logisticsId)
-                        );
-
-                        if (!provider || !provider.associatedDrivers) return [];
-
-                        const associatedDriverIds = provider.associatedDrivers.map(d => String(d._id));
-
-                        return this.drivers.filter(d => associatedDriverIds.includes(String(d._id)));
-                    },
-
-                    // 🔄 UPDATED: This property now maps Vue data fields to the Mongoose schema fields 
-                    // for correct API submission during logistics update.
-                    selectedUpdateDriverFullObject() {
-                        if (!this.logisticsUpdateForm.driverId) return null;
-
-                        const driver = this.drivers.find(d => String(d._id) === String(this.logisticsUpdateForm.driverId));
-
-                        if (driver) {
-                            return {
-                                _id: driver._id,
-
-                                // 🛑 MAP TO SCHEMA FIELD: 'name'
-                                name: driver.driverName || driver.name,
-
-                                // 🛑 MAP TO SCHEMA FIELD: 'phone'
-                                phone: driver.driverPhone || driver.phone,
-
-                                // 🛑 MAP TO SCHEMA FIELD: 'vehicleCategory'
-                                vehicleCategory: driver.vehicleCategory || driver.category,
-
-                                // 🛑 MAP TO SCHEMA FIELD: 'vehicleType'
-                                vehicleType: driver.vehicleType,
-
-                                // 🛑 MAP TO SCHEMA FIELD: 'vehicleNumber'
-                                // Handles multiple possible input field names (vehicleNo, plateNumber)
-                                vehicleNumber: driver.vehicleNo || driver.plateNumber
-                            };
-                        }
-                        return null;
-                    },
-
-                    permissions() {
-                        const role = this.userRole;
-                        return {
-                            canCreate: ['warehouse', 'inventory', 'admin'].includes(role),
-                            canApproveOut: ['admin'].includes(role),
-                            canMarkPendingIn: ['warehouse', 'inventory', 'admin'].includes(role),
-                            canApproveIn: ['admin'].includes(role),
-                            canQuery: ['warehouse', 'inventory', 'admin', 'finance'].includes(role),
-                            canResolveQuery: ['admin', 'warehouse', 'inventory'].includes(role),
-                            canUpdateLogistics: ['warehouse', 'inventory', 'admin'].includes(role),
-                            canCancel: role === 'admin'
-                        };
-                    },
-
-                    availableSourceWarehouses() {
-                        if (this.isAdmin) {
-                            return this.warehouses;
-                        }
-                        return this.warehouses.filter(w => String(w._id) === String(this.userWarehouse));
-                    },
-
-                    isFormValid() {
-                        return this.form.items.every(item => {
-                            if (!item.productVariantId || item.quantity <= 0) return false;
-                            if (item.maxStock > 0 && item.quantity > item.maxStock) return false;
-                            return true;
-                        });
-                    },
-
-                    stats() {
-                        return {
-                            pendingOut: this.movements.filter(m => m.status === 'out_pending_approval').length,
-                            inTransit: this.movements.filter(m => m.status === 'in_transit').length,
-                            completedToday: this.movements.filter(m => {
-                                return m.status === 'completed' && new Date(m.createdAt).toDateString() === new Date().toDateString();
-                            }).length
-                        };
-                    },
-
                     filteredMovements() {
-                        let filtered = [...this.movements];
+                        const sorted = [...this.movements].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-                        if (this.activeTab === 'pending') {
-                            filtered = filtered.filter(m => m.status === 'out_pending_approval');
-                        } else if (this.activeTab === 'in-transit') {
-                            filtered = filtered.filter(m => m.status === 'in_transit');
-                        }
-
-                        const from = this.filters.dateFrom ? new Date(this.filters.dateFrom) : null;
-                        const to = this.filters.dateTo ? new Date(this.filters.dateTo) : null;
-
-                        filtered = filtered.filter(m => {
+                        const filtered = sorted.filter(m => {
+                            const from = this.filters.dateFrom ? new Date(this.filters.dateFrom) : null;
+                            const to = this.filters.dateTo ? new Date(this.filters.dateTo) : null;
                             const created = new Date(m.createdAt);
-                            const itemMatches = !this.filters.product || m.items.some(item => String(item.productVariant) === String(this.filters.product));
-
-                            return itemMatches &&
-                                (!this.filters.warehouse || String(m.warehouse?._id) === String(this.filters.warehouse) || String(m.destinationWarehouse?._id) === String(this.filters.warehouse)) &&
+                            return (!this.filters.product || m.productVariant?._id === this.filters.product) &&
+                                (!this.filters.warehouse || m.warehouse?._id === this.filters.warehouse) &&
                                 (!from || created >= from) &&
                                 (!to || created <= to);
                         });
 
-                        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                        this.totalPages = Math.ceil(filtered.length / this.pagination.perPage);
 
-                        return filtered;
-                    },
-
-                    paginatedMovements() {
                         const start = (this.pagination.page - 1) * this.pagination.perPage;
-                        return this.filteredMovements.slice(start, start + this.pagination.perPage);
-                    },
-
-                    totalPages() {
-                        return Math.ceil(this.filteredMovements.length / this.pagination.perPage) || 1;
+                        return filtered.slice(start, start + this.pagination.perPage);
                     }
+
                 },
                 watch: {
                     'filters.product': 'resetPage',
                     'filters.warehouse': 'resetPage',
                     'filters.dateFrom': 'resetPage',
                     'filters.dateTo': 'resetPage',
-                    'activeTab': 'resetPage',
-                    'form.warehouse'(newWhId) {
-                        this.form.items.forEach(item => this.updateItemStock(item, newWhId));
-                    },
-                    'form.items': {
-                        handler(items) {
-                            items.forEach(item => this.updateItemStock(item, this.form.warehouse));
-                        },
-                        deep: true
-                    },
-                    'form.driverId': 'updateSelectedDriverObject',
-
-                    'logisticsUpdateForm.logisticsId': function () {
-                        this.logisticsUpdateForm.driverId = '';
-                    },
-                    'logisticsUpdateForm.driverId': function () {
-                        this.logisticsUpdateForm.selectedDriverObject = this.selectedUpdateDriverFullObject;
+                    'form.productVariantId'(val) {
+                        this.selectedProductVariant = this.products.find(p => p._id === val) || null;
                     }
                 },
                 mounted() {
-                    this.loadUserData();
                     this.fetchAll();
-                    this.fetchLogisticsAndDriversData();
-
                     document.addEventListener('keydown', e => {
-                        if (e.key === 'Escape') {
-                            this.closeTransferModal();
-                            this.closeDetailModal();
-                            this.closeLogisticsUpdateModal();
-                        }
+                        if (e.key === 'Escape') this.closeModal();
                     });
                 },
                 methods: {
-                    loadUserData() {
-                        const userJson = localStorage.getItem('user');
-                        if (!userJson) return;
-                        try {
-                            this.userData = JSON.parse(userJson);
-                            const { role, firstName, lastName, warehouse } = this.userData;
-                            this.userRole = role?.toLowerCase() || 'warehouse';
-                            this.userName = `${firstName || ''} ${lastName || ''}`.trim() || 'User';
-                            this.userWarehouse = warehouse?._id || '';
-                            this.userWarehouseName = warehouse?.name || 'N/A';
-                            if (!this.isAdmin && this.userWarehouse && !this.form.warehouse) {
-                                this.form.warehouse = this.userWarehouse;
-                            }
-                        } catch (e) {
-                            console.error("Error loading or parsing user data from Local Storage:", e);
-                            this.userData = null;
-                        }
+                    closeModal() {
+                        this.showModal = false;
                     },
-
-                    getRoleBadgeClass() {
-                        const role = this.userRole;
-                        if (role === 'admin') return 'role-badge role-admin';
-                        if (role === 'warehouse') return 'role-badge role-warehouse';
-                        if (role === 'inventory') return 'role-badge role-inventory';
-                        if (role === 'finance') return 'role-badge role-finance';
-                        return 'role-badge';
-                    },
-
-                    hasLimitedPermissions(movement) {
-                        const allPerms = Object.values(this.permissions);
-                        return !allPerms.every(p => p === true);
-                    },
-
-                    async fetchLogisticsAndDriversData() {
-                        try {
-                            const response = await axios.get(`${BASE_URL}/logistics`);
-                            const fetchedData = response.data?.data || response.data;
-
-                            if (Array.isArray(fetchedData)) {
-                                const validProviders = fetchedData.filter(p => p && typeof p === 'object');
-
-                                this.logisticsRecords = validProviders.map(p => {
-                                    return {
-                                        _id: p._id,
-                                        logisticsId: p.serviceId,
-                                        provider: p.provider,
-                                        displayName: `Provider: ${p.provider} (${p.serviceId})`,
-                                        associatedDrivers: p.drivers || []
-                                    };
-                                });
-
-                                let allDrivers = [];
-                                validProviders.forEach(provider => {
-                                    const validDrivers = (provider.drivers || []).filter(d => d && typeof d === 'object');
-                                    validDrivers.forEach(driver => {
-                                        allDrivers.push({
-                                            _id: driver._id,
-                                            providerName: provider.provider,
-                                            driverName: driver.name || driver.driverName,
-                                            driverPhone: driver.phone || driver.driverPhone,
-                                            vehicleCategory: driver.category || driver.vehicleCategory,
-                                            vehicleType: driver.type || driver.vehicleType,
-                                            vehicleNo: driver.plateNumber || driver.vehicleNo
-                                        });
-                                    });
-                                });
-
-                                this.drivers = allDrivers;
-                            } else {
-                                this.logisticsRecords = [];
-                                this.drivers = [];
-                            }
-                        } catch (error) {
-                            console.error('Error fetching logistics providers and drivers:', error);
-                        }
-                    },
-
-                    updateSelectedDriverObject() {
-                        this.form.selectedDriverObject = this.selectedDriverFullObject;
-                    },
-
-                    handleLogisticsChange() {
-                        const selectedProvider = this.logisticsRecords.find(
-                            p => String(p._id) === String(this.form.logisticsId)
-                        );
-
-                        if (selectedProvider && selectedProvider.associatedDrivers.length > 0) {
-                            const firstActiveDriver = selectedProvider.associatedDrivers.find(d => d.status === 'Active');
-                            this.form.driverId = firstActiveDriver ? firstActiveDriver._id : '';
-                        } else {
-                            this.form.driverId = '';
-                        }
-                    },
-
-                    closeTransferModal() {
-                        this.showTransferModal = false;
-                        this.form = {
-                            type: 'transfer',
-                            warehouse: this.isAdmin ? '' : this.userWarehouse,
-                            destinationWarehouse: '',
-                            reason: '',
-                            reference: '',
-                            logisticsId: '',
-                            driverId: '',
-                            selectedDriverObject: null,
-                            items: [{ productVariantId: '', quantity: 1, batchNumber: '', maxStock: 0 }]
-                        };
-                    },
-
-                    closeDetailModal() {
-                        this.selectedMovement = null;
-                        this.showDetailModal = false;
-                        this.detailTab = 'items';
-                    },
-
-                    closeLogisticsUpdateModal() {
-                        this.showLogisticsUpdateModal = false;
-                        this.logisticsUpdateForm = {
-                            movementId: '',
-                            logisticsId: '',
-                            driverId: '',
-                            selectedDriverObject: null,
-                        };
-                    },
-
-                    showMovementDetails(movement) {
-                        this.selectedMovement = movement;
-                        this.showDetailModal = true;
-                    },
-
                     async fetchAll() {
-                        try {
-                            const [prodRes, whRes, movRes] = await Promise.all([
-                                axios.get(`${BASE_URL}/product-variant`),
-                                axios.get(`${BASE_URL}/warehouse`),
-                                axios.get(`${API}`)
-                            ]);
-                            this.products = prodRes.data;
-                            this.warehouses = whRes.data;
-                            this.movements = movRes.data;
-                        } catch (error) {
-                            console.error('Fetch error:', error);
-                        }
+                        const [prodRes, whRes, movRes] = await Promise.all([
+                            axios.get(`${window.BASE_URL}/product-variant`),
+                            axios.get(`${window.BASE_URL}/warehouse`),
+                            axios.get(`${API}`)
+                        ]);
+                        this.products = prodRes.data;
+                        this.warehouses = whRes.data;
+                        this.movements = movRes.data;
                     },
-
-                    addItem() {
-                        this.form.items.push({ productVariantId: '', quantity: 1, batchNumber: '', maxStock: 0 });
+                    createdLog(m) {
+                        return m.stock_log?.find(l => l.action === 'created');
                     },
-
-                    updateItemStock(item, warehouseId = this.form.warehouse) {
-                        if (item.productVariantId && warehouseId) {
-                            const product = this.products.find(p => String(p._id) === String(item.productVariantId));
-                            const stock = getWarehouseStock(product, warehouseId);
-                            item.maxStock = stock;
-                            if (item.quantity > stock && stock > 0) {
-                                item.quantity = stock;
-                            }
-                        } else {
-                            item.maxStock = 0;
-                        }
+                    approvedLog(m) {
+                        return m.stock_log?.find(l => l.action === 'approved');
                     },
-
+                    receivedLog(m) {
+                        return m.stock_log?.find(l => l.action === 'received');
+                    },
+                    formatLog(log) {
+                        return `${this.formatDate(log.timestamp)}\n${log.role} - ${log.userName}\n${log.warehouseName}`;
+                    },
+                    formatDate(d) {
+                        return new Date(d).toLocaleString();
+                    },
                     async submitTransfer() {
-                        if (this.form.warehouse === this.form.destinationWarehouse) {
-                            alert('Source and destination warehouses cannot be the same');
-                            return;
-                        }
-                        if (this.form.items.some(i => !i.productVariantId || i.quantity <= 0)) {
-                            alert('Please ensure all items have a valid product and quantity.');
-                            return;
-                        }
-
-                        // Note: selectedDriverFullObject must return the schema-compliant object
-                        const finalDriverObject = this.selectedDriverFullObject;
-
-                        if (this.form.driverId && !finalDriverObject) {
-                            alert('Cannot find full driver details for the selected driver ID. Check driver data.');
-                            return;
-                        }
-
-                        const transferData = {
-                            type: 'transfer',
-                            warehouse: this.form.warehouse,
-                            destinationWarehouse: this.form.destinationWarehouse,
-                            reason: this.form.reason,
-                            reference: this.form.reference,
-                            items: this.form.items.map(item => ({
-                                productVariantId: item.productVariantId,
-                                quantity: item.quantity,
-                                batchNumber: item.batchNumber
-                            }))
-                        };
-
-                        if (this.form.logisticsId) {
-                            transferData.logisticsId = this.form.logisticsId;
-                        }
-
-                        // If the Create Transfer modal driver selection uses the schema-compliant keys
-                        if (finalDriverObject) {
-                            transferData.driver = finalDriverObject;
-                        }
-
                         this.loading = true;
                         try {
-                            await axios.post(`${API}`, transferData);
+                            await axios.post(`${API}`, { ...this.form, type: 'transfer' });
                             await this.fetchAll();
-                            this.closeTransferModal();
-                            alert('✅ Transfer request created successfully! Awaiting approval.');
+                            this.closeModal();
+                            this.form = {
+                                productVariantId: '',
+                                quantity: '',
+                                warehouse: '',
+                                destinationWarehouse: '',
+                                reason: '',
+                                reference: ''
+                            };
                         } catch (err) {
-                            console.error(err.response || err);
-                            alert('❌ ' + (err.response?.data?.message || 'Transfer failed. Check console for details.'));
+                            console.error(err);
+                            alert('Transfer failed.');
                         } finally {
                             this.loading = false;
                         }
                     },
-
-                    getWarehouseFromLog(m) {
-                        if (!m.stock_log || m.stock_log.length === 0) return null;
-                        const createdLog = m.stock_log.find(l => l.action === 'created' || l.action === 'updated');
-                        return createdLog ? createdLog.warehouseName : null;
+                    async approve(id) {
+                        await axios.put(`${API}/approve/${id}`);
+                        this.fetchAll();
                     },
-
-                    createdLog(m) {
-                        return m.stock_log?.find(l => l.action === 'created' || l.action === 'updated');
-                    },
-
-                    getStatusText(m) {
-                        const statusMap = {
-                            'out_pending_approval': 'Pending OUT Approval',
-                            'in_transit': 'In-Transit',
-                            'in_pending_approval': 'Pending IN Approval',
-                            'queried': 'Queried/On Hold',
-                            'completed': 'Completed',
-                            'cancelled': 'Cancelled'
-                        };
-                        return statusMap[m.status] || m.status?.replace(/_/g, ' ').toUpperCase() || 'N/A';
-                    },
-
-                    getStatusClass(m) {
-                        const classMap = {
-                            'out_pending_approval': 'badge-pending',
-                            'in_transit': 'badge-in-transit',
-                            'in_pending_approval': 'badge-warning',
-                            'queried': 'badge-danger',
-                            'completed': 'badge-completed',
-                            'cancelled': 'badge-cancelled'
-                        };
-                        return classMap[m.status] || 'badge-muted';
-                    },
-
-                    formatDate(d) {
-                        return new Date(d).toLocaleString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        });
-                    },
-
-                    // 🔄 UPDATED: Modified to accept an optional secondary action/callback
-                    async executePutAction(id, endpoint, payload = {}, successMsg, secondaryAction = null) {
+                    async receive(id) {
                         try {
-                            await axios.put(`${API}/${id}/${endpoint}`, payload);
-
-                            // 2. Execute the secondary action (e.g., printing the manifest)
-                            if (secondaryAction && typeof secondaryAction === 'function') {
-                                secondaryAction(id);
-                            }
-
-                            // 1. Refresh data and close modals
-                            await this.fetchAll();
-                            this.closeDetailModal();
-                            this.closeLogisticsUpdateModal();
-
-                            alert('✅ ' + successMsg);
-
-                        } catch (err) {
-                            console.error(err);
-                            alert('❌ ' + (err.response?.data?.message || `Action failed for ${endpoint}`));
-                        }
-                    },
-
-                    // 🆕 NEW METHOD: Handles the API call to print/generate the manifest
-                    async printManifestForMovement(movementId) {
-                        try {
-                            // API call to the new endpoint
-                            const response = await axios.get(`${API}/${movementId}/manifest-print`, {
-                                responseType: 'blob' // Important for handling files like PDF
-                            });
-
-                            // Trigger the browser download
-                            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.setAttribute('download', `manifest_${movementId}.pdf`); // Filename
-                            document.body.appendChild(link);
-                            link.click();
-                            link.remove();
-                            window.URL.revokeObjectURL(url);
-
-                            alert('📄 Manifest generation successful! Download initiated.');
-
+                            await axios.put(`${API}/receive/${id}`);
+                            this.fetchAll();
                         } catch (error) {
-                            console.error('Error generating manifest:', error);
-                            // Non-critical error, do not block the main approval success message
-                            // We alert separately to inform the user about the printing failure
-                            alert('⚠️ OUT approval successful, but manifest printing failed. Check console for details.');
+                            console.error('Receive failed:', error.response?.data || error.message);
+                            alert('Receive failed: ' + (error.response?.data?.message || error.message));
                         }
                     },
 
-                    // 🔄 UPDATED: Now triggers printManifestForMovement after successful approval
-                    approveOut(id) {
-                        // 🛑 APPROVAL GATE: Check for Logistics and Driver assignment
-                        if (!this.selectedMovement.logistics || !this.selectedMovement.driver) {
-                            alert('🚫 Cannot approve OUT movement. Logistics provider and driver must be assigned first.');
-                            return;
-                        }
 
-                        const comments = prompt('Enter approval comments (optional):');
-                        if (comments !== null) {
-
-                            // Define the callback function to run on success
-                            const printCallback = (approvedId) => {
-                                this.printManifestForMovement(approvedId);
-                            };
-
-                            this.executePutAction(
-                                id,
-                                'approve-out',
-                                { comments },
-                                'OUT movement approved! Shipment is now in transit.',
-                                printCallback // Pass the new callback function here
-                            );
-                        }
-                    },
-
-                    markPendingInPrompt(id) {
-                        const comments = prompt('Enter arrival comments (optional):');
-                        if (comments !== null) {
-                            this.executePutAction(id, 'mark-pending-in', { comments }, 'Movement marked as arrived, awaiting IN approval.');
-                        }
-                    },
-
-                    approveIn(id) {
-                        const comments = prompt('Enter receipt approval comments (optional):');
-                        if (comments !== null) {
-                            this.executePutAction(id, 'approve-in', { comments }, 'Stock received and approved successfully! Stock added to destination.');
-                        }
-                    },
-
-                    queryMovementPrompt(id) {
-                        const queryText = prompt('Enter the query or issue (required):');
-                        if (queryText && queryText.trim()) {
-                            this.executePutAction(id, 'query', { queryText }, 'Movement successfully queried. Status updated.');
-                        } else if (queryText !== null) {
-                            alert('Query text is required.');
-                        }
-                    },
-
-                    resolveQueryPrompt(id) {
-                        const resolution = prompt('Enter the resolution details (required):');
-                        if (!resolution || !resolution.trim()) return alert('Resolution details are required.');
-
-                        const newStatus = prompt('Set the new status (in_transit or in_pending_approval):', 'in_pending_approval');
-                        if (newStatus && ['in_transit', 'in_pending_approval'].includes(newStatus)) {
-                            this.executePutAction(id, 'resolve-query', { resolution, newStatus }, 'Query resolved successfully. Status updated.');
-                        } else if (newStatus !== null) {
-                            alert('Invalid status selected.');
-                        }
-                    },
-
-                    // 🔄 LOGISTICS UPDATE: Uses the dedicated modal with dropdowns
-                    updateLogisticsPrompt(id) {
-                        const currentMovement = this.movements.find(m => String(m._id) === String(id));
-
-                        if (!currentMovement) return;
-
-                        this.selectedMovement = currentMovement; // Ensure selectedMovement is the current one
-                        this.logisticsUpdateForm.movementId = id;
-                        this.logisticsUpdateForm.logisticsId = currentMovement.logistics?._id || '';
-                        this.logisticsUpdateForm.driverId = currentMovement.driver?._id || '';
-                        this.logisticsUpdateForm.selectedDriverObject = currentMovement.driver || null;
-
-                        this.showLogisticsUpdateModal = true;
-                    },
-
-                    submitLogisticsUpdate() {
-                        if (!this.logisticsUpdateForm.logisticsId || !this.logisticsUpdateForm.driverId) {
-                            alert('Logistics Provider and Driver must be selected.');
-                            return;
-                        }
-
-                        const payload = {};
-
-                        // Set the logistics ID
-                        payload.logisticsId = this.logisticsUpdateForm.logisticsId;
-
-                        // Set the full driver object using the computed property
-                        payload.driver = this.selectedUpdateDriverFullObject;
-
-                        // 🛑 IMPROVED VALIDATION: Check for required schema fields 'name' and 'vehicleNumber'
-                        // NOTE: Assuming this.selectedUpdateDriverFullObject now maps driverName to name and vehicleNo to vehicleNumber based on previous context.
-                        if (!payload.driver || !payload.driver.name || !payload.driver.vehicleNumber) {
-                            alert('Error: Could not construct full driver details for submission. Missing Name or Vehicle Number.');
-                            return;
-                        }
-
-                        this.loading = true;
-
-                        this.executePutAction(
-                            this.logisticsUpdateForm.movementId,
-                            'logistics',
-                            payload,
-                            'Logistics and Driver updated successfully.'
-                        ).finally(() => {
-                            this.loading = false;
-                        });
-                    },
-
-                    cancelMovementPrompt(id) {
-                        const reason = prompt('Enter the cancellation reason (required):');
-                        if (!reason) return alert('Cancellation reason is required.');
-                        if (confirm('Are you sure you want to CANCEL this movement? This action will revert stock if already deducted.')) {
-                            this.executePutAction(id, 'cancel', { reason }, 'Movement cancelled successfully. Stock reversed if needed.');
-                        }
-                    },
 
                     exportToExcel() {
-                        const data = this.filteredMovements.map(m => ({
+                        const ws = XLSX.utils.json_to_sheet(this.filteredMovements.map(m => ({
                             Code: m.code,
-                            Product: (m.items || []).map(i => i.name).join(', '),
-                            Quantity: (m.items || []).reduce((sum, i) => sum + i.quantity, 0),
-                            Status: this.getStatusText(m),
-                            Reason: m.reason || '—',
-                            From: m.warehouse?.name || this.getWarehouseFromLog(m) || '—',
-                            To: m.destinationWarehouse?.name || m.destinationCustomer?.name || '—',
-                            'Created By': this.createdLog(m)?.userName || '—',
-                            'Created Date': this.formatDate(m.createdAt)
-                        }));
-
-                        const ws = XLSX.utils.json_to_sheet(data);
+                            Product: m.productVariant?.name,
+                            Quantity: m.quantity,
+                            Type: m.type,
+                            Reason: m.reason,
+                            From: m.warehouse?.name,
+                            To: m.destinationWarehouse?.name,
+                            Created: this.createdLog(m)?.userName,
+                            Approved: this.approvedLog(m)?.userName,
+                            Received: this.receivedLog(m)?.userName
+                        })));
                         const wb = XLSX.utils.book_new();
-                        XLSX.utils.book_append_sheet(wb, ws, 'Stock Movements');
-                        XLSX.writeFile(wb, `stock_movements_${new Date().toISOString().split('T')[0]}.xlsx`);
+                        XLSX.utils.book_append_sheet(wb, ws, 'Stock');
+                        XLSX.writeFile(wb, 'stock_movements.xlsx');
                     },
-
                     exportToPDF() {
                         const { jsPDF } = window.jspdf;
-                        const doc = new jsPDF({ orientation: 'landscape' });
-                        const title = 'Stock Movement Report';
-
-                        const data = this.filteredMovements.map(m => [
-                            m.code,
-                            (m.items || []).map(i => i.name).join(', '),
-                            (m.items || []).reduce((sum, i) => sum + i.quantity, 0).toString(),
-                            this.getStatusText(m),
-                            m.reason || '—',
-                            m.warehouse?.name || this.getWarehouseFromLog(m) || '—',
-                            m.destinationWarehouse?.name || m.destinationCustomer?.name || '—',
-                            this.createdLog(m)?.userName || '—',
-                            this.formatDate(m.createdAt).split(', ')[0]
-                        ]);
-
-                        const headers = [
-                            ['Code', 'Products', 'Qty', 'Status', 'Reason', 'From', 'To', 'Created By', 'Date']
-                        ];
-
-                        doc.autoTable({
-                            head: headers,
-                            body: data,
-                            startY: 15,
-                            styles: { fontSize: 8, cellPadding: 2 },
-                            headStyles: { fillColor: [59, 130, 246] },
-                            margin: { top: 10 }
+                        const doc = new jsPDF();
+                        doc.text("Stock Movements", 10, 10);
+                        this.filteredMovements.forEach((m, i) => {
+                            const y = 20 + i * 10;
+                            doc.text(`${m.code} | ${m.productVariant?.name} | ${m.quantity} | ${m.type}`, 10, y);
                         });
-
-                        doc.text(title, 14, 10);
-                        doc.save(`stock_movements_${new Date().toISOString().split('T')[0]}.pdf`);
+                        doc.save('stock_movements.pdf');
                     },
-
                     resetPage() {
                         this.pagination.page = 1;
-                    }
+                    },
+
+
                 }
             });
         });
     </script>
+
 </body>
 
 </html>
