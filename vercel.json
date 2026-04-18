@@ -1,4 +1,6 @@
 {
+  "buildCommand": "npm run sync:web",
+  "outputDirectory": "www",
   "rewrites": [
     {
       "source": "/(.*)",
@@ -25,4 +27,3 @@
     }
   ]
 }
-
