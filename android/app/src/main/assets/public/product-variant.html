@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Product Variant Manager</title>
+
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<style>
+    :root {
+  --bg-color: #e2dcdc;
+  --text-color: #090F3B;
+  --card-bg: #ffffff;
+  --border-color: #ccc;
+  --input-border: #ccc;
+}
+
+body.dark {
+  --bg-color: #090F3B;
+  --text-color: #f1f1f1;
+  --card-bg: #050d4a;
+  --border-color: #444;
+  --input-border: #444;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  text-align: left;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+th {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+body.dark th {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+body.dark tr:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* BUTTON */
+button {
+  padding: 8px 12px;
+  margin: 5px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+button:hover {
+  background: #2563eb;
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 700px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* CARDS */
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  padding: 15px;
+  border-radius: 8px;
+  background: var(--card-bg);
+  width: 100%;
+  max-width: 320px;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+.card:hover {
+  transform: scale(1.02);
+}
+
+@media (min-width: 600px) {
+  .card {
+    width: calc(50% - 20px);
+  }
+}
+@media (min-width: 900px) {
+  .card {
+    width: calc(33.333% - 20px);
+  }
+}
+
+/* FORMS */
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+input, select {
+  width: 100%;
+  padding: 6px 8px;
+  margin-top: 4px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* OTHER */
+.preview {
+  max-width: 100px;
+  margin-top: 10px;
+}
+
+.inline-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.error {
+  color: red;
+  font-size: 0.9em;
+}
+
+</style>
+    
+</head>
+
+
+<body>
+  <script src="components/uiComponents.js"></script>
+ <script src="components/spinner.js"></script>
+  <script src="components/authGuard.js"></script>
+
+  <script src="components/navbar.js"></script>
+
+  <script src="components/sidebar.js"></script>
+  <script src="components/footerTab.js"></script>
+    
+  <main id="app" class="main-content">
+
+        <h1>Product Variant Manager</h1>
+
+        <button @click="showAddModal()">Add New Product Variant</button>
+        <button @click="toggleView()">Switch to {{ view === 'table' ? 'Card' : 'Table' }} View</button>
+
+        <template v-if="view === 'table'">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Product</th>
+                        <th>SKU</th>
+                        <th>Barcode</th>
+                        <th>Selling Price</th> <th>Cost Price</th>
+                        <th>Total Stock</th>
+                        <th>Batch Tracking</th>
+                        <th>Low Stock Threshold</th>
+                        <th>Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="variant in productVariants" :key="variant._id">
+                        <td>
+                            <img v-if="variant.image" :src="variant.image" alt="product image"
+                                style="max-width: 50px; max-height: 50px;" />
+                        </td>
+                        <td>{{ variant.name }}</td>
+                        <td>{{ variant.product?.name || 'N/A' }}</td>
+                        <td>{{ variant.sku }}</td>
+                        <td>{{ variant.barcode }}</td>
+                        <td>₦{{ variant.sellingPrice?.toFixed(2) }}</td> <td>₦{{ variant.costPrice?.toFixed(2) }}</td>
+                        <td>{{ variant.totalStock }}</td>
+                        <td>{{ variant.batchTracking ? 'Yes' : 'No' }}</td>
+                        <td>{{ variant.lowStockThreshold || 0 }}</td>
+                        <td>{{ variant.active ? 'Yes' : 'No' }}</td>
+                        <td>
+               <button @click="showEditModal(variant)">Edit</button>
+               <button @click="deleteVariant(variant._id)" style="background: #ef4444;">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+
+        <template v-else>
+            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                <div v-for="variant in productVariants" :key="variant._id" style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; width: 300px; background: white;">
+                    <img v-if="variant.image" :src="variant.image" alt="product image"
+                        style="max-width: 100%; max-height: 150px; object-fit: contain; margin-bottom: 10px;" />
+                    <h3>{{ variant.name }}</h3>
+                    <p><strong>Product:</strong> {{ variant.product?.name || 'N/A' }}</p>
+                    <p><strong>SKU:</strong> {{ variant.sku }}</p>
+                    <p><strong>Barcode:</strong> {{ variant.barcode }}</p>
+                    <p><strong>Selling Price:</strong> ₦{{ variant.sellingPrice?.toFixed(2) }}</p> <p><strong>Cost Price:</strong> ₦{{ variant.costPrice?.toFixed(2) }}</p>
+                    <p><strong>Total Stock:</strong> {{ variant.totalStock }}</p>
+                    <p><strong>Batch Tracking:</strong> {{ variant.batchTracking ? 'Yes' : 'No' }}</p>
+                    <p><strong>Low Stock Threshold:</strong> {{ variant.lowStockThreshold || 0 }}</p>
+                    <p><strong>Active:</strong> {{ variant.active ? 'Yes' : 'No' }}</p>
+                    <button @click="showEditModal(variant)">Edit</button>
+            <button @click="deleteVariant(variant._id)" style="background: #ef4444;">Delete</button>
+                </div>
+            </div>
+        </template>
+
+        <div v-if="modalVisible" class="modal-overlay" @click.self="closeModal()">
+  <div class="modal" @click.stop>
+    <h2>{{ editingVariant ? 'Edit' : 'Add' }} Product Variant</h2>
+    <form @submit.prevent="onSubmit">
+      <label for="product">Product</label>
+<select id="product" name="product" v-model="form.product" required>
+  <option disabled value="">-- Select Product --</option>
+  <option v-for="p in products" :value="p._id" :key="p._id">{{ p.name }}</option>
+</select>
+<span class="error" v-if="errors.product">{{ errors.product }}</span>
+
+<label for="variantName">Name</label>
+<input id="variantName" name="name" type="text" v-model="form.name" required />
+<span class="error" v-if="errors.name">{{ errors.name }}</span>
+
+<label for="sku">SKU</label>
+<input id="sku" name="sku" type="text" v-model="form.sku" required />
+<span class="error" v-if="errors.sku">{{ errors.sku }}</span>
+
+<label for="barcode">Barcode</label>
+<input id="barcode" name="barcode" type="text" v-model="form.barcode" required />
+<span class="error" v-if="errors.barcode">{{ errors.barcode }}</span>
+
+<label for="sellingPrice">Selling Price</label>
+<input id="sellingPrice" name="sellingPrice" type="number" v-model.number="form.sellingPrice" min="0" step="0.01" required />
+<span class="error" v-if="errors.sellingPrice">{{ errors.sellingPrice }}</span>
+
+
+<label for="costPrice">Cost Price</label>
+<input id="costPrice" name="costPrice" type="number" v-model.number="form.costPrice" min="0" step="0.01" required />
+<span class="error" v-if="errors.costPrice">{{ errors.costPrice }}</span>
+
+<label>Batch Tracking</label>
+<select v-model="form.batchTracking">
+  <option :value="true">Yes</option>
+  <option :value="false">No</option>
+</select>
+
+<label>Low Stock Threshold</label>
+<input type="number" v-model.number="form.lowStockThreshold" min="0" />
+
+<label>Active</label>
+<select v-model="form.active">
+  <option :value="true">Yes</option>
+  <option :value="false">No</option>
+</select>
+
+<label>Image</label>
+<input type="file" @change="onFileChange" accept="image/*" />
+<div v-if="previewImage">
+  <img :src="previewImage" alt="Preview" class="preview" />
+</div>
+
+<div class="form-section" v-if="form.batchTracking">
+  <h3>Batches</h3>
+  <button type="button" @click="addBatch()">Add Batch</button>
+  <div v-for="(batch, index) in form.batches" :key="index" class="form-section" style="margin-top: 10px;">
+    <div class="inline-row">
+      <div>
+        <label :for="`batchNumber_${index}`">Batch Number</label>
+        <input :id="`batchNumber_${index}`" :name="`batchNumber_${index}`" type="text" v-model="batch.batchNumber" />
+        <span class="error" v-if="errors[`batchNumber_${index}`]">{{ errors[`batchNumber_${index}`] }}</span>
+      </div>
+      <div>
+        <label :for="`expiryDate_${index}`">Expiry Date</label>
+        <input :id="`expiryDate_${index}`" :name="`expiryDate_${index}`" type="date" v-model="batch.expiryDate" />
+      </div>
+      <div>
+        <label :for="`batchQuantity_${index}`">Quantity</label>
+        <input :id="`batchQuantity_${index}`" :name="`batchQuantity_${index}`" type="number" v-model.number="batch.quantity" min="0" />
+        <span class="error" v-if="errors[`batchQuantity_${index}`]">{{ errors[`batchQuantity_${index}`] }}</span>
+      </div>
+      <div>
+        <label :for="`batchWarehouse_${index}`">Warehouse</label>
+        <select :id="`batchWarehouse_${index}`" :name="`batchWarehouse_${index}`" v-model="batch.warehouse">
+          <option disabled value="">-- Select Warehouse --</option>
+          <option v-for="w in warehouses" :value="w._id" :key="w._id">{{ w.name }}</option>
+        </select>
+        <span class="error" v-if="errors[`batchWarehouse_${index}`]">{{ errors[`batchWarehouse_${index}`] }}</span>
+      </div>
+      <button type="button" @click="removeBatch(index)">Remove</button>
+    </div>
+  </div>
+</div>
+
+<div class="form-section">
+  <h3>Warehouses</h3>
+  <button type="button" @click="addWarehouse()">Add Warehouse</button>
+  <div v-for="(w, index) in form.warehouses" :key="index" class="form-section" style="margin-top: 10px;">
+    <div class="inline-row">
+      <div>
+        <label :for="`warehouse_${index}`">Warehouse</label>
+        <select :id="`warehouse_${index}`" :name="`warehouse_${index}`" v-model="w.warehouse">
+          <option disabled value="">-- Select Warehouse --</option>
+          <option v-for="wh in warehouses" :value="wh._id" :key="wh._id">{{ wh.name }}</option>
+        </select>
+        <span class="error" v-if="errors[`warehouseWarehouse_${index}`]">{{ errors[`warehouseWarehouse_${index}`] }}</span>
+      </div>
+      <div>
+        <label :for="`warehouseName_${index}`">Name</label>
+        <input :id="`warehouseName_${index}`" :name="`warehouseName_${index}`" type="text" v-model="w.name" />
+        <span class="error" v-if="errors[`warehouseName_${index}`]">{{ errors[`warehouseName_${index}`] }}</span>
+      </div>
+      <div>
+        <label :for="`warehouseLocation_${index}`">Location</label>
+        <input :id="`warehouseLocation_${index}`" :name="`warehouseLocation_${index}`" type="text" v-model="w.location" />
+      </div>
+      <div>
+        <label :for="`warehouseStock_${index}`">Stock</label>
+        <input :id="`warehouseStock_${index}`" :name="`warehouseStock_${index}`" type="number" v-model.number="w.stock" min="0" />
+        <span class="error" v-if="errors[`warehouseStock_${index}`]">{{ errors[`warehouseStock_${index}`] }}</span>
+      </div>
+      <div>
+        <label :for="`warehouseLowStockThreshold_${index}`">Low Stock Threshold</label>
+        <input :id="`warehouseLowStockThreshold_${index}`" :name="`warehouseLowStockThreshold_${index}`" type="number" v-model.number="w.lowStockThreshold" min="0" />
+        <span class="error" v-if="errors[`warehouseLowStockThreshold_${index}`]">{{ errors[`warehouseLowStockThreshold_${index}`] }}</span>
+      </div>
+      <button type="button" @click="removeWarehouse(index)">Remove</button>
+    </div>
+  </div>
+</div>
+
+<span class="error" v-if="formError">{{ formError }}</span>
+<div style="margin-top: 20px;">
+  <button type="submit" class="btn">Save</button>
+  <button type="button" @click="closeModal()" class="btn-secondary">Cancel</button>
+</div>
+    </form>
+  </div>
+</div>
+
+
+    </main>
+    <script src="assets/js/script.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="config.js"></script>
+
+
+
+    <script>
+        const API_BASE = window.BASE_URL;
+        new Vue({
+            el: '#app',
+            data: {
+
+                isDarkMode: localStorage.getItem("darkMode") === "true",
+                searchTerm: '',
+                API_BASE: API_BASE,
+                productVariants: [],
+                products: [],
+                warehouses: [],
+                view: 'table',
+                modalVisible: false,
+                editingVariant: null,
+                previewImage: null,
+                formError: '',
+                form: {
+                    _id: '',
+                    product: '',
+                    name: '',
+                    sku: '',
+                    barcode: '',
+                    sellingPrice: 0, // Standardized on sellingPrice
+                    costPrice: 0,
+                    batchTracking: false,
+                    lowStockThreshold: 0,
+                    active: true,
+                    image: null,
+                    batches: [],
+                    warehouses: []
+                },
+                errors: {}
+            },
+            watch: {
+                isDarkMode(val) {
+                    document.body.classList.toggle('dark', val);
+                }
+            },
+            mounted() {
+                this.fetchVariants();
+                this.fetchProducts();
+                this.fetchWarehouses();
+            },
+            methods: {
+                toggleDarkMode() {
+                    this.isDarkMode = !this.isDarkMode;
+                    localStorage.setItem("darkMode", this.isDarkMode);
+                },
+                async fetchVariants() {
+                    try {
+                        const res = await axios.get(`${this.API_BASE}/product-variant`);
+                        this.productVariants = res.data;
+                        console.log('Fetched product variants:', this.productVariants); 
+                    } catch (err) {
+                        console.error('Error fetching product variants:', err);
+                    }
+                },
+                async fetchProducts() {
+                    try {
+                        const res = await axios.get(`${this.API_BASE}/products`);
+                        this.products = res.data;
+                        console.log('Fetched products:', this.products);
+                    } catch (err) {
+                        console.error('Error fetching products:', err);
+                    }
+                },
+                async fetchWarehouses() {
+                    try {
+                        const res = await axios.get(`${this.API_BASE}/warehouse`);
+                        this.warehouses = res.data;
+                    } catch (err) {
+                        console.error('Error fetching warehouses:', err);
+                    }
+                },
+                resetForm() {
+                    this.form = {
+                        _id: '',
+                        product: '',
+                        name: '',
+                        sku: '',
+                        barcode: '',
+                        sellingPrice: 0, // Standardized on sellingPrice
+                        costPrice: 0,
+                        batchTracking: false,
+                        lowStockThreshold: 0,
+                        active: true,
+                        image: null,
+                        batches: [],
+                        warehouses: []
+                    };
+                    this.previewImage = null;
+                    this.errors = {};
+                    this.formError = '';
+                },
+                showAddModal() {
+                    this.resetForm();
+                    this.editingVariant = null;
+                    this.modalVisible = true;
+                },
+                showEditModal(variant) {
+                    this.resetForm();
+                    this.editingVariant = variant;
+                    this.form._id = variant._id;
+                    this.form.product = variant.product?._id || '';
+                    this.form.name = variant.name;
+                    this.form.sku = variant.sku;
+                    this.form.barcode = variant.barcode;
+                    this.form.sellingPrice = variant.sellingPrice || 0;
+                    this.form.costPrice = variant.costPrice || 0;
+                    // Always cast to Boolean
+                    this.form.batchTracking = !!variant.batchTracking;
+                    this.form.lowStockThreshold = variant.lowStockThreshold || 0;
+                    this.form.active = variant.active !== undefined ? variant.active : true;
+                    this.form.image = variant.image || null;
+
+                    this.form.batches = variant.batches ? variant.batches.map(b => ({
+                        batchNumber: b.batchNumber || '',
+                        expiryDate: b.expiryDate ? b.expiryDate.split('T')[0] : '',
+                        quantity: b.quantity || 0,
+                        warehouse: b.warehouse?._id || b.warehouse || ''
+                    })) : [];
+
+                    this.form.warehouses = variant.warehouses ? variant.warehouses.map(w => ({
+                        warehouse: w.warehouse?._id || w.warehouse || '',
+                        name: w.name || '',
+                        location: w.location || '',
+                        stock: w.stock || 0,
+                        lowStockThreshold: w.lowStockThreshold || 0
+                    })) : [];
+
+                    if (typeof this.form.image === 'string' && this.form.image) {
+                        this.previewImage = this.form.image;
+                    } else {
+                        this.previewImage = null;
+                    }
+
+                    this.modalVisible = true;
+                },
+                closeModal() {
+                    this.modalVisible = false;
+                    this.resetForm();
+                },
+                toggleView() {
+                    this.view = this.view === 'table' ? 'card' : 'table';
+                },
+                onFileChange(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        this.form.image = file;
+                        this.previewImage = URL.createObjectURL(file);
+                    } else {
+                        this.form.image = null;
+                        this.previewImage = null;
+                    }
+                },
+                addBatch() {
+                    this.form.batches.push({
+                        batchNumber: '',
+                        expiryDate: '',
+                        quantity: 0,
+                        warehouse: ''
+                    });
+                },
+                removeBatch(index) {
+                    this.form.batches.splice(index, 1);
+                },
+                addWarehouse() {
+                    this.form.warehouses.push({
+                        warehouse: '',
+                        name: '',
+                        location: '',
+                        stock: 0,
+                        lowStockThreshold: 0
+                    });
+                },
+                removeWarehouse(index) {
+                    this.form.warehouses.splice(index, 1);
+                },
+                validateForm() {
+                    let valid = true;
+                    this.errors = {};
+
+                    if (!this.form.product) {
+                        this.errors.product = 'Product is required';
+                        valid = false;
+                    }
+                    if (!this.form.name.trim()) {
+                        this.errors.name = 'Name is required';
+                        valid = false;
+                    }
+                    if (!this.form.sku.trim()) {
+                        this.errors.sku = 'SKU is required';
+                        valid = false;
+                    }
+                    if (!this.form.barcode.trim()) {
+                        this.errors.barcode = 'Barcode is required';
+                        valid = false;
+                    }
+                    // Validation for sellingPrice
+                    if (this.form.sellingPrice === null || this.form.sellingPrice < 0) {
+                        this.errors.sellingPrice = 'Selling Price must be zero or positive';
+                        valid = false;
+                    }
+                    if (this.form.costPrice === null || this.form.costPrice < 0) {
+                        this.errors.costPrice = 'Cost Price must be zero or positive';
+                        valid = false;
+                    }
+
+                    if (this.form.batchTracking) {
+                        this.form.batches.forEach((b, i) => {
+                            if (!b.batchNumber.trim()) {
+                                this.errors[`batchNumber_${i}`] = 'Batch Number required';
+                                valid = false;
+                            }
+                            if (b.quantity === null || b.quantity < 0) {
+                                this.errors[`batchQuantity_${i}`] = 'Quantity must be zero or positive';
+                                valid = false;
+                            }
+                            if (!b.warehouse) {
+                                this.errors[`batchWarehouse_${i}`] = 'Warehouse required';
+                                valid = false;
+                            }
+                        });
+                    }
+
+                    this.form.warehouses.forEach((w, i) => {
+                        if (!w.warehouse) {
+                            this.errors[`warehouseWarehouse_${i}`] = 'Warehouse required';
+                            valid = false;
+                        }
+                        if (!w.name.trim()) {
+                            this.errors[`warehouseName_${i}`] = 'Name required';
+                            valid = false;
+                        }
+                        if (w.stock === null || w.stock < 0) {
+                            this.errors[`warehouseStock_${i}`] = 'Stock must be zero or positive';
+                            valid = false;
+                        }
+                        if (w.lowStockThreshold === null || w.lowStockThreshold < 0) {
+                            this.errors[`warehouseLowStockThreshold_${i}`] = 'Threshold must be zero or positive';
+                            valid = false;
+                        }
+                    });
+
+                    return valid;
+                },
+                async onSubmit() {
+                    if (!this.validateForm()) {
+                        this.formError = 'Please fix validation errors';
+                        return;
+                    }
+                    this.formError = '';
+
+                    try {
+                        const payload = new FormData();
+                        payload.append('product', this.form.product);
+                        payload.append('name', this.form.name.trim());
+                        payload.append('sku', this.form.sku.trim());
+                        payload.append('barcode', this.form.barcode.trim());
+                        payload.append('sellingPrice', this.form.sellingPrice);
+                        payload.append('costPrice', this.form.costPrice);
+                        payload.append('batchTracking', !!this.form.batchTracking);
+                        payload.append('lowStockThreshold', this.form.lowStockThreshold);
+                        payload.append('active', !!this.form.active);
+                        if (this.form.image instanceof File) {
+                            payload.append('image', this.form.image);
+                        }
+                        payload.append('batches', JSON.stringify(this.form.batches));
+                        payload.append('warehouses', JSON.stringify(this.form.warehouses));
+
+                        let res;
+                        if (this.editingVariant) {
+                            res = await axios.put(`${this.API_BASE}/product-variant/${this.form._id}`, payload, {
+                                headers: { 'Content-Type': 'multipart/form-data' }
+                            });
+                        } else {
+                            res = await axios.post(`${this.API_BASE}/product-variant`, payload, {
+                                headers: { 'Content-Type': 'multipart/form-data' }
+                            });
+                        }
+
+                        await this.fetchVariants();
+                        this.closeModal();
+                    } catch (err) {
+                        // Duplicate SKU or Barcode error handling
+                        const backendError = err.response?.data?.error || err.response?.data?.message || '';
+                        if (
+                            backendError.includes('duplicate key error') &&
+                            backendError.includes('sku')
+                        ) {
+                            this.formError = 'SKU already exists. Please use a unique SKU.';
+                        } else if (
+                            backendError.includes('duplicate key error') &&
+                            backendError.includes('barcode')
+                        ) {
+                            this.formError = 'Barcode already exists. Please use a unique Barcode.';
+                        } else {
+                            this.formError = backendError || 'Submit failed';
+                        }
+                        console.error('Submit error:', err, err.response?.data);
+                    }
+                },
+                async deleteVariant(id) {
+                    if (!confirm('Are you sure to delete this variant?')) return;
+                    try {
+                        await axios.delete(`${this.API_BASE}/product-variant/${id}`);
+                        await this.fetchVariants();
+
+                        this.closeModal();
+                    } catch (err) {
+                        console.error('Delete error:', err);
+                        alert('Failed to delete variant');
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eraskon Inventory Management - Customers</title>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <!-- <link rel="stylesheet" href="assets/css/style.css" /> -->
+  <!-- BUG 6 FIX: config.js must load before any script that reads window.BASE_URL -->
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    /* ── Design tokens ─────────────────────────────────────────
+       Matches the Eraskon sidebar / index.html palette exactly.
+       All colours referenced via var() so dark-mode just flips
+       the token values — no hard-coded colours elsewhere.
+    ─────────────────────────────────────────────────────────── */
+    :root {
+      --nav-h:         60px;   /* navbar height assumption — change once if it changes */
+      --sb-w:          260px;  /* sidebar open width */
+      --sb-w-closed:   70px;
+
+      /* Surfaces */
+      --page-bg:       #f0f4fa;
+      --card-bg:       #ffffff;
+      --card-border:   #e2e8f0;
+      --th-bg:         #f8fafc;
+      --row-hover:     #f1f5f9;
+      --input-bg:      #f8fafc;
+      --input-border:  #cbd5e1;
+
+      /* Text */
+      --text-primary:  #1e293b;
+      --text-secondary:#475569;
+      --text-muted:    #94a3b8;
+
+      /* Brand blues — mirrors sidebar tokens */
+      --blue:          #3b82f6;
+      --blue-dark:     #1d4ed8;
+      --blue-light:    #60a5fa;
+      --indigo:        #6366f1;
+
+      /* Status */
+      --green:         #22c55e;
+      --green-dark:    #16a34a;
+      --red:           #ef4444;
+      --red-dark:      #dc2626;
+      --amber:         #f59e0b;
+
+      /* Misc */
+      --radius-lg:     12px;
+      --radius-md:     8px;
+      --radius-sm:     5px;
+      --shadow-card:   0 1px 4px rgba(30,41,59,0.07), 0 4px 16px rgba(30,41,59,0.05);
+      --shadow-modal:  0 8px 40px rgba(15,23,42,0.22);
+      --transition:    0.18s ease;
+    }
+
+    /* Dark mode — BUG 9 FIX: all colours go through tokens */
+    body.dark {
+      --page-bg:       #0f172a;
+      --card-bg:       #1e293b;
+      --card-border:   #334155;
+      --th-bg:         #162032;
+      --row-hover:     #243047;
+      --input-bg:      #1e293b;
+      --input-border:  #334155;
+      --text-primary:  #f1f5f9;
+      --text-secondary:#cbd5e1;
+      --text-muted:    #64748b;
+    }
+
+    /* ── Base ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', 'Segoe UI', sans-serif;
+      background: var(--page-bg);
+      color: var(--text-primary);
+      transition: background var(--transition), color var(--transition);
+    }
+
+    /* ── Main content offset ────────────────────────────────── */
+    /* BUG 10 FIX: use CSS variable for nav height */
+    #main-content {
+      margin-left: var(--sb-w);
+      margin-top: var(--nav-h);
+      padding: 24px;
+      min-height: calc(100vh - var(--nav-h));
+      transition: margin-left 0.28s ease;
+    }
+
+    /* Sidebar collapsed state — synced by sidebar.js adding .sb-closed */
+    .main-content.sb-closed { margin-left: var(--sb-w-closed); }
+
+    /* ── Page header ────────────────────────────────────────── */
+    .page-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .page-title i { color: var(--blue); font-size: 1.4rem; }
+
+    /* ── Toolbar ────────────────────────────────────────────── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+      max-width: 340px;
+    }
+    .search-wrap i {
+      position: absolute;
+      left: 11px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 17px;
+      pointer-events: none;
+    }
+    .search-wrap input {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px 0 36px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .search-wrap input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.13);
+    }
+    .search-wrap input::placeholder { color: var(--text-muted); }
+
+    /* Action buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 40px;
+      padding: 0 16px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: filter var(--transition), transform 0.12s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:hover  { filter: brightness(1.08); }
+    .btn i      { font-size: 16px; }
+
+    .btn-primary  { background: var(--blue);  color: #fff; }
+    .btn-success  { background: var(--green); color: #fff; }
+    .btn-excel    { background: #16a34a;      color: #fff; }
+    .btn-danger   { background: var(--red);   color: #fff; }
+
+    /* ── Table card ─────────────────────────────────────────── */
+    /* BUG 3 FIX: class now matches HTML (.table-container) */
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;        /* clips the inner scroll */
+    }
+
+    /* BUG 5 FIX: single clean strategy — horizontal scroll only,
+       no conflicting display overrides */
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* BUG 2 FIX: all rules under .customer-table, no .user-table */
+    table.customer-table {
+      width: 100%;
+      min-width: 680px;     /* triggers horizontal scroll on narrow screens */
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    table.customer-table thead tr {
+      background: var(--th-bg);
+      border-bottom: 2px solid var(--card-border);
+    }
+
+    table.customer-table th {
+      padding: 11px 14px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    table.customer-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    table.customer-table tbody tr:last-child td { border-bottom: none; }
+
+    table.customer-table tbody tr:hover td {
+      background: var(--row-hover);
+    }
+
+    /* Action column buttons */
+    td.actions {
+      white-space: nowrap;
+      display: flex;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+
+    td.actions button {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 11px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: filter var(--transition);
+    }
+    td.actions button:hover  { filter: brightness(1.1); }
+    td.actions button.edit   { background: var(--blue);  color: #fff; }
+    td.actions button.delete { background: var(--red);   color: #fff; }
+
+    /* Empty / loading state */
+    .table-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .table-empty i { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+
+    /* ── Pagination ─────────────────────────────────────────── */
+    /* BUG 8 FIX: pagination HTML now exists; CSS kept clean */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 16px;
+      border-top: 1px solid var(--card-border);
+      background: var(--card-bg);
+    }
+    .pagination-info {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .pagination-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .pagination-btns button {
+      height: 34px;
+      min-width: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      background: var(--card-bg);
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+    .pagination-btns button:hover:not(:disabled) {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
+    }
+    .pagination-btns button.active {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
+    }
+    .pagination-btns button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── Modal ──────────────────────────────────────────────── */
+    .modal {
+      position: fixed; inset: 0;
+      background: rgba(15,23,42,0.55);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1200;
+      padding: 16px;
+    }
+    .modal.show { display: flex; }
+
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-modal);
+      width: 100%;
+      max-width: 460px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      width: 30px; height: 30px;
+      border: none; border-radius: 6px;
+      background: var(--row-hover);
+      color: var(--text-muted);
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background var(--transition);
+      flex-shrink: 0;
+    }
+    .modal-close:hover { background: var(--red); color: #fff; }
+
+    /* Field groups */
+    .field-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .field-group.full { grid-template-columns: 1fr; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .field label {
+      font-size: 0.73rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .field input {
+      height: 40px;
+      padding: 0 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .field input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.13);
+    }
+    .field input::placeholder { color: var(--text-muted); }
+
+    .section-divider {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--blue);
+      padding: 10px 0 4px;
+      margin-bottom: 2px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 10px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    /* BUG 1 FIX: all @media at top-level, never nested */
+
+    /* Tablet — sidebar collapses, main shifts */
+    @media (max-width: 900px) {
+      #main-content {
+        margin-left: 0;
+        padding: 16px;
+      }
+    }
+
+    /* Mobile toolbar */
+    @media (max-width: 640px) {
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-wrap {
+        max-width: 100%;
+      }
+      .btn {
+        justify-content: center;
+        width: 100%;
+      }
+    }
+
+    /* Mobile modal — full-bottom-sheet feel */
+    @media (max-width: 520px) {
+      .modal {
+        align-items: flex-end;
+        padding: 0;
+      }
+      .modal-content {
+        max-width: 100%;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        max-height: 92vh;
+        padding: 22px 18px 20px;
+      }
+      .field-group {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <script src="components/uiComponents.js"></script>
+  <script src="components/spinner.js"></script>
+  <script src="components/authGuard.js"></script>
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+  <script src="components/footerTab.js"></script>
+  <script src="assets/js/script.js"></script>
+
+  <div id="main-content" class="main-content">
+
+    <div class="page-title">
+      <i class="bx bx-user-circle"></i>
+      Customers
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <i class="bx bx-search"></i>
+        <input type="text" id="searchCustomer" placeholder="Search customers…" />
+      </div>
+      <button class="btn btn-success" id="addCustomerBtn">
+        <i class="bx bx-plus"></i> Add Customer
+      </button>
+      <button class="btn btn-excel" onclick="exportCustomersToExcel()">
+        <i class="bx bx-spreadsheet"></i> Export Excel
+      </button>
+    </div>
+
+    <!-- Table card -->
+    <!-- BUG 3 FIX: class is now .table-container to match CSS -->
+    <div class="table-container">
+      <!-- BUG 5 FIX: single scroll wrapper, no conflicting display tricks -->
+      <div class="table-scroll">
+        <table class="customer-table" id="customerTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Address</th>
+              <th>Company</th>
+              <th>Tax ID</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="customerTableBody">
+            <tr>
+              <td colspan="7" class="table-empty">
+                <i class="bx bx-loader-alt bx-spin"></i>
+                Loading customers…
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- BUG 8 FIX: pagination HTML now exists -->
+      <div class="pagination" id="pagination" style="display:none;">
+        <span class="pagination-info" id="pageInfo">Showing 1–20 of 0</span>
+        <div class="pagination-btns" id="pageBtns"></div>
+      </div>
+    </div>
+
+  </div><!-- /#main-content -->
+
+  <!-- Add / Edit Modal -->
+  <div class="modal" id="customerModal">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Customer</h3>
+        <button class="modal-close" id="cancelCustomerBtn" aria-label="Close">
+          <i class="bx bx-x"></i>
+        </button>
+      </div>
+
+      <div class="section-divider">Basic info</div>
+      <div class="field-group full">
+        <div class="field">
+          <label>Full Name *</label>
+          <input type="text" id="cname" placeholder="e.g. John Doe" />
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="cemail" placeholder="email@example.com" />
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input type="text" id="cphone" placeholder="+234 800 000 0000" />
+        </div>
+      </div>
+
+      <div class="section-divider">Address</div>
+      <div class="field-group full">
+        <div class="field">
+          <label>Street</label>
+          <input type="text" id="cstreetLine" placeholder="Street address" />
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>City</label>
+          <input type="text" id="ccity" placeholder="City" />
+        </div>
+        <div class="field">
+          <label>State</label>
+          <input type="text" id="cstate" placeholder="State" />
+        </div>
+        <div class="field">
+          <label>Country</label>
+          <input type="text" id="ccountry" placeholder="Country" />
+        </div>
+        <div class="field">
+          <label>Postal Code</label>
+          <input type="text" id="cpostalCode" placeholder="e.g. 500001" />
+        </div>
+      </div>
+
+      <div class="section-divider">Business</div>
+      <div class="field-group">
+        <div class="field">
+          <label>Company</label>
+          <input type="text" id="ccompany" placeholder="Company name" />
+        </div>
+        <div class="field">
+          <label>Tax ID</label>
+          <input type="text" id="ctaxId" placeholder="Tax / VAT number" />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="cancelModalBtn"
+          style="background:var(--row-hover);color:var(--text-secondary);border:1px solid var(--card-border);">
+          Cancel
+        </button>
+        <button class="btn btn-primary" id="saveCustomerBtn">
+          <i class="bx bx-save"></i> Save Customer
+        </button>
+      </div>
+
+    </div>
+  </div><!-- /.modal -->
+
+  <!-- BUG 6 FIX: config already in <head>; inline script goes last -->
+  <script>
+    /* ── Config ─────────────────────────────────────────────── */
+    const API_BASE = window.BASE_URL;
+
+    /* BUG 7 FIX: derive WebSocket URL from BASE_URL, not hardcoded localhost */
+    function makeWsUrl(httpUrl) {
+      if (!httpUrl) return null;
+      return httpUrl.replace(/^https?/, (m) => (m === 'https' ? 'wss' : 'ws'));
+    }
+
+    /* ── State ──────────────────────────────────────────────── */
+    let customers  = [];
+    let editingId  = null;
+    const PAGE_SIZE = 20;
+    let currentPage = 1;
+
+    /* ── DOM refs ───────────────────────────────────────────── */
+    const tableBody     = document.getElementById('customerTableBody');
+    const modal         = document.getElementById('customerModal');
+    const pagination    = document.getElementById('pagination');
+    const pageInfo      = document.getElementById('pageInfo');
+    const pageBtns      = document.getElementById('pageBtns');
+
+    /* ── WebSocket ──────────────────────────────────────────── */
+    const wsUrl = makeWsUrl(API_BASE);
+    let socket  = null;
+
+    if (wsUrl) {
+      try {
+        socket = new WebSocket(wsUrl);
+        socket.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'customer-update') fetchCustomers();
+          } catch (_) {}
+        };
+        socket.onerror = () => { /* silent — non-critical feature */ };
+      } catch (_) {}
+    }
+
+    function wsSend(payload) {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify(payload));
+      }
+    }
+
+    /* ── Fetch ──────────────────────────────────────────────── */
+    function fetchCustomers() {
+      tableBody.innerHTML = `
+        <tr><td colspan="7" class="table-empty">
+          <i class="bx bx-loader-alt bx-spin"></i> Loading…
+        </td></tr>`;
+
+      axios.get(`${API_BASE}/customer`)
+        .then((res) => { customers = res.data; currentPage = 1; renderCustomers(); })
+        .catch(() => {
+          tableBody.innerHTML = `
+            <tr><td colspan="7" class="table-empty">
+              <i class="bx bx-error-circle"></i> Failed to load customers.
+            </td></tr>`;
+        });
+    }
+
+    /* ── Render ─────────────────────────────────────────────── */
+    function renderCustomers() {
+      const q        = document.getElementById('searchCustomer').value.toLowerCase().trim();
+      const filtered = q
+        ? customers.filter((c) =>
+            (c.name || '').toLowerCase().includes(q) ||
+            (c.email || '').toLowerCase().includes(q) ||
+            (c.phone || '').includes(q))
+        : customers;
+
+      const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const start  = (currentPage - 1) * PAGE_SIZE;
+      const paged  = filtered.slice(start, start + PAGE_SIZE);
+
+      if (!paged.length) {
+        tableBody.innerHTML = `
+          <tr><td colspan="7" class="table-empty">
+            <i class="bx bx-user-x"></i>
+            ${q ? 'No customers match your search.' : 'No customers yet. Add one to get started.'}
+          </td></tr>`;
+        pagination.style.display = 'none';
+        return;
+      }
+
+      tableBody.innerHTML = paged.map((c) => `
+        <tr>
+          <td>${esc(c.name)}</td>
+          <td>${esc(c.email)}</td>
+          <td>${esc(c.phone)}</td>
+          <td>${[c.streetLine,c.city,c.state,c.country,c.postalCode].filter(Boolean).map(esc).join(', ')}</td>
+          <td>${esc(c.company)}</td>
+          <td>${esc(c.taxId)}</td>
+          <td class="actions">
+            <button class="edit"   onclick="editCustomer('${c._id}')"><i class="bx bx-edit-alt"></i> Edit</button>
+            <button class="delete" onclick="deleteCustomer('${c._id}')"><i class="bx bx-trash"></i> Delete</button>
+          </td>
+        </tr>`).join('');
+
+      /* Pagination */
+      pagination.style.display = 'flex';
+      pageInfo.textContent = `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} of ${filtered.length}`;
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(total) {
+      pageBtns.innerHTML = '';
+      const addBtn = (label, page, disabled, active) => {
+        const b = document.createElement('button');
+        b.innerHTML  = label;
+        b.disabled   = disabled;
+        if (active) b.classList.add('active');
+        b.onclick = () => { currentPage = page; renderCustomers(); };
+        pageBtns.appendChild(b);
+      };
+      addBtn('<i class="bx bx-chevron-left"></i>', currentPage - 1, currentPage === 1);
+      for (let p = 1; p <= total; p++) {
+        if (total > 7 && Math.abs(p - currentPage) > 2 && p !== 1 && p !== total) {
+          if (p === 2 || p === total - 1) { const s = document.createElement('button'); s.textContent = '…'; s.disabled = true; pageBtns.appendChild(s); }
+          continue;
+        }
+        addBtn(p, p, false, p === currentPage);
+      }
+      addBtn('<i class="bx bx-chevron-right"></i>', currentPage + 1, currentPage === total);
+    }
+
+    /* ── Escape helper (XSS prevention) ────────────────────── */
+    function esc(v) {
+      if (!v) return '—';
+      return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ── Modal helpers ──────────────────────────────────────── */
+    function openModal()  { modal.classList.add('show'); }
+    function closeModal() {
+      modal.classList.remove('show');
+      editingId = null;
+      document.querySelectorAll('#customerModal input').forEach((i) => (i.value = ''));
+    }
+
+    document.getElementById('addCustomerBtn').onclick = () => {
+      document.getElementById('modalTitle').textContent = 'Add Customer';
+      document.getElementById('saveCustomerBtn').innerHTML = '<i class="bx bx-plus"></i> Add Customer';
+      openModal();
+    };
+
+    document.getElementById('cancelCustomerBtn').onclick = closeModal;
+    document.getElementById('cancelModalBtn').onclick    = closeModal;
+
+    /* Close on backdrop click */
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    /* ── Save ───────────────────────────────────────────────── */
+    document.getElementById('saveCustomerBtn').onclick = () => {
+      const name = document.getElementById('cname').value.trim();
+      if (!name) {
+        document.getElementById('cname').focus();
+        document.getElementById('cname').style.borderColor = 'var(--red)';
+        setTimeout(() => { document.getElementById('cname').style.borderColor = ''; }, 1800);
+        return;
+      }
+
+      const data = {
+        name,
+        email:      document.getElementById('cemail').value.trim(),
+        phone:      document.getElementById('cphone').value.trim(),
+        streetLine: document.getElementById('cstreetLine').value.trim(),
+        city:       document.getElementById('ccity').value.trim(),
+        state:      document.getElementById('cstate').value.trim(),
+        country:    document.getElementById('ccountry').value.trim(),
+        postalCode: document.getElementById('cpostalCode').value.trim(),
+        company:    document.getElementById('ccompany').value.trim(),
+        taxId:      document.getElementById('ctaxId').value.trim(),
+      };
+
+      const btn = document.getElementById('saveCustomerBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Saving…';
+
+      const req = editingId
+        ? axios.put(`${API_BASE}/customer/${editingId}`, data)
+        : axios.post(`${API_BASE}/customer`, data);
+
+      req.then(() => {
+        wsSend({ type: 'customer-update' });
+        fetchCustomers();
+        closeModal();
+      }).catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bx bx-save"></i> Save Customer';
+      });
+    };
+
+    /* ── Edit ───────────────────────────────────────────────── */
+    function editCustomer(id) {
+      const c = customers.find((c) => c._id === id);
+      if (!c) return;
+      document.getElementById('modalTitle').textContent = 'Edit Customer';
+      document.getElementById('saveCustomerBtn').innerHTML = '<i class="bx bx-save"></i> Save Changes';
+      document.getElementById('cname').value       = c.name       || '';
+      document.getElementById('cemail').value      = c.email      || '';
+      document.getElementById('cphone').value      = c.phone      || '';
+      document.getElementById('cstreetLine').value = c.streetLine || '';
+      document.getElementById('ccity').value       = c.city       || '';
+      document.getElementById('cstate').value      = c.state      || '';
+      document.getElementById('ccountry').value    = c.country    || '';
+      document.getElementById('cpostalCode').value = c.postalCode || '';
+      document.getElementById('ccompany').value    = c.company    || '';
+      document.getElementById('ctaxId').value      = c.taxId      || '';
+      editingId = id;
+      openModal();
+    }
+
+    /* ── Delete ─────────────────────────────────────────────── */
+    function deleteCustomer(id) {
+      if (!confirm('Delete this customer? This cannot be undone.')) return;
+      axios.delete(`${API_BASE}/customer/${id}`).then(() => {
+        wsSend({ type: 'customer-update' });
+        fetchCustomers();
+      });
+    }
+
+    /* ── Export ─────────────────────────────────────────────── */
+    function exportCustomersToExcel() {
+      const table = document.getElementById('customerTable');
+      const wb    = XLSX.utils.table_to_book(table, { sheet: 'Customers' });
+      XLSX.writeFile(wb, 'customers.xlsx');
+    }
+
+    /* ── Search ─────────────────────────────────────────────── */
+    document.getElementById('searchCustomer').addEventListener('input', () => {
+      currentPage = 1;
+      renderCustomers();
+    });
+
+    /* ── Init ───────────────────────────────────────────────── */
+    fetchCustomers();
+  </script>
+</body>
+</html>

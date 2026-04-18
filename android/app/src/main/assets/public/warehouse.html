@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eraskon Inventory Management - Warehouses</title>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- Excel Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    /* Reuse your theme and table styles */
+    :root {
+      --bg-light: #e2dcdc;
+      --bg-dark: #090F3B;
+      --text-light: #090F3B;
+      --text-dark: #f1f1f1;
+      --card-bg-light: #e2dcdc;
+      --card-bg-dark: #050d4a;
+      --input-border: #ccc;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    body.dark {
+      --bg-light: #090F3B;
+      --text-light: #e2dcdc;
+      --card-bg-light: #090F3B;
+    }
+
+    #main-content {
+      margin-left: 250px;
+      margin-top: 60px;
+      padding: 20px;
+      background: #fff;
+      min-height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+
+    .user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .user-header input {
+      width: 300px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .user-header button {
+      padding: 8px 16px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    table.user-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    table.user-table th,
+    table.user-table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    table.user-table th {
+      background: var(--text-light);
+      color: white;
+    }
+
+    .actions button {
+      margin-right: 5px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .edit {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .delete {
+      background: #ef4444;
+      color: white;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      width: 400px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .modal-content button {
+      padding: 10px 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+
+    .pagination button {
+      margin: 2px;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      background: #f3f4f6;
+      cursor: pointer;
+    }
+
+    .pagination button.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    .export-buttons button {
+      margin-right: 10px;
+    }
+
+    .save {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    .cancel {
+      background-color: #6b7280;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="components/uiComponents.js"></script>
+  <script src="components/spinner.js"></script>
+  <script src="components/authGuard.js"></script>
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+  <script src="components/footerTab.js"></script>
+
+  <div id="main-content">
+    <div class="user-header">
+      <input type="text" id="searchWarehouse" placeholder="Search warehouses..." />
+      <button style="background: #22c55e;" id="addWarehouseBtn">  <i class="bx bx-plus" style="vertical-align:middle;"></i>Add Warehouse
+      </button>
+      <button onclick="exportToExcel()" style="background:#2563eb;">
+        <i class="bx bx-spreadsheet" style="vertical-align:middle;"></i> Export to Excel
+      </button>
+      <button onclick="exportToPDF()" style="background:#ef4444;">
+        <i class="bx bxs-file-pdf" style="vertical-align:middle;"></i> Export to PDF
+      </button>
+    </div>
+
+
+
+    <table class="user-table" id="warehouseTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Country</th>
+          <th>Location</th>
+          <th>Capacity</th>
+          <th>Manager</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="warehouseTableBody"></tbody>
+    </table>
+    <div id="pagination" class="pagination" style="margin-top: 10px; text-align: center;"></div>
+
+    <div style="margin-top:40px;">
+      <h2 style="margin-bottom:10px;">Warehouse Stock Balances</h2>
+      <table class="user-table" id="warehouseStockTable">
+        <thead>
+          <tr>
+            <th>Warehouse</th>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Stock</th>
+          </tr>
+        </thead>
+        <tbody id="warehouseStockTableBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="modal" id="warehouseModal">
+    <div class="modal-content">
+      <h3 id="modalTitle">Add Warehouse</h3>
+      <input type="text" id="name" placeholder="Name" />
+      <input type="text" id="country" placeholder="Country" />
+      <input type="text" id="location" placeholder="Location" />
+      <input type="text" id="address" placeholder="Address" />
+      <input type="number" id="capacity" placeholder="Capacity" />
+      <input type="text" id="manager" placeholder="Manager" />
+      <button class="save" id="saveWarehouseBtn">Save</button>
+      <button class="cancel" id="cancelWarehouseBtn">Cancel</button>
+    </div>
+  </div>
+
+
+  <script src="assets/js/script.js"></script>
+  <script src="config.js"></script>
+  <script>
+     const API_BASE = window.BASE_URL;
+
+
+    let currentPage = 1;
+    const itemsPerPage = 5;
+
+    const addBtn = document.getElementById('addWarehouseBtn');
+    const modal = document.getElementById('warehouseModal');
+    const saveBtn = document.getElementById('saveWarehouseBtn');
+    const cancelBtn = document.getElementById('cancelWarehouseBtn');
+    const modalTitle = document.getElementById('modalTitle');
+    const tableBody = document.getElementById('warehouseTableBody');
+    const searchInput = document.getElementById('searchWarehouse');
+
+    let warehouses = [];
+    let editingId = null;
+
+    function fetchWarehouses() {
+      axios.get(`${API_BASE}/warehouse`)
+        .then(res => {
+          warehouses = res.data || [];
+          currentPage = 1; // reset to page 1
+          renderPaginatedWarehouses();
+        });
+    }
+
+    function renderPaginatedWarehouses() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const filtered = warehouses.filter(w =>
+        (w.name || "").toLowerCase().includes(searchTerm) ||
+        (w.location || "").toLowerCase().includes(searchTerm)
+      );
+
+      const totalPages = Math.ceil(filtered.length / itemsPerPage);
+      const start = (currentPage - 1) * itemsPerPage;
+      const paginated = filtered.slice(start, start + itemsPerPage);
+
+      tableBody.innerHTML = paginated.map(w => `
+      <tr>
+        <td>${w.name || '-'}</td>
+        <td>${w.country || '-'}</td>
+        <td>${w.location || '-'}</td>
+        <td>${w.capacity || '-'}</td>
+        <td>${w.manager || '-'}</td>
+        <td class="actions">
+          <button class="edit" onclick="editWarehouse('${w._id}')">Edit</button>
+          <button class="delete" onclick="deleteWarehouse('${w._id}')">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+
+      renderPaginationControls(totalPages);
+    }
+
+    function renderPaginationControls(totalPages) {
+      const container = document.getElementById("pagination");
+      container.innerHTML = "";
+
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.className = i === currentPage ? "active" : "";
+        btn.onclick = () => {
+          currentPage = i;
+          renderPaginatedWarehouses();
+        };
+        container.appendChild(btn);
+      }
+    }
+
+    function openModal() {
+      modal.classList.add('show');
+    }
+
+    function closeModal() {
+      modal.classList.remove('show');
+      document.querySelectorAll('#warehouseModal input').forEach(input => input.value = '');
+      editingId = null;
+    }
+
+    addBtn.onclick = () => {
+      modalTitle.textContent = 'Add Warehouse';
+      openModal();
+    };
+
+    cancelBtn.onclick = closeModal;
+
+    saveBtn.onclick = () => {
+      const data = {
+        name: document.getElementById('name').value,
+        country: document.getElementById('country').value,
+        location: document.getElementById('location').value,
+        address: document.getElementById('address').value,
+        capacity: +document.getElementById('capacity').value,
+        manager: document.getElementById('manager').value,
+      };
+
+      const request = editingId
+        ? axios.put(`${API_BASE}/warehouse/${editingId}`, data)
+        : axios.post(`${API_BASE}/warehouse`, data);
+
+      request.then(fetchWarehouses).finally(closeModal);
+    };
+
+    function editWarehouse(id) {
+      const w = warehouses.find(w => w._id === id);
+      if (!w) return;
+      modalTitle.textContent = 'Edit Warehouse';
+      document.getElementById('name').value = w.name || '';
+      document.getElementById('country').value = w.country || '';
+      document.getElementById('location').value = w.location || '';
+      document.getElementById('address').value = w.address || '';
+      document.getElementById('capacity').value = w.capacity || '';
+      document.getElementById('manager').value = w.manager || '';
+      editingId = id;
+      openModal();
+    }
+
+    function deleteWarehouse(id) {
+      if (confirm('Are you sure?')) {
+        axios.delete(`${API_BASE}/warehouse/${id}`)
+          .then(fetchWarehouses)
+          .catch(err => alert('Delete failed: ' + (err.response?.data?.message || err.message)));
+      }
+    }
+
+    function exportToExcel() {
+      const table = document.getElementById("warehouseTable");
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Warehouses" });
+      XLSX.writeFile(wb, "warehouses.xlsx");
+    }
+
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const rows = Array.from(document.querySelectorAll("#warehouseTable tbody tr"))
+        .map(tr => Array.from(tr.children).slice(0, 5).map(td => td.textContent.trim()));
+
+      doc.autoTable({
+        head: [["Name", "Country", "Location", "Capacity", "Manager"]],
+        body: rows
+      });
+      doc.save("warehouses.pdf");
+    }
+
+    // Handle search input
+    searchInput.addEventListener('input', () => {
+      currentPage = 1;
+      renderPaginatedWarehouses();
+    });
+
+    // Fetch and display warehouse stock balances
+    async function fetchWarehouseStock() {
+      try {
+        const res = await axios.get(`${API_BASE}/product-variant`);
+        const variants = res.data || [];
+        const rows = [];
+        variants.forEach(variant => {
+          if (Array.isArray(variant.warehouses)) {
+            variant.warehouses.forEach(w => {
+              rows.push({
+                warehouse: w.name || (w.warehouse && w.warehouse.name) || w.warehouse || '-',
+                product: variant.name,
+                sku: variant.sku,
+                category: (variant.product && variant.product.category && variant.product.category.name)
+                  ? variant.product.category.name
+                  : (variant.category && variant.category.name)
+                    ? variant.category.name
+                    : (variant.category || '-'),
+                stock: w.stock
+              });
+            });
+          }
+        });
+        renderWarehouseStockTable(rows);
+      } catch (err) {
+        document.getElementById('warehouseStockTableBody').innerHTML =
+          `<tr><td colspan="5" style="text-align:center;">Failed to load stock data</td></tr>`;
+      }
+    }
+
+    function renderWarehouseStockTable(rows) {
+      const tbody = document.getElementById('warehouseStockTableBody');
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No stock data</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.warehouse}</td>
+          <td>${row.product}</td>
+          <td>${row.sku}</td>
+          <td>${row.category || '-'}</td>
+          <td>${row.stock}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Call this after the page loads
+    fetchWarehouseStock();
+
+    // Initial load
+    fetchWarehouses();
+  </script>
+
+</body>
+
+</html>

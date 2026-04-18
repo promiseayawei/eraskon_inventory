@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Eraskon | Login & Activation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Spinner Loader -->
+  <script src="components/spinner.js"></script>
+
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <!-- Config & Utils -->
+  <script src="config.js"></script>
+  <script src="components/uiComponents.js"></script>
+  <script src="assets/js/utils.js"></script>
+
+  <!-- Fonts: Cinzel for display + DM Sans for body — same as sidebar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Design Tokens — mirrors sidebar.js :root ─────────── */
+    :root {
+      /* Core palette — exact sidebar values */
+      --blue:           #3b82f6;
+      --blue-light:     #60a5fa;
+      --blue-mid:       #2563eb;
+      --indigo:         #6366f1;
+      --indigo-label:   #c7d2fe;   /* was #a5b4fc — brighter for headers on #344f9f */
+      --indigo-soft:    #ffffff;   /* was #e0e7ff — pure white for panel h2         */
+      --purple:         #9333ea;
+
+      /* Gradients — identical to sidebar */
+      --gradient-pill:  linear-gradient(90deg, #3b82f6, #9333ea);   /* --sb-pill  */
+      --gradient-panel: linear-gradient(180deg, #1e3a8a 0%, #172d6e 100%); /* --sb-bg */
+      --gradient-btn:   linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+      --gradient-avatar:linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); /* --sb-avatar */
+
+      /* Surfaces */
+      --bg-page:        #23336e;   /* brand navy — page background */
+      --bg-page-alt:    #1d2a5e;   /* slightly deeper for gradient depth */
+      --bg-card:        #344f9f;
+      --bg-side:        #1e3a8a;   /* side panel — sidebar gradient start */
+      --bg-input:       #2a4190;   /* input surface — slightly deeper than card */
+      --bg-field:       #253a82;   /* focused input surface */
+      --border-card:    rgba(59,130,246,0.20);
+      --border-input:   rgba(59,130,246,0.22);
+
+      /* Accent surface — replaces gold-ring/gold-border with blue equivalents */
+      --accent:         var(--blue-light);        /* was --gold        */
+      --accent-light:   #bfdbfe;                  /* was --gold-light  */
+      --accent-border:  rgba(59,130,246,0.30);    /* was --gold-border */
+      --accent-bg:      rgba(59,130,246,0.07);    /* was rgba(gold,0.07) */
+      --accent-ring:    rgba(59,130,246,0.18);    /* was --gold-ring   */
+      --glow-blue:      0 0 32px 0 rgba(59,130,246,0.40); /* --sb-glow */
+      --pill-glow:      0 0 12px 2px rgba(59,130,246,0.50); /* --sb-pill-glow */
+
+      /* Text — brightened for #344f9f card background */
+      --text-primary:   #ffffff;   /* was #e6e8f3 — full white for body copy */
+      --text-muted:     #dce6ff;   /* was #cbcdde — crisp light-blue white   */
+      --text-faint:     #a8bde8;   /* was #7c7e8c — lifted from near-grey    */
+
+      /* Status */
+      --success-bg:     #1e2e1e;
+      --success-txt:    #b6e6b6;
+      --success-bdr:    #3bbf3b;
+      --error-bg:       #2a181c;
+      --error-txt:      #f3b6b6;
+      --error-bdr:      #f63b3b;
+
+      /* Radii */
+      --r-xl:  22px;
+      --r-lg:  16px;
+      --r-md:  10px;
+      --r-sm:   6px;
+
+      /* Fonts */
+      --font-display: 'Cinzel', serif;
+      --font-body:    'DM Sans', sans-serif;
+
+      /* Card shadow — mirrors sidebar box-shadow */
+      --card-shadow: var(--glow-blue), 0 1.5px 6px 0 rgba(59,130,246,0.08);
+    }
+
+    /* ─── Page ───────────────────────────────────────────────── */
+    html, body { min-height: 100%; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1rem 1.5rem;
+      font-family: var(--font-body);
+      background: #23336e;
+      background-attachment: fixed;
+      color: var(--text-primary);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Subtle blue grid — same technique as sidebar host pages */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        repeating-linear-gradient(0deg,  transparent, transparent 59px, rgba(59,130,246,0.03) 60px),
+        repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(59,130,246,0.03) 60px);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* Radial glow from top — blue, matching sidebar's top glow */
+    body::after {
+      content: '';
+      position: fixed; top: -10%; left: 50%; transform: translateX(-50%);
+      width: 80vw; height: 50vh;
+      background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.12) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ─── Brand Header ───────────────────────────────────────── */
+    .logo-header {
+      position: relative; z-index: 2;
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 1.75rem;
+      animation: fadeUp 0.55s ease both;
+    }
+
+    .logo-header img {
+      height: 46px; width: 46px;
+      border-radius: var(--r-md);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--accent-border);
+      padding: 4px;
+      box-shadow: 0 2px 12px rgba(59,130,246,0.20);
+    }
+
+    .logo-header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(0.85rem, 2.5vw, 1.05rem);
+      font-weight: 500;
+      color: var(--indigo-label);        /* was gold — now indigo-label */
+      letter-spacing: 0.03em;
+      line-height: 1.3;
+    }
+
+    .logo-header h1 span {
+      display: block;
+      font-family: var(--font-body);
+      font-size: 0.63rem; font-weight: 300;
+      color: var(--text-muted);
+      letter-spacing: 0.18em; text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    /* ─── Card ───────────────────────────────────────────────── */
+    .container {
+      position: relative; z-index: 2;
+      width: 100%; max-width: 860px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      display: flex; min-height: 490px;
+      animation: fadeUp 0.55s 0.1s ease both;
+      opacity: 0;
+      /* box-shadow: var(--card-shadow); */
+      /* Remove shadow for a flat look */
+      box-shadow: none;
+    }
+
+    /* ─── Side Panel — uses sidebar's exact gradient ─────────── */
+    .side-panel {
+      flex: 0 0 38%;
+      background: var(--gradient-panel);   /* ← sidebar --sb-bg */
+      border-right: 1px solid rgba(59,130,246,0.15);
+      padding: 2.5rem 2rem;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      position: relative; overflow: hidden;
+    }
+
+    /* Decorative rings — blue tones matching sidebar glow */
+    .side-panel .ring {
+      position: absolute; border-radius: 50%;
+      border: 1px solid rgba(59,130,246,0.10);
+      pointer-events: none;
+    }
+    .side-panel .ring:nth-child(1) { width: 260px; height: 260px; top: -80px; left: -80px; }
+    .side-panel .ring:nth-child(2) { width: 160px; height: 160px; top: -30px; left: -30px; }
+    /* Extra faint outer ring */
+    .side-panel .ring:nth-child(3) { width: 360px; height: 360px; top:-120px; left:-120px; border-color: rgba(99,102,241,0.06); }
+
+    /* Badge — gradient pill matching sidebar active pill */
+    .side-badge {
+      position: absolute; top: 24px; right: 24px;
+      width: 52px; height: 52px;
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .side-badge::before {
+      content: '';
+      position: absolute;
+      width: 34px; height: 34px;
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 50%;
+    }
+    .side-badge svg {
+      width: 18px; height: 18px;
+      stroke: var(--blue-light);   /* was gold stroke */
+      fill: none; stroke-width: 1.4;
+      position: relative; z-index: 1;
+      filter: drop-shadow(0 0 6px rgba(96,165,250,0.5));
+    }
+
+    /* Side tag — indigo-label border */
+    .side-tag {
+      display: inline-block;
+      font-size: 0.61rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--indigo-label);          /* was text-muted */
+      background: rgba(99,102,241,0.08);   /* was gold tint  */
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 4px; padding: 3px 9px;
+      margin-bottom: 0.9rem;
+      font-family: var(--font-body);
+    }
+
+    /* Divider — blue gradient strip */
+    .side-divider {
+      width: 32px; height: 2px;
+      background: var(--gradient-pill);   /* was solid gold */
+      border-radius: 1px;
+      margin-bottom: 0.9rem;
+      box-shadow: var(--pill-glow);
+    }
+
+    .side-panel h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+      font-weight: 500;
+      color: #e0e7ff;                      /* was gold — now indigo-soft */
+      line-height: 1.35; margin-bottom: 0.5rem;
+    }
+
+    .side-panel p {
+      font-size: 0.76rem;
+      color: rgba(165,180,252,0.75);       /* was text-muted — now muted indigo */
+      line-height: 1.65; font-weight: 300;
+    }
+
+    /* Feature pills at bottom of side panel */
+    .side-features {
+      display: flex; flex-direction: column; gap: 6px;
+      margin-top: 1.2rem;
+    }
+    .side-feature {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.71rem; color: rgba(165,180,252,0.65);
+    }
+    .side-feature-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--blue-light); flex-shrink: 0;
+      box-shadow: 0 0 6px rgba(96,165,250,0.6);
+    }
+
+    /* ─── Form Panel ──────────────────────────────────────────── */
+    .forms {
+      flex: 1; padding: 2.25rem 2rem;
+      display: flex; flex-direction: column;
+      min-width: 0;
+    }
+
+    /* ─── Tab Bar — blue accent border, same as sidebar divider ─ */
+    .tab-bar {
+      display: flex; gap: 3px;
+      background: rgba(59,130,246,0.05);
+      border: 1px solid rgba(59,130,246,0.22);   /* was gold-border */
+      border-radius: var(--r-md);
+      padding: 3px;
+      margin-bottom: 1.75rem;
+    }
+
+    .tab-bar button {
+      flex: 1; padding: 9px 10px;
+      font-family: var(--font-body);
+      font-size: 0.73rem; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      border: none; border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+      color: var(--text-muted);
+      background: transparent;
+    }
+
+    .tab-bar button.active {
+      background: var(--gradient-btn);    /* same as sidebar active pill gradient */
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(59,130,246,0.25);
+    }
+
+    .tab-bar button:not(.active):hover {
+      color: var(--blue-light);
+      background: rgba(59,130,246,0.10);
+    }
+
+    /* ─── Form Views ─────────────────────────────────────────── */
+    .form-view {
+      display: none; flex-direction: column; flex: 1;
+      animation: fadeIn 0.28s ease;
+    }
+    .form-view.active { display: flex; }
+
+    /* ─── Form Head ─────────────────────────────────────────── */
+    .form-head { margin-bottom: 1.4rem; }
+
+    .form-head h3 {
+      font-family: var(--font-display);
+      font-size: 1.2rem; font-weight: 500;
+      color: var(--indigo-label);         /* was gold — now indigo-label */
+      margin-bottom: 3px;
+    }
+
+    .form-head p { font-size: 0.76rem; color: var(--text-muted); font-weight: 300; }
+
+    /* ─── Message Box ─────────────────────────────────────────── */
+    .message-box {
+      display: none; border-radius: var(--r-sm);
+      padding: 9px 13px; font-size: 0.76rem;
+      font-weight: 400; margin-bottom: 0.85rem;
+      border: 1px solid; line-height: 1.5;
+    }
+    .message-box.success { display: block; background: var(--success-bg); color: var(--success-txt); border-color: var(--success-bdr); }
+    .message-box.error   { display: block; background: var(--error-bg);   color: var(--error-txt);   border-color: var(--error-bdr);   }
+
+    /* ─── Input Fields ───────────────────────────────────────── */
+    .input-boxes { display: flex; flex-direction: column; gap: 0.65rem; }
+
+    .input-box { position: relative; display: flex; align-items: center; }
+
+    .input-box .field-icon {
+      position: absolute; left: 13px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none; display: flex;
+      align-items: center; justify-content: center;
+      z-index: 2; width: 16px; height: 16px;
+    }
+
+    .input-box .field-icon svg {
+      width: 15px; height: 15px;
+      stroke: var(--text-faint);   /* slightly dimmer default */
+      fill: none; stroke-width: 1.7;
+      stroke-linecap: round; stroke-linejoin: round;
+      transition: stroke 0.2s;
+    }
+
+    .input-box input[type="text"],
+    .input-box input[type="email"],
+    .input-box input[type="password"] {
+      width: 100%; height: 46px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: var(--r-md);
+      padding: 0 44px 0 40px;
+      font-family: var(--font-body);
+      font-size: 0.83rem; font-weight: 300;
+      color: var(--text-primary); outline: none;
+      transition: border-color 0.22s, background 0.22s, box-shadow 0.22s;
+    }
+
+    .input-box input::placeholder { color: var(--text-faint); }
+
+    .input-box input:focus {
+      border-color: var(--blue);
+      background: var(--bg-field);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+
+    /* Icon turns blue on focus — matches sidebar icon color shift */
+    .input-box:has(input:focus) .field-icon svg { stroke: var(--blue-light); }
+
+    /* Submit button */
+    .input-box.button input[type="submit"] {
+      width: 100%; height: 46px; padding: 0 20px;
+      background: var(--gradient-btn);
+      color: #fff; font-family: var(--font-body);
+      font-size: 0.83rem; font-weight: 500;
+      letter-spacing: 0.06em;
+      border: none; border-radius: var(--r-md);
+      cursor: pointer;
+      transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 2px 14px rgba(59,130,246,0.25);
+    }
+
+    .input-box.button input[type="submit"]:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 4px 22px rgba(59,130,246,0.38);
+    }
+
+    .input-box.button input[type="submit"]:active { transform: scale(0.98); }
+
+    .input-box.button input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* Eye toggle */
+    .eye-btn {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      padding: 2px; display: flex; align-items: center; z-index: 3;
+    }
+    .eye-btn svg {
+      width: 15px; height: 15px;
+      stroke: var(--text-faint); fill: none;
+      stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+      transition: stroke 0.2s;
+    }
+    .eye-btn:hover svg { stroke: var(--blue-light); }   /* was gold */
+
+    /* Forgot link */
+    .text.forgot-link { text-align: right; margin-top: -4px; margin-bottom: 2px; }
+    .text.forgot-link a {
+      font-size: 0.73rem; color: var(--indigo-label);   /* was text-muted */
+      text-decoration: none; transition: color 0.2s;
+    }
+    .text.forgot-link a:hover { color: var(--blue-light); }
+
+    /* Switch text */
+    .text.sign-up-text {
+      text-align: center; font-size: 0.74rem;
+      color: var(--text-muted); margin-top: 0.5rem;
+    }
+    .text.sign-up-text label {
+      color: var(--indigo-label);         /* was gold */
+      cursor: pointer; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .text.sign-up-text label:hover {
+      color: var(--blue-light);           /* was gold-light */
+      text-decoration: underline;
+    }
+
+    /* ─── Footer ─────────────────────────────────────────────── */
+    footer {
+      position: relative; z-index: 2;
+      text-align: center; padding: 1.25rem 0 0;
+      font-size: 0.7rem; color: var(--text-faint);
+      animation: fadeUp 0.55s 0.22s ease both;
+      opacity: 0;
+    }
+    footer a { color: var(--blue-light); text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: var(--indigo-label); }
+
+    /* ─── Animations ──────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ─── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 700px) {
+      .side-panel { display: none; }
+      .container  { min-height: auto; }
+      .forms      { padding: 2rem 1.5rem; }
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 1.5rem 0.75rem 1rem; }
+      .logo-header { gap: 10px; margin-bottom: 1.25rem; }
+      .logo-header img { height: 40px; width: 40px; }
+      .logo-header h1  { font-size: 0.85rem; }
+      .container       { border-radius: var(--r-lg); }
+      .forms           { padding: 1.5rem 1.25rem; }
+      .tab-bar         { margin-bottom: 1.4rem; }
+      .tab-bar button  { font-size: 0.68rem; padding: 8px 6px; }
+      .input-box input[type="text"],
+      .input-box input[type="email"],
+      .input-box input[type="password"],
+      .input-box.button input[type="submit"] { height: 44px; font-size: 0.82rem; }
+      .form-head h3 { font-size: 1.05rem; }
+    }
+
+    @media (max-width: 360px) {
+      .forms { padding: 1.25rem 1rem; }
+      .tab-bar button { letter-spacing: 0.04em; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Brand Header -->
+  <div class="logo-header">
+    <img src="assets/images/eraskon_logo.webp" alt="Eraskon Logo">
+    <h1>
+      Eraskon Inventory Management Solution
+      <span>Enterprise Resource Platform</span>
+    </h1>
+  </div>
+
+  <!-- Main Card -->
+  <div class="container">
+
+    <!-- Side Panel — gradient matches sidebar --sb-bg exactly -->
+    <div class="side-panel">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+
+      <div class="side-badge">
+        <!-- Store / inventory icon — matches sidebar logo -->
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+
+      <div>
+        <div class="side-tag">Eraskon IMS</div>
+        <div class="side-divider"></div>
+        <h2>Inventory<br>Systems<br>Automation</h2>
+        <p style="margin-top:0.75rem">
+          Streamline operations, track stock in real time, and make data-driven decisions across all warehouses.
+        </p>
+
+        <!-- Feature list — complements the panel -->
+        <div class="side-features">
+          <div class="side-feature"><div class="side-feature-dot"></div>Real-time stock tracking</div>
+          <div class="side-feature"><div class="side-feature-dot"></div>Multi-warehouse management</div>
+          <div class="side-feature"><div class="side-feature-dot"></div>Role-based access control</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forms Section -->
+    <div class="forms">
+
+      <!-- Hidden checkbox — kept for script compat -->
+      <input type="checkbox" id="flip" style="display:none">
+
+      <!-- Tab Switcher -->
+      <div class="tab-bar">
+        <button class="active" id="tab-login"  onclick="switchView('login')">Login</button>
+        <button              id="tab-signup" onclick="switchView('signup')">Activate Account</button>
+      </div>
+
+      <!-- ── LOGIN FORM ── -->
+      <div class="form-view active" id="view-login">
+        <div class="form-head">
+          <h3>Welcome back</h3>
+          <p>Sign in to your Eraskon dashboard</p>
+        </div>
+
+        <div id="loginMessageBox" class="message-box"></div>
+
+        <form id="loginForm" autocomplete="on">
+          <div class="input-boxes">
+
+            <div class="input-box">
+              <div class="field-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <input type="email" id="l-email" placeholder="Email address" required autocomplete="email">
+            </div>
+
+            <div class="input-box">
+              <div class="field-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <input type="password" id="l-pass" placeholder="Password" required autocomplete="current-password">
+              <button class="eye-btn" type="button" onclick="togglePw('l-pass', this)" tabindex="-1" aria-label="Show password">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+
+            <div class="text forgot-link">
+              <a href="#" id="forgotLink">Forgot password?</a>
+            </div>
+
+            <div class="input-box button">
+              <input type="submit" id="loginBtn" value="Login to Dashboard">
+            </div>
+
+            <div class="text sign-up-text">
+              No credentials yet? <label for="flip" onclick="switchView('signup')">Activate Account</label>
+            </div>
+
+          </div>
+        </form>
+      </div>
+
+      <!-- ── SIGNUP / ACTIVATION FORM ── -->
+      <div class="form-view" id="view-signup">
+        <div class="form-head">
+          <h3>Activate account</h3>
+          <p>Create your credentials to get started</p>
+        </div>
+
+        <div id="signupMessageBox" class="message-box"></div>
+
+        <form id="signupForm" autocomplete="on">
+          <div class="input-boxes">
+
+            <div class="input-box">
+              <div class="field-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <input type="email" id="s-email" placeholder="Work email address" required autocomplete="email">
+            </div>
+
+            <div class="input-box">
+              <div class="field-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <input type="text" id="s-fname" placeholder="First name" required autocomplete="given-name">
+            </div>
+
+            <div class="input-box">
+              <div class="field-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <input type="text" id="s-lname" placeholder="Last name" required autocomplete="family-name">
+            </div>
+
+            <div class="input-box">
+              <div class="field-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <input type="password" id="s-pass" placeholder="Create password" required autocomplete="new-password">
+              <button class="eye-btn" type="button" onclick="togglePw('s-pass', this)" tabindex="-1" aria-label="Show password">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+
+            <div class="input-box">
+              <div class="field-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2L3 6v6c0 5.25 3.75 10.05 9 11.25C17.25 22.05 21 17.25 21 12V6L12 2z"/><path d="M9 12l2 2 4-4"/></svg>
+              </div>
+              <input type="password" id="s-cpass" placeholder="Confirm password" required autocomplete="new-password">
+              <button class="eye-btn" type="button" onclick="togglePw('s-cpass', this)" tabindex="-1" aria-label="Show confirm password">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+
+            <div class="input-box button">
+              <input type="submit" id="signupBtn" value="Activate Account">
+            </div>
+
+            <div class="text sign-up-text">
+              Already have an account? <label for="flip" onclick="switchView('login')">Login now</label>
+            </div>
+
+          </div>
+        </form>
+      </div>
+
+    </div><!-- /.forms -->
+  </div><!-- /.container -->
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Eraskon Inventory. All rights reserved &nbsp;&mdash;&nbsp;
+    Developed by <a href="https://github.com/ayaweisoft" target="_blank" rel="noopener">Ayaweisoft</a>
+  </footer>
+
+  <!-- ─── Scripts (unchanged logic) ───────────────────────────── -->
+  <script>
+    const API_BASE = window.BASE_URL;
+
+    /* ── View Switcher ── */
+    function switchView(view) {
+      document.querySelectorAll('.form-view').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-bar button').forEach(el => el.classList.remove('active'));
+      document.getElementById('view-' + view).classList.add('active');
+      document.getElementById('tab-'  + view).classList.add('active');
+      document.getElementById('flip').checked = (view === 'signup');
+    }
+
+    /* ── Message Box ── */
+    function showMessage(id, message, type = 'success') {
+      const box = document.getElementById(id);
+      box.textContent = message;
+      box.className = 'message-box ' + type;
+      if (type === 'success') {
+        setTimeout(() => { box.className = 'message-box'; box.textContent = ''; }, 5000);
+      }
+    }
+
+    /* ── Password Toggle ── */
+    function togglePw(id, btn) {
+      const inp    = document.getElementById(id);
+      const isText = inp.type === 'password';
+      inp.type     = isText ? 'text' : 'password';
+      const svg    = btn.querySelector('svg');
+      if (isText) {
+        svg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+        svg.style.stroke = 'var(--blue-light)';   /* was gold */
+      } else {
+        svg.innerHTML    = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+        svg.style.stroke = '';
+      }
+    }
+
+    /* ── LOGIN ── */
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email    = document.getElementById('l-email').value.trim();
+      const password = document.getElementById('l-pass').value;
+      const btn      = document.getElementById('loginBtn');
+
+      btn.value = 'Authenticating…'; btn.disabled = true;
+
+      axios.post(`${API_BASE}/auth/login`, { email, password })
+        .then(response => {
+          const { token, user } = response.data;
+          localStorage.setItem('token',     token);
+          localStorage.setItem('email',     user.email);
+          localStorage.setItem('role',      user.role);
+          localStorage.setItem('name',      `${user.firstName} ${user.lastName}`);
+          localStorage.setItem('firstName', user.firstName);
+          localStorage.setItem('lastName',  user.lastName);
+          localStorage.setItem('userId',    user._id);
+          localStorage.setItem('warehouse',
+            (user.warehouse && typeof user.warehouse === 'object' && user.warehouse.name)
+              ? user.warehouse.name
+              : (typeof user.warehouse === 'string' ? user.warehouse : '')
+          );
+
+          showMessage('loginMessageBox', 'Login successful! Redirecting…', 'success');
+
+          const redirectMap = {
+            admin:     'stats.html',
+            inventory: 'stock-movement.html',
+            sales:     'store.html',
+            warehouse: 'warehouse.html',
+            finance:   'approve.html',
+            chairman:  'chairman.html',
+          };
+          setTimeout(() => { window.location.href = redirectMap[user.role] || 'welcome.html'; }, 1500);
+        })
+        .catch(err => {
+          showMessage('loginMessageBox', err.response?.data?.error || 'Login failed. Check your credentials.', 'error');
+          btn.value = 'Login to Dashboard'; btn.disabled = false;
+        });
+    });
+
+    /* ── REGISTER ── */
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email           = document.getElementById('s-email').value.trim();
+      const firstName       = document.getElementById('s-fname').value.trim();
+      const lastName        = document.getElementById('s-lname').value.trim();
+      const password        = document.getElementById('s-pass').value;
+      const confirmPassword = document.getElementById('s-cpass').value;
+      const btn             = document.getElementById('signupBtn');
+
+      if (password !== confirmPassword) {
+        showMessage('signupMessageBox', 'Passwords do not match.', 'error');
+        return;
+      }
+
+      btn.value = 'Activating…'; btn.disabled = true;
+
+      axios.post(`${API_BASE}/auth/register`, { email, firstName, lastName, password })
+        .then(res => {
+          showMessage('signupMessageBox', res.data.message || 'Account activated! You can now log in.', 'success');
+          btn.value = 'Activate Account'; btn.disabled = false;
+        })
+        .catch(err => {
+          showMessage('signupMessageBox', err.response?.data?.error || 'Activation failed.', 'error');
+          btn.value = 'Activate Account'; btn.disabled = false;
+        });
+    });
+
+    /* ── FORGOT PASSWORD ── */
+    document.getElementById('forgotLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      const emailInput = document.getElementById('l-email');
+      const email      = emailInput.value.trim();
+
+      if (!email) {
+        emailInput.focus();
+        emailInput.style.borderColor = 'var(--error-bdr)';
+        showMessage('loginMessageBox', 'Please enter your email address to reset your password.', 'error');
+        setTimeout(() => { emailInput.style.borderColor = ''; }, 1800);
+        return;
+      }
+
+      const link        = document.getElementById('forgotLink');
+      link.textContent  = 'Sending…';
+      link.style.pointerEvents = 'none';
+
+      axios.post(`${API_BASE}/auth/forgot-password`, { email })
+        .then(res  => {
+          showMessage('loginMessageBox', res.data.message || 'Password reset link sent!', 'success');
+          link.textContent = 'Forgot password?'; link.style.pointerEvents = '';
+        })
+        .catch(err => {
+          showMessage('loginMessageBox', err.response?.data?.error || 'Password reset failed.', 'error');
+          link.textContent = 'Forgot password?'; link.style.pointerEvents = '';
+        });
+    });
+
+    /* ── Spinner ── */
+    window.addEventListener('load', () => { if (window.hideSpinner) window.hideSpinner(); });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shipping Dashboard - Eraskon</title>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --primary-bg: #e2dcdc;
+      --success: #10b981;
+      --danger: #ef4444;
+      --table-header: #f3eded;
+      --white: #f3eded;
+      --text: #222;
+      --shadow: 0 2px 8px #0001;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--primary-bg);
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: rgba(0, 0, 0, 0.4);
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 24px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .shipping-main-content {
+      margin-left: 240px;
+      margin-top: 64px;
+      padding: 32px 24px 24px 24px;
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
+
+    .shipping-container {
+      max-width: 1200px;
+      margin: 0;
+      background: var(--white);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 32px 24px;
+    }
+
+    .shipping-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .shipping-tab-btn {
+      background: var(--white);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 10px 18px;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      font-weight: 600;
+      outline: none;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .shipping-tab-btn.active {
+      background: var(--primary);
+      color: var(--white);
+      border-bottom: 2px solid var(--white);
+      z-index: 2;
+    }
+
+    .shipping-tab-content {
+      display: none;
+      background: var(--white);
+      border-radius: 0 0 8px 8px;
+      box-shadow: var(--shadow);
+      padding: 0;
+      margin-bottom: 32px;
+      animation-duration: 0.5s;
+    }
+
+    .shipping-tab-content.active {
+      display: block;
+      animation: fadeIn 0.5s;
+    }
+
+    table {
+      width: 100%;
+      min-width: 900px;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      background: var(--white);
+      border-radius: 8px;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    th {
+      background: var(--table-header);
+      color: var(--primary);
+    }
+
+    .shipping-action-btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-right: 6px;
+      transition: background 0.2s;
+    }
+
+    .shipping-action-btn.ship {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .shipping-action-btn.delivered {
+      background: var(--success);
+      color: var(--white);
+    }
+
+    .shipping-action-btn.cancel {
+      background: var(--danger);
+      color: var(--white);
+    }
+
+    .shipping-action-btn.ship:hover {
+      background: var(--primary-light);
+    }
+
+    .shipping-action-btn.delivered:hover {
+      background: #059669;
+    }
+
+    .shipping-action-btn.cancel:hover {
+      background: #b91c1c;
+    }
+
+    @media (max-width: 900px) {
+      .shipping-main-content {
+        margin-left: 60px;
+        margin-top: 56px;
+        padding: 16px 4px 4px 4px;
+      }
+
+      .shipping-container {
+        padding: 12px 4px;
+      }
+
+      table {
+        min-width: 600px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .shipping-main-content {
+        margin-left: 0;
+        margin-top: 56px;
+        padding: 8px 2px 2px 2px;
+      }
+
+      .shipping-container {
+        padding: 10px 2px;
+        border-radius: 0;
+        margin: 0;
+        box-shadow: none;
+        background: transparent !important;
+        width: 100% !important;
+      }
+
+      .shipping-tabs {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .shipping-tab-btn {
+        border-radius: 0;
+        width: 100%;
+        text-align: left;
+        padding: 12px 10px;
+        font-size: 1em;
+      }
+
+      .shipping-tab-content {
+        border-radius: 0 0 8px 8px;
+        padding: 0;
+        box-shadow: none;
+        background: transparent !important;
+      }
+
+      table {
+        min-width: 400px;
+        font-size: 0.95em;
+        display: block;
+        overflow-x: auto;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        min-width: 0 !important;
+      }
+
+      th,
+      td {
+        min-width: 120px;
+        white-space: normal;
+        padding: 8px 6px;
+        flex: 1 0 120px;
+        max-width: 100vw;
+        word-break: break-word;
+      }
+
+      table,
+      thead,
+      tbody,
+      tfoot,
+      tr,
+      th,
+      td {
+        display: block;
+        width: 100% !important;
+        box-sizing: border-box;
+      }
+
+      tr {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <script src="components/uiComponents.js"></script>
+  <script src="components/spinner.js"></script>
+  <script src="components/authGuard.js"></script>
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+  <script src="components/footerTab.js"></script>
+
+  <div class="shipping-main-content">
+    <div class="shipping-container">
+      <h2>Shipping Menu</h2>
+
+      <div class="shipping-tabs">
+        <button class="shipping-tab-btn active" data-tab="pendingShippingTab"><i class="bx bx-send"></i> Pending</button>
+        <button class="shipping-tab-btn" data-tab="stockMovementTab"><i class="bx bx-transfer"></i> Stock Movement</button>
+      </div>
+
+      <div id="pendingShippingTab" class="shipping-tab-content active">
+        <h3>Pending Shipments</h3>
+        <div style="text-align: right; margin-bottom: 12px;">
+          <button class="shipping-action-btn ship" onclick="printPendingShipments()">🖨️ Print All</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment ID</th>
+              <th>Order</th>
+              <th>Customer</th>
+              <th>Address</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="pendingShippingBody">
+            <tr><td colspan="7">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="stockMovementTab" class="shipping-tab-content">
+        <h3>Stock Movements</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Type</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Created</th>
+              <th>Approved</th>
+              <th>Received</th>
+              <th>Logistics</th>
+            </tr>
+          </thead>
+          <tbody id="stockMovementTbody">
+            <tr><td colspan="10">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logistics Modal -->
+  <div id="logisticsModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <h3>Assign Logistics</h3>
+      <select id="logisticsSelect">
+        <option value="">Select a company</option>
+      </select>
+      <br><br>
+      <button id="assignLogisticsConfirm">Assign</button>
+      <button onclick="closeLogisticsModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script> <script src="assets/js/shipping.js"></script>
+</body>
+
+</html>

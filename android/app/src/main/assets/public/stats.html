@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eraskon Inventory Management — Store</title>
+
+  <!-- BUG 3 FIX: Font Awesome removed — only Boxicons used in HTML -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+
+  <!-- BUG 2 FIX: correct Tailwind v3 CDN — play script, not the stub CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- BUG 1 + 9 FIX: config first so BASE_URL is available to every script -->
+  <script src="config.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+  <script>
+    /* Tailwind config — extend with Eraskon brand colours */
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#3b82f6', dark: '#1e3a8a', light: '#60a5fa' }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* ── Page shell ─────────────────────────────────────────── */
+    :root {
+      --nav-h:   60px;
+      --sb-w:    260px;
+      --sb-closed: 70px;
+    }
+    body { font-family: 'DM Sans', 'Segoe UI', sans-serif; }
+
+    #app {
+      margin-left: var(--sb-w);
+      margin-top: var(--nav-h);
+      padding: 28px 24px 40px;
+      min-height: calc(100vh - var(--nav-h));
+      transition: margin-left 0.28s ease;
+    }
+    .main-content.sb-closed #app,
+    body.collapsed #app { margin-left: var(--sb-closed); }
+
+    /* ── Toast ──────────────────────────────────────────────── */
+    .toast-wrap {
+      position: fixed; top: 72px; right: 20px; z-index: 2000;
+      display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      padding: 12px 18px; border-radius: 10px;
+      font-size: 0.83rem; font-weight: 500;
+      max-width: 340px; pointer-events: auto;
+      animation: toastIn 0.25s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    }
+    .toast-error   { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+    .toast-success { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Stat cards grid ────────────────────────────────────── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px 18px;
+      display: flex; flex-direction: column; gap: 8px;
+      box-shadow: 0 1px 4px rgba(30,41,59,0.06);
+      transition: box-shadow 0.18s, transform 0.18s;
+    }
+    .stat-card:hover { box-shadow: 0 4px 18px rgba(59,130,246,0.13); transform: translateY(-2px); }
+    .dark .stat-card { background: #1e293b; border-color: #334155; }
+    .stat-card-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .stat-card-value { font-size: 1.6rem; font-weight: 700; color: #1e293b; line-height: 1; }
+    .dark .stat-card-value { color: #f1f5f9; }
+    .stat-card-label { font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* ── Chart cards ────────────────────────────────────────── */
+    .chart-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(30,41,59,0.06);
+    }
+    .dark .chart-card { background: #1e293b; border-color: #334155; }
+
+    .chart-canvas-wrap {
+      position: relative;
+      height: 260px;
+    }
+
+    /* Chart empty placeholder */
+    .chart-empty {
+      height: 260px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: #94a3b8; font-size: 0.85rem; gap: 8px;
+    }
+    .chart-empty i { font-size: 2.2rem; }
+
+    /* ── Table section ──────────────────────────────────────── */
+    .table-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 1px 4px rgba(30,41,59,0.06);
+      overflow: hidden;
+    }
+    .dark .table-card { background: #1e293b; border-color: #334155; }
+
+    table.inv-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; min-width: 700px; }
+    table.inv-table thead tr { background: #f8fafc; border-bottom: 2px solid #e2e8f0; }
+    .dark table.inv-table thead tr { background: #162032; border-color: #334155; }
+    table.inv-table th {
+      padding: 11px 14px; text-align: left;
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: #94a3b8; white-space: nowrap; cursor: pointer; user-select: none;
+    }
+    table.inv-table th:hover { color: #3b82f6; }
+    table.inv-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; color: #475569; vertical-align: middle; }
+    .dark table.inv-table td { border-color: #334155; color: #cbd5e1; }
+    table.inv-table tbody tr:last-child td { border-bottom: none; }
+    table.inv-table tbody tr:hover td { background: #f8faff; }
+    .dark table.inv-table tbody tr:hover td { background: #243047; }
+
+    .sort-icon { opacity: 0.4; font-size: 12px; margin-left: 3px; }
+    th.sorted .sort-icon { opacity: 1; color: #3b82f6; }
+
+    /* Stock badge */
+    .stock-badge {
+      display: inline-block; padding: 2px 9px;
+      border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+    }
+    .stock-ok   { background: #dcfce7; color: #166534; }
+    .stock-low  { background: #fef3c7; color: #92400e; }
+    .stock-none { background: #fef2f2; color: #991b1b; }
+
+    /* ── Warehouse select wrapper ────────────────────────────── */
+    /* BUG 11 FIX: proper relative wrapper, no negative-margin hack */
+    .select-wrap {
+      position: relative; display: inline-flex; align-items: center;
+    }
+    .select-wrap select {
+      appearance: none; -webkit-appearance: none;
+      padding-right: 32px;
+    }
+    .select-wrap .chevron {
+      position: absolute; right: 10px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none; color: #94a3b8; font-size: 16px;
+    }
+
+    /* ── Download button ────────────────────────────────────── */
+    .dl-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 7px; font-size: 0.78rem;
+      font-weight: 600; border: none; cursor: pointer;
+      background: #eff6ff; color: #1d4ed8;
+      transition: background 0.15s;
+    }
+    .dl-btn:hover { background: #dbeafe; }
+    .dark .dl-btn { background: #1e3a8a; color: #93c5fd; }
+
+    /* ── Loading skeleton ───────────────────────────────────── */
+    @keyframes shimmer {
+      0%   { background-position: -600px 0; }
+      100% { background-position: 600px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
+      background-size: 600px 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+    .dark .skeleton {
+      background: linear-gradient(90deg, #1e293b 25%, #243047 50%, #1e293b 75%);
+      background-size: 600px 100%;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      #app { margin-left: 0; padding: 16px; }
+    }
+    @media (max-width: 640px) {
+      .stat-card-value { font-size: 1.3rem; }
+      .chart-canvas-wrap { height: 200px; }
+    }
+  </style>
+</head>
+
+<body>
+  <script src="components/uiComponents.js"></script>
+  <script src="components/spinner.js"></script>
+  <script src="components/authGuard.js"></script>
+  <script src="components/navbar.js"></script>
+  <script src="components/sidebar.js"></script>
+  <script src="components/footerTab.js"></script>
+  <script src="assets/js/script.js"></script>
+
+  <!-- BUG 4 FIX: toast container outside Vue app -->
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <!-- BUG 12 FIX: footer moved outside #app -->
+  <main id="app">
+
+    <!-- ── Page heading ──────────────────────────────────────── -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-7">
+      <div>
+        <h1 class="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <i class="bx bx-store text-blue-500"></i> Store Overview
+        </h1>
+        <p class="text-sm text-slate-400 mt-0.5">Real-time inventory and sales dashboard</p>
+      </div>
+
+      <!-- BUG 11 FIX: proper select wrapper — no negative-margin chevron hack -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="select-wrap">
+          <select id="warehouseSelect" v-model="selectedWarehouseId" @change="onWarehouseChange"
+            class="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-2 pr-8
+                   bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200
+                   text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-400
+                   shadow-sm cursor-pointer">
+            <option value="">All Warehouses</option>
+            <option v-for="w in warehouses" :key="w._id" :value="w._id">
+              {{ w.name }} ({{ w.location }})
+            </option>
+          </select>
+          <i class="bx bx-chevron-down chevron"></i>
+        </div>
+        <span v-if="selectedWarehouse" class="text-sm text-slate-500 dark:text-slate-400">
+          <span class="font-semibold text-slate-700 dark:text-slate-200">{{ selectedWarehouse.location }}</span>
+          &nbsp;·&nbsp;{{ selectedWarehouseTotalStock }} units
+        </span>
+      </div>
+    </div>
+
+    <!-- BUG 5 FIX: loading state — skeleton cards while fetching -->
+    <template v-if="loading">
+      <div class="cards-grid mb-7">
+        <div v-for="n in 4" :key="n" class="stat-card">
+          <div class="skeleton h-8 w-8 rounded-lg mb-1"></div>
+          <div class="skeleton h-7 w-24 rounded"></div>
+          <div class="skeleton h-3 w-20 rounded mt-1"></div>
+        </div>
+      </div>
+    </template>
+
+    <!-- ── Stat cards ────────────────────────────────────────── -->
+    <div v-else class="cards-grid">
+      <div v-for="(card, i) in cards" :key="card.title" class="stat-card">
+        <div class="stat-card-icon" :style="{ background: cardColors[i].bg, color: cardColors[i].fg }">
+          <i :class="'bx ' + cardIcons[i]"></i>
+        </div>
+        <div class="stat-card-value">{{ card.value }}</div>
+        <div class="stat-card-label">{{ card.title }}</div>
+      </div>
+    </div>
+
+    <!-- ── Charts row 1 ──────────────────────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+      <!-- Sales line chart -->
+      <div class="chart-card">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h4 class="font-semibold text-slate-700 dark:text-slate-200 text-base">Sales</h4>
+          <div class="flex items-center gap-2 flex-wrap">
+            <div class="select-wrap">
+              <select v-model="selectedMonth" @change="drawChart()"
+                class="rounded-lg border border-slate-200 dark:border-slate-600 px-2 py-1 pr-7
+                       bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200
+                       text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+                <option value="all">All Months</option>
+                <option v-for="m in availableMonths" :key="m" :value="m">{{ m }}</option>
+              </select>
+              <i class="bx bx-chevron-down chevron" style="font-size:14px;right:7px"></i>
+            </div>
+            <button class="dl-btn" @click="downloadChart('salesChart','Sales_Report.png')">
+              <i class="bx bx-download"></i> Download
+            </button>
+          </div>
+        </div>
+        <!-- BUG 10 FIX: show empty state when no orders -->
+        <div v-if="!loading && orders.length === 0" class="chart-empty">
+          <i class="bx bx-line-chart"></i>
+          No sales data yet
+        </div>
+        <div v-else class="chart-canvas-wrap">
+          <canvas id="salesChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Product stock bar chart -->
+      <div class="chart-card">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h4 class="font-semibold text-slate-700 dark:text-slate-200 text-base">Product Stock</h4>
+          <button class="dl-btn" @click="downloadChart('productChart','Product_Stock.png')">
+            <i class="bx bx-download"></i> Download
+          </button>
+        </div>
+        <div v-if="!loading && products.length === 0" class="chart-empty">
+          <i class="bx bx-package"></i>
+          No product data yet
+        </div>
+        <div v-else class="chart-canvas-wrap">
+          <canvas id="productChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Charts row 2 ──────────────────────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+      <div class="chart-card">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h4 class="font-semibold text-slate-700 dark:text-slate-200 text-base">Sales Distribution</h4>
+          <button class="dl-btn" @click="downloadChart('salesPieChart','Product_Sales_Pie.png')">
+            <i class="bx bx-download"></i> Download
+          </button>
+        </div>
+        <div v-if="!loading && orders.length === 0" class="chart-empty">
+          <i class="bx bx-pie-chart-alt"></i>
+          No sales data yet
+        </div>
+        <div v-else class="chart-canvas-wrap">
+          <canvas id="salesPieChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h4 class="font-semibold text-slate-700 dark:text-slate-200 text-base">Warehouse Stock</h4>
+          <button class="dl-btn" @click="downloadChart('stockPieChart','Warehouse_Stock_Pie.png')">
+            <i class="bx bx-download"></i> Download
+          </button>
+        </div>
+        <div v-if="!loading && warehouses.length === 0" class="chart-empty">
+          <i class="bx bx-buildings"></i>
+          No warehouse data yet
+        </div>
+        <div v-else class="chart-canvas-wrap">
+          <canvas id="stockPieChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Product inventory table ───────────────────────────── -->
+    <div class="table-card">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-4
+                  border-b border-slate-100 dark:border-slate-700">
+        <h3 class="font-semibold text-slate-700 dark:text-slate-200 text-base">
+          Product Inventory
+          <span v-if="!loading" class="ml-2 text-xs font-normal text-slate-400">
+            ({{ filteredProducts.length }} items)
+          </span>
+        </h3>
+        <div class="select-wrap" style="max-width:280px;width:100%">
+          <i class="bx bx-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:16px;pointer-events:none"></i>
+          <input type="text" v-model="search" placeholder="Search products…"
+            style="padding-left:34px;padding-right:12px;width:100%;height:38px;
+                   border:1px solid #e2e8f0;border-radius:8px;font-size:0.85rem;
+                   background:#f8fafc;color:#1e293b;outline:none;"
+            @focus="$event.target.style.borderColor='#3b82f6'"
+            @blur="$event.target.style.borderColor='#e2e8f0'" />
+        </div>
+      </div>
+
+      <!-- BUG 5 FIX: skeleton rows while loading -->
+      <div v-if="loading" class="px-5 py-6 space-y-3">
+        <div v-for="n in 5" :key="n" class="skeleton h-10 rounded-lg w-full"></div>
+      </div>
+
+      <!-- BUG 6 FIX: empty state when no products match -->
+      <div v-else-if="filteredProducts.length === 0" class="chart-empty py-12">
+        <i class="bx bx-search-alt"></i>
+        {{ search ? 'No products match your search.' : 'No products found.' }}
+      </div>
+
+      <div v-else class="overflow-x-auto">
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th @click="sort('name')"     :class="{ sorted: sortKey==='name' }">
+                Name <i class="bx bx-sort-alt-2 sort-icon"></i>
+              </th>
+              <th @click="sort('category')" :class="{ sorted: sortKey==='category' }">
+                Category <i class="bx bx-sort-alt-2 sort-icon"></i>
+              </th>
+              <th>Description</th>
+              <th>SKU</th>
+              <th>Barcode</th>
+              <th>Batch</th>
+              <th @click="sort('stock')"    :class="{ sorted: sortKey==='stock' }">
+                Stock <i class="bx bx-sort-alt-2 sort-icon"></i>
+              </th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="product in filteredProducts" :key="product._id || product.id">
+              <td class="font-medium text-slate-700 dark:text-slate-200">{{ product.name }}</td>
+              <td>{{ typeof product.category === 'object' ? product.category.name : (product.category || '—') }}</td>
+              <td class="max-w-xs truncate text-slate-400">{{ product.description || '—' }}</td>
+              <td class="font-mono text-xs">{{ product.sku || '—' }}</td>
+              <td class="font-mono text-xs">{{ product.barcode || '—' }}</td>
+              <td>
+                <span :class="product.batchTracking ? 'stock-ok' : 'stock-none'" class="stock-badge">
+                  {{ product.batchTracking ? 'Yes' : 'No' }}
+                </span>
+              </td>
+              <td>
+                <span :class="stockClass(warehouseStock(product))" class="stock-badge">
+                  {{ warehouseStock(product) }}
+                </span>
+              </td>
+              <td class="font-semibold text-slate-600 dark:text-slate-300">
+                {{ product.totalStock ?? product.stock ?? 0 }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main><!-- /#app -->
+
+  <!-- BUG 12 FIX: footer outside Vue reactive tree -->
+  <footer class="mt-10 border-t border-slate-100 dark:border-slate-800 py-5 text-center
+                 text-sm text-slate-400"
+          style="margin-left: var(--sb-w); transition: margin-left 0.28s ease;">
+    <p>© 2025 Eraskon Inventory. All rights reserved.</p>
+    <div class="flex justify-center gap-5 mt-2">
+      <a href="#" class="hover:text-blue-500 transition"><i class="bx bxl-facebook text-lg"></i></a>
+      <a href="#" class="hover:text-blue-500 transition"><i class="bx bxl-twitter text-lg"></i></a>
+      <a href="#" class="hover:text-blue-500 transition"><i class="bx bxl-linkedin text-lg"></i></a>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = window.BASE_URL;
+
+    /* ── Toast helper (replaces alert) ─────────────────────────
+       BUG 4 FIX */
+    function showToast(msg, type = 'error', duration = 5000) {
+      const wrap = document.getElementById('toastWrap');
+      const el   = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.innerHTML = `<i class="bx ${type === 'error' ? 'bx-error-circle' : 'bx-check-circle'} mr-2"></i>${msg}`;
+      wrap.appendChild(el);
+      setTimeout(() => el.remove(), duration);
+    }
+
+    /* ── Vue app ────────────────────────────────────────────── */
+    new Vue({
+      el: '#app',
+      data: {
+        loading:             true,
+        warehouses:          [],
+        selectedWarehouseId: '',
+        cards: [
+          { title: 'Total Products', value: 0 },
+          { title: 'Total Sales',    value: 0 },
+          { title: 'Available Stock',value: 0 },
+          { title: 'Total Amount',   value: 0 },
+        ],
+        cardIcons:  ['bx-box', 'bx-cart', 'bx-transfer', 'bx-dollar'],
+        cardColors: [
+          { bg: '#eff6ff', fg: '#1d4ed8' },
+          { bg: '#f0fdf4', fg: '#166534' },
+          { bg: '#fef3c7', fg: '#92400e' },
+          { bg: '#fdf4ff', fg: '#7e22ce' },
+        ],
+        search:       '',
+        sortKey:      '',
+        sortAsc:      true,
+        selectedMonth:'all',
+        products:     [],
+        orders:       [],
+        salesData:    {},
+        /* chart instances */
+        salesChart:   null,
+        productChart: null,
+        salesPieChart:null,
+        stockPieChart:null,
+        /* BUG 7: track previous dark class to avoid unnecessary redraws */
+        _wasDark:     false,
+      },
+
+      computed: {
+        availableMonths() { return Object.keys(this.salesData); },
+
+        selectedWarehouse() {
+          return this.warehouses.find(w => w._id === this.selectedWarehouseId) || null;
+        },
+
+        selectedWarehouseTotalStock() {
+          if (!this.selectedWarehouseId) return 0;
+          return this.products.reduce((sum, p) => {
+            const wh = (p.warehouses || []).find(w => w.warehouse === this.selectedWarehouseId);
+            return sum + (wh ? (wh.stock || 0) : 0);
+          }, 0);
+        },
+
+        filteredProducts() {
+          let list = this.products;
+          if (this.selectedWarehouseId) {
+            list = list.filter(p =>
+              (p.warehouses || []).some(w => w.warehouse === this.selectedWarehouseId));
+          }
+          if (this.search.trim()) {
+            const q = this.search.toLowerCase();
+            list = list.filter(p =>
+              (p.name || '').toLowerCase().includes(q) ||
+              (p.sku  || '').toLowerCase().includes(q));
+          }
+          if (this.sortKey) {
+            list = [...list].sort((a, b) => {
+              const va = a[this.sortKey], vb = b[this.sortKey];
+              return this.sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+            });
+          }
+          return list;
+        },
+      },
+
+      methods: {
+        sort(key) {
+          if (this.sortKey === key) { this.sortAsc = !this.sortAsc; }
+          else { this.sortKey = key; this.sortAsc = true; }
+        },
+
+        isDark() {
+          return document.documentElement.classList.contains('dark') ||
+                 document.body.classList.contains('dark-mode');
+        },
+
+        getTextColor() { return this.isDark() ? '#e2e8f0' : '#1e293b'; },
+
+        warehouseStock(product) {
+          if (this.selectedWarehouseId) {
+            const wh = (product.warehouses || []).find(w => w.warehouse === this.selectedWarehouseId);
+            return wh ? (wh.stock ?? 0) : 0;
+          }
+          return product.totalStock ?? product.stock ?? 0;
+        },
+
+        stockClass(n) {
+          if (n === 0)  return 'stock-none';
+          if (n < 10)   return 'stock-low';
+          return 'stock-ok';
+        },
+
+        downloadChart(id, name) {
+          const a = document.createElement('a');
+          a.href     = document.getElementById(id).toDataURL('image/png');
+          a.download = name;
+          a.click();
+        },
+
+        /* ── Data fetch ─────────────────────────────────────── */
+        async fetchData() {
+          this.loading = true;
+          const token  = localStorage.getItem('token');
+          const hdrs   = { Authorization: `Bearer ${token}` };
+
+          try {
+            const [wRes, pRes, oRes] = await Promise.all([
+              fetch(`${API_BASE}/warehouse`,       { headers: hdrs }),
+              fetch(`${API_BASE}/product-variant`, { headers: hdrs }),
+              fetch(`${API_BASE}/order`,           { headers: hdrs }),
+            ]);
+
+            /* Normalise all three responses */
+            const wData = await wRes.json();
+            const pData = await pRes.json();
+            const oData = await oRes.json();
+
+            this.warehouses = Array.isArray(wData) ? wData : (wData.warehouses || []);
+            this.products   = Array.isArray(pData) ? pData : (pData.products   || []);
+            this.orders     = Array.isArray(oData) ? oData : (oData.orders     || []);
+
+            this.updateCards();
+            this.prepareSalesData();
+            this.loading = false;
+            this.$nextTick(() => this.drawChart());
+          } catch (err) {
+            this.loading = false;
+            /* BUG 4 FIX: toast instead of blocking alert() */
+            showToast(`Failed to load dashboard data: ${err.message}`, 'error');
+          }
+        },
+
+        /* ── Sales data prep ────────────────────────────────── */
+        prepareSalesData() {
+          const sd = {};
+          let orders = this.orders;
+          if (this.selectedWarehouseId) {
+            orders = orders.filter(o =>
+              (o.items || []).some(i => i.warehouse === this.selectedWarehouseId));
+          }
+          orders.forEach(o => {
+            const month = new Date(o.createdAt).toLocaleString('default', { month: 'short' });
+            if (!sd[month]) sd[month] = [0, 0];
+            o.channel === 'online' ? sd[month][0]++ : sd[month][1]++;
+          });
+          this.salesData = sd;
+        },
+
+        /* ── Draw / redraw all charts ───────────────────────── */
+        drawChart() {
+          /* Guard: canvases only exist when !loading */
+          if (this.loading) return;
+
+          this._destroyCharts();
+
+          const txt   = this.getTextColor();
+          const grid  = txt + '18';
+          const blue  = '#3b82f6';
+          const red   = '#f87171';
+
+          /* ── Sales line ── */
+          const salesCtx = document.getElementById('salesChart');
+          if (salesCtx && this.orders.length) {
+            let labels = [], d1 = [], d2 = [];
+            if (this.selectedMonth === 'all') {
+              labels = Object.keys(this.salesData);
+              d1 = labels.map(m => this.salesData[m][0]);
+              d2 = labels.map(m => this.salesData[m][1]);
+            } else if (this.salesData[this.selectedMonth]) {
+              labels = [this.selectedMonth];
+              d1 = [this.salesData[this.selectedMonth][0]];
+              d2 = [this.salesData[this.selectedMonth][1]];
+            }
+            this.salesChart = new Chart(salesCtx.getContext('2d'), {
+              type: 'line',
+              data: {
+                labels,
+                datasets: [
+                  { label: 'Online',  data: d1, borderColor: blue, backgroundColor: blue+'28', tension: 0.4, fill: true, pointBackgroundColor: blue },
+                  { label: 'Offline', data: d2, borderColor: red,  backgroundColor: red +'28', tension: 0.4, fill: true, pointBackgroundColor: red  },
+                ]
+              },
+              options: this._lineOpts(txt, grid),
+              plugins: [ChartDataLabels],
+            });
+          }
+
+          /* ── Product bar ── */
+          const prodCtx = document.getElementById('productChart');
+          if (prodCtx && this.products.length) {
+            let prods  = this.products;
+            let stocks = prods.map(p => p.stock || 0);
+            if (this.selectedWarehouseId) {
+              prods  = prods.filter(p => (p.warehouses||[]).some(w => w.warehouse === this.selectedWarehouseId));
+              stocks = prods.map(p => { const w = (p.warehouses||[]).find(w=>w.warehouse===this.selectedWarehouseId); return w?w.stock:0; });
+            }
+            this.productChart = new Chart(prodCtx.getContext('2d'), {
+              type: 'bar',
+              data: {
+                labels: prods.map(p => p.name),
+                datasets: [{ label: 'Stock', data: stocks, backgroundColor: blue+'bb', borderRadius: 6, borderSkipped: false }]
+              },
+              options: this._barOpts(txt),
+              plugins: [ChartDataLabels],
+            });
+          }
+
+          /* ── Sales pie ── */
+          const spCtx = document.getElementById('salesPieChart');
+          if (spCtx && this.orders.length) {
+            const sd = this.getProductSalesData();
+            this.salesPieChart = new Chart(spCtx.getContext('2d'), {
+              type: 'pie',
+              data: { labels: sd.map(s=>s.name), datasets: [{ data: sd.map(s=>s.count), backgroundColor: sd.map((_,i)=>`hsl(${i*360/sd.length},65%,58%)`) }] },
+              options: this._pieOpts(txt),
+              plugins: [ChartDataLabels],
+            });
+          }
+
+          /* ── Warehouse pie ── */
+          const wpCtx = document.getElementById('stockPieChart');
+          if (wpCtx && this.warehouses.length) {
+            const wd = this.getWarehouseStockData();
+            this.stockPieChart = new Chart(wpCtx.getContext('2d'), {
+              type: 'pie',
+              data: { labels: wd.map(s=>s.name), datasets: [{ data: wd.map(s=>s.stock), backgroundColor: wd.map((_,i)=>`hsl(${i*360/wd.length},65%,58%)`) }] },
+              options: this._pieOpts(txt),
+              plugins: [ChartDataLabels],
+            });
+          }
+        },
+
+        /* ── Shared chart option factories ──────────────────── */
+        _lineOpts(txt, grid) {
+          return {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: txt, boxWidth: 12, font: { size: 12 } } },
+              tooltip: { mode: 'index', intersect: false },
+              datalabels: { display: false },
+            },
+            scales: {
+              x: { ticks: { color: txt }, grid: { color: grid } },
+              y: { beginAtZero: true, ticks: { color: txt }, grid: { color: grid } },
+            },
+          };
+        },
+        _barOpts(txt) {
+          return {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              datalabels: { color: txt, anchor: 'end', align: 'top', font: { size: 10, weight: 'bold' }, formatter: Math.round },
+            },
+            scales: {
+              x: { ticks: { color: txt, maxRotation: 35 }, grid: { display: false } },
+              y: { beginAtZero: true, ticks: { color: txt }, grid: { display: false } },
+            },
+          };
+        },
+        _pieOpts(txt) {
+          return {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: txt, boxWidth: 12, font: { size: 11 } } },
+              datalabels: { color: '#fff', font: { weight: 'bold', size: 11 }, formatter: (v, ctx) => {
+                const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+                return total ? `${Math.round(v/total*100)}%` : '';
+              }},
+            },
+          };
+        },
+
+        _destroyCharts() {
+          ['salesChart','productChart','salesPieChart','stockPieChart'].forEach(k => {
+            if (this[k]) { this[k].destroy(); this[k] = null; }
+          });
+        },
+
+        /* ── Stat card update ───────────────────────────────── */
+        updateCards() {
+          if (this.selectedWarehouseId) {
+            let products = new Set(), sales = 0, amount = 0;
+            this.orders.forEach(o => {
+              let inWh = false, amt = 0;
+              (o.items||[]).forEach(i => {
+                if (i.warehouse === this.selectedWarehouseId) {
+                  products.add(i.productVariantId||i.product||i.sku||i.name);
+                  amt += (Number(i.price)||0)*(Number(i.quantity)||1);
+                  inWh = true;
+                }
+              });
+              if (inWh) { sales++; amount += amt || Number(o.total)||0; }
+            });
+            const stock = this.products.reduce((s,p) => {
+              const w = (p.warehouses||[]).find(w=>w.warehouse===this.selectedWarehouseId);
+              return s + (w?w.stock:0);
+            }, 0);
+            this.cards = [
+              { title:'Products (WH)',  value: products.size },
+              { title:'Sales (WH)',     value: sales },
+              { title:'Stock (WH)',     value: stock },
+              { title:'Amount (WH)',    value:`₦${amount.toLocaleString()}` },
+            ];
+          } else {
+            const products = new Set();
+            let amount = 0;
+            this.orders.forEach(o => {
+              (o.items||[]).forEach(i => {
+                products.add(i.productVariantId||i.product||i.sku||i.name);
+                amount += (Number(i.price)||0)*(Number(i.quantity)||1);
+              });
+              if (!o.items?.length) amount += Number(o.total)||0;
+            });
+            const stock = this.products.reduce((s,p) =>
+              s + (p.warehouses||[]).reduce((ws,w) => ws+(w.stock||0), 0), 0);
+            this.cards = [
+              { title:'Total Products', value: products.size },
+              { title:'Total Sales',    value: this.orders.length },
+              { title:'Available Stock',value: stock },
+              { title:'Total Amount',   value:`₦${amount.toLocaleString()}` },
+            ];
+          }
+        },
+
+        onWarehouseChange() {
+          this.prepareSalesData();
+          this.updateCards();
+          this.$nextTick(() => this.drawChart());
+        },
+
+        getProductSalesData() {
+          const stats = {};
+          this.orders.forEach(o => {
+            (o.items||[]).forEach(i => {
+              if (!this.selectedWarehouseId || i.warehouse === this.selectedWarehouseId) {
+                const key = i.name||i.productVariantId||i.product||i.sku||'Unknown';
+                if (!stats[key]) stats[key] = { name: key, count: 0 };
+                stats[key].count += Number(i.quantity)||1;
+              }
+            });
+          });
+          return Object.values(stats);
+        },
+
+        getWarehouseStockData() {
+          const map = {};
+          this.warehouses.forEach(w => { map[w._id] = { name: w.name, stock: 0 }; });
+          this.products.forEach(p => {
+            (p.warehouses||[]).forEach(wd => {
+              if (map[wd.warehouse]) map[wd.warehouse].stock += wd.stock||0;
+            });
+          });
+          return Object.values(map).filter(d => d.stock > 0);
+        },
+      },
+
+      mounted() {
+        this.fetchData();
+
+        /* BUG 7 FIX: only redraw on actual dark-mode toggle, not every class change */
+        const observer = new MutationObserver(() => {
+          const dark = this.isDark();
+          if (dark !== this._wasDark) {
+            this._wasDark = dark;
+            this.$nextTick(() => this.drawChart());
+          }
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        observer.observe(document.body,            { attributes: true, attributeFilter: ['class'] });
+        this._observer = observer;
+      },
+
+      /* BUG 8 FIX: clean up chart instances and observer on destroy */
+      beforeDestroy() {
+        this._destroyCharts();
+        if (this._observer) this._observer.disconnect();
+      },
+    });
+  </script>
+</body>
+</html>

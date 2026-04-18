@@ -1,0 +1,429 @@
+/* ============================================================
+   Eraskon Auth Styles — login & activation page
+   Font: Poppins | Palette: brand blue #1A56DB, slate, white
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ── Reset ── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+/* ── Page ── */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #1A56DB 100%);
+  padding: 24px 16px 0;
+}
+
+/* ── Top brand bar ── */
+.logo-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  color: #fff;
+  animation: fadeSlideDown 0.6s ease forwards;
+}
+
+.logo-header img {
+  height: 48px;
+  width: 48px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.12);
+  padding: 4px;
+}
+
+.logo-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+  color: #fff;
+}
+
+/* ── Flip card container ── */
+.container {
+  position: relative;
+  max-width: 860px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  perspective: 2700px;
+  /* override any inline margin/border */
+  border: none !important;
+  margin: 0 auto !important;
+}
+
+/* Hide the checkbox that drives the flip */
+.container #flip { display: none; }
+
+/* ── Cover panel (left half — flips on signup) ── */
+.container .cover {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  width: 50%;
+  z-index: 98;
+  transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  border-radius: 0 20px 20px 0;
+  overflow: hidden;
+}
+
+.container #flip:checked ~ .cover {
+  transform: rotateY(-180deg);
+}
+
+.container #flip:checked ~ .forms .login-form {
+  pointer-events: none;
+}
+
+.container .cover .front,
+.container .cover .back {
+  position: absolute;
+  inset: 0;
+}
+
+.cover .back { transform: rotateY(180deg); }
+
+.container .cover img {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+/* Gradient overlay on cover */
+.container .cover .text {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  background: linear-gradient(160deg, rgba(15,23,42,0.72) 0%, rgba(26,86,219,0.65) 100%);
+  text-align: center;
+}
+
+.cover .text .text-1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+}
+
+.cover .text .text-2 {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 0.3px;
+}
+
+/* ── Forms panel (right half) ── */
+.container .forms {
+  width: 100%;
+  background: #ffffff;
+  padding: 48px 40px;
+  min-height: 520px;
+}
+
+.container .form-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.form-content .login-form,
+.form-content .signup-form {
+  width: calc(50% - 12px);
+}
+
+/* ── Form title ── */
+.forms .form-content .title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.forms .form-content .title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 32px;
+  border-radius: 2px;
+  background: #1A56DB;
+}
+
+/* ── Input group ── */
+.forms .form-content .input-boxes {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.forms .form-content .input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 48px;
+  width: 100%;
+}
+
+/* Icon */
+.form-content .input-box i {
+  position: absolute;
+  left: 14px;
+  font-size: 15px;
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 2;
+  transition: color 0.2s;
+}
+
+/* Input field */
+.form-content .input-box input[type="text"],
+.form-content .input-box input[type="password"],
+.form-content .input-box input[type="email"] {
+  height: 100%;
+  width: 100%;
+  padding: 0 40px 0 40px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #1e293b;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.form-content .input-box input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.form-content .input-box input:focus {
+  border-color: #1A56DB;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.12);
+}
+
+.form-content .input-box input:focus ~ i,
+.form-content .input-box input:focus + i {
+  color: #1A56DB;
+}
+
+/* Icon inside box, need to target sibling — handled by JS class */
+.form-content .input-box.focused i { color: #1A56DB; }
+
+/* Password toggle button */
+.toggle-pw {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 15px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  z-index: 3;
+  transition: color 0.2s;
+}
+.toggle-pw:hover { color: #1A56DB; }
+
+/* ── Submit button ── */
+.forms .form-content .button {
+  margin-top: 8px;
+}
+
+.forms .form-content .button input[type="submit"] {
+  height: 48px;
+  width: 100%;
+  background: #1A56DB;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(26, 86, 219, 0.35);
+}
+
+.forms .form-content .button input[type="submit"]:hover {
+  background: #1648c0;
+  box-shadow: 0 6px 20px rgba(26, 86, 219, 0.45);
+}
+
+.forms .form-content .button input[type="submit"]:active {
+  transform: scale(0.98);
+}
+
+/* ── Helper text + links ── */
+.forms .form-content .text {
+  font-size: 13px;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.forms .form-content .text a {
+  color: #1A56DB;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.forms .form-content .text a:hover { text-decoration: underline; }
+
+.forms .form-content label {
+  color: #1A56DB;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.forms .form-content label:hover { text-decoration: underline; }
+
+.forms .form-content .sign-up-text {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* ── Message boxes ── */
+.message-box {
+  display: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.message-box.success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.message-box.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* ── Footer ── */
+footer {
+  width: 100%;
+  text-align: center;
+  padding: 20px 0 24px;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 20px;
+}
+
+footer a {
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* ── Animations ── */
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animated {
+  animation: fadeSlideUp 0.6s ease forwards;
+  opacity: 0;
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.25s; }
+.delay-3 { animation-delay: 0.4s; }
+.delay-4 { animation-delay: 0.55s; }
+.delay-5 { animation-delay: 0.7s; }
+
+/* ── Divider between forms ── */
+.form-divider {
+  width: 1px;
+  background: #e2e8f0;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 730px) {
+  .container .cover { display: none; }
+
+  .container .forms { padding: 36px 28px; }
+
+  .form-content .login-form,
+  .form-content .signup-form { width: 100%; }
+
+  .form-divider { display: none; }
+
+  .form-content .signup-form { display: none; }
+
+  .container #flip:checked ~ .forms .signup-form { display: block; }
+  .container #flip:checked ~ .forms .login-form  { display: none; }
+}
+
+@media (max-width: 480px) {
+  body { padding: 20px 12px 0; }
+
+  .logo-header h1 {
+    font-size: 16px;
+  }
+
+  .logo-header img {
+    height: 40px;
+    width: 40px;
+  }
+
+  .container .forms { padding: 28px 20px; }
+
+  .forms .form-content .title { font-size: 20px; }
+}

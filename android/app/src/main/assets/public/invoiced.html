@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Eraskon Invoice PDF</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+  <button onclick="previewInvoice()">Generate Invoice PDF</button>
+
+  <script>
+    function numberToWords(n) {
+      const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+      const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+      const c = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+
+      function convert_hundreds(num) {
+        let str = '';
+        if (num > 99) {
+          str += a[Math.floor(num / 100)] + " Hundred ";
+          num = num % 100;
+        }
+        if (num > 19) {
+          str += b[Math.floor(num / 10)] + " " + a[num % 10];
+        } else if (num >= 10) {
+          str += c[num - 10];
+        } else {
+          str += a[num];
+        }
+        return str.trim();
+      }
+
+      if (n === 0) return "Zero Naira Only";
+
+      const parts = n.toString().split('.');
+      const naira = parseInt(parts[0], 10);
+      const kobo = parts[1] ? parseInt(parts[1].padEnd(2, '0'), 10) : 0;
+
+      let result = "";
+      const billions = Math.floor(naira / 1_000_000_000);
+      const millions = Math.floor((naira % 1_000_000_000) / 1_000_000);
+      const thousands = Math.floor((naira % 1_000_000) / 1_000);
+      const remainder = naira % 1_000;
+
+      if (billions) result += convert_hundreds(billions) + " Billion ";
+      if (millions) result += convert_hundreds(millions) + " Million ";
+      if (thousands) result += convert_hundreds(thousands) + " Thousand ";
+      if (remainder) result += convert_hundreds(remainder) + " ";
+
+      result += "Naira";
+
+      if (kobo > 0) {
+        result += ` and ${convert_hundreds(kobo)} Kobo`;
+      }
+
+      return result.trim() + " Only";
+    }
+
+    async function generateInvoicePDF(customer, cart, cartTotal) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const naira = '\u20A6'; // Proper Naira sign
+      const date = new Date().toLocaleDateString('en-GB');
+      const invoiceNo = `ENL/PRD/${new Date().getFullYear().toString().slice(2)}/${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+      const total = cartTotal.toFixed(2);
+      const amountInWords = numberToWords(total);
+
+      const tableBody = cart.map(item => [
+        item.quantity,
+        item.name,
+        `${naira}${(item.variant.price * item.quantity).toLocaleString()}`
+      ]);
+
+      const logoUrl = "https://res.cloudinary.com/ayaweisoft/image/upload/v1747014775/eraskon_logo_iw3v9i.jpg";
+      const signatureUrl = "https://res.cloudinary.com/ayaweisoft/image/upload/v1751231874/muhammad-ali-signature.png";
+
+      const [logoImage, signatureImage] = await Promise.all([
+        loadImageToBase64(logoUrl),
+        loadImageToBase64(signatureUrl)
+      ]);
+
+      // Eraskon Logo
+      if (logoImage) {
+        doc.addImage(logoImage, 'JPEG', 75, 10, 60, 40);
+      }
+
+      doc.setFontSize(10);
+      doc.text("Head Office: El-Al Court, Plot 35 Chief Yesufu Abiodun Oniru Way, Victoria Island, Lagos.", 14, 55);
+      doc.text("E-mail: info@eraskoenergy.com", 14, 60);
+
+      doc.setFontSize(14);
+      doc.text("INVOICE", 105, 70, { align: 'center' });
+
+      doc.setFontSize(10);
+      doc.text(`Name: ${customer.name}`, 14, 80);
+      doc.text(`Date: ${date}`, 150, 80);
+      doc.text(`Invoice No: ${invoiceNo}`, 14, 86);
+
+      doc.autoTable({
+        startY: 95,
+        head: [["QTY", "DESCRIPTION OF PRODUCTS", "TOTAL"]],
+        body: tableBody,
+        theme: 'grid',
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [37, 99, 235], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 245, 245] }
+      });
+
+      const finalY = doc.lastAutoTable.finalY;
+
+      doc.autoTable({
+        startY: finalY + 10,
+        body: [
+          ["DISCOUNT", `${naira}0.00`],
+          ["AMOUNT PAID", `${naira}0.00`],
+          ["NET BALANCE", `${naira}${parseFloat(total).toLocaleString()}`]
+        ],
+        styles: { fontSize: 10 },
+        margin: { left: 120 }
+      });
+
+      doc.setFontSize(11);
+      doc.text(`GRAND TOTAL: ${naira}${parseFloat(total).toLocaleString()}`, 14, finalY + 45);
+      doc.setFontSize(10);
+      doc.text(`Amount in words: ${amountInWords}`, 14, finalY + 55);
+      doc.text("Payments to be made to:", 14, finalY + 65);
+      doc.text("Eraskon Nigeria Limited\nZenith Bank Plc: 1016862835\nFCMB Plc:", 14, finalY + 70);
+
+      // Signature lines
+      doc.text("_______________________________", 14, finalY + 95);
+      doc.text("Client’s Sign", 25, finalY + 100);
+      doc.text("_______________________________", 130, finalY + 95);
+      doc.text("Manager’s Sign", 145, finalY + 100);
+
+      // Add signature image under Manager’s Sign
+      if (signatureImage) {
+        doc.addImage(signatureImage, 'PNG', 130, finalY + 78, 50, 15); // Adjust size/position
+      }
+
+      const blobUrl = doc.output('bloburl');
+      window.open(blobUrl, '_blank');
+    }
+
+    function loadImageToBase64(url) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = function () {
+          resolve(null);
+        };
+        img.src = url;
+      });
+    }
+
+    function previewInvoice() {
+      generateInvoicePDF(
+        {
+          name: 'John Doe',
+          email: 'john@example.com',
+          phone: '08012345678',
+          company: 'Doe Ltd',
+          taxId: 'TIN123456'
+        },
+        [
+          { name: 'Erasko HD', quantity: 50, variant: { price: 1000, size: '25L', sku: 'HD25' } },
+          { name: 'Erasko DMO', quantity: 20, variant: { price: 750, size: '10L', sku: 'DM10' } }
+        ],
+        50 * 1000 + 20 * 750
+      );
+    }
+  </script>
+</body>
+</html>
