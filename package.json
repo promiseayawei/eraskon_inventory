@@ -4,8 +4,9 @@
   "description": "",
   "main": "config.js",
   "scripts": {
-    "start": "npm run build",
-    "sync:web": "rsync -a assets/ www/assets/ && rsync -a components/ www/components/ && rsync -a controllers/ www/controllers/ && rsync -a models/ www/models/ && rsync -a resources/ www/resources/ && rsync -a *.html config.js capacitor.config.json sales-orders www/",
+    "start": "npm run watch:web",
+    "sync:web": "node scripts/sync-web.mjs",
+    "watch:web": "node scripts/watch-web.mjs",
     "build": "npm run sync:web && npx cap sync android",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
