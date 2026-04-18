@@ -150,7 +150,15 @@
   /* ── Mobile ── */
   @media (max-width: 768px) {
     .navbar { padding: 0 12px; height: 56px; }
-    .navbar-brand-name { display: none; }
+    .navbar-brand { gap: 6px; min-width: 0; }
+    .navbar-brand img { height: 28px; width: 28px; }
+    .navbar-brand-name {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      max-width: 135px;
+      line-height: 1.05;
+    }
     .nav-network-badge { display: none; }
     .nav-user-info { display: none; }
     .nav-user-chip {
