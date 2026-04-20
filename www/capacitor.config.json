@@ -3,7 +3,9 @@
   "appName": "Eraskon Inventory",
   "webDir": "www",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "hostname": "app.eraskon.com",
+    "allowNavigation": ["api.eraskon.com"]
   },
   "android": {
     "allowMixedContent": true,

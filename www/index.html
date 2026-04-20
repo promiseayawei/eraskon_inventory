@@ -9,7 +9,7 @@
   <script src="components/spinner.js"></script>
 
   <!-- Axios -->
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="assets/js/axios.min.js"></script>
 
   <!-- Config & Utils -->
   <script src="config.js"></script>
@@ -748,7 +748,15 @@
           setTimeout(() => { window.location.href = redirectMap[user.role] || 'welcome.html'; }, 1500);
         })
         .catch(err => {
-          showMessage('loginMessageBox', err.response?.data?.error || 'Login failed. Check your credentials.', 'error');
+          let msg;
+          if (err.response) {
+            msg = err.response.data?.error || `Server error (${err.response.status})`;
+          } else if (err.request) {
+            msg = 'Cannot reach server. Check your internet connection.';
+          } else {
+            msg = err.message || 'Login failed. Try again.';
+          }
+          showMessage('loginMessageBox', msg, 'error');
           btn.value = 'Login to Dashboard'; btn.disabled = false;
         });
     });
