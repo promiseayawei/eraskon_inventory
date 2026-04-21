@@ -9,9 +9,7 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="assets/js/vue.min.js"></script>
     <script src="assets/js/axios.min.js"></script>
 <style>
     :root {
@@ -94,10 +92,11 @@ button:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1500;
 }
 
 .modal {
+  display: block;
   background: var(--card-bg);
   padding: 20px;
   border-radius: 10px;
@@ -106,6 +105,8 @@ button:hover {
   max-height: 90vh;
   overflow-y: auto;
   animation: slideIn 0.3s ease;
+  position: relative;
+  inset: unset;
 }
 
 @keyframes slideIn {
@@ -416,11 +417,6 @@ input, select {
 
     </main>
     <script src="assets/js/script.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-
-
-    <script src="assets/js/axios.min.js"></script>
     <script src="config.js"></script>
 
 
@@ -500,7 +496,7 @@ input, select {
                 },
                 async fetchProducts() {
                     try {
-                        const res = await axios.get(`${this.API_BASE}/products`);
+                        const res = await axios.get(`${this.API_BASE}/product`);
                         this.products = res.data;
                         console.log('Fetched products:', this.products);
                     } catch (err) {
